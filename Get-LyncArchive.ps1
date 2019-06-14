@@ -1,4 +1,4 @@
-﻿<#
+<#
 .Synopsis
     Get-LyncArchives is used to get conversation history for a user and decode the base64 encoded conversation if wanted.
     This cmdlet does not accept any switches and will prompt the runner for input.
@@ -39,7 +39,7 @@ Function Get-LyncArchives {
 
         $StartDate = Read-Host "What should the start date of your search be? Example: 5/1/2019"
 
-        $EndDate = Read-Host "What should the start date of your search be? Example: 10/1/2019"
+        $EndDate = Read-Host "What should the end date of your search be? Example: 5/10/2019"
 
         Write-Host "Reports will be saved to your desktop..."
 
@@ -51,8 +51,8 @@ Function Get-LyncArchives {
 
 
         try {
-
-            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $savePath -UserUri $person -Verbose
+         
+            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $savePath -UserUri $person -Verbose 
 
             } # End Try
 
@@ -117,7 +117,7 @@ Function Get-LyncArchives {
 
             } # End ForEach
                 
-            $printBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($test)) 
+            $printBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64)) 
 
             $printBase
 
