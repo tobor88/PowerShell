@@ -12,7 +12,7 @@
         4.) Checks local machine and current user registry for any previously unknown applications and shows the unknown apps to the admin. The admin should verify these applications are safe.
         5.) Make sure no proxy settings have been configured/altered.
 
-    Written by Rob Osborne - rob.osborne@usav.org - robosborne88@gmail.com 
+    Written by Rob Osborne - rosborne@osbornepro.com
     Alias: tobor
 
 .EXAMPLE
