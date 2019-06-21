@@ -13,6 +13,7 @@
         5.) Make sure no proxy settings have been configured/altered.
 
     Written by Rob Osborne - rosborne@osbornepro.com
+    https://roberthosborne.com
     Alias: tobor
 
 .EXAMPLE
