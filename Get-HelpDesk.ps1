@@ -9,6 +9,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
+    https://roberthosborne.com
 
 .EXAMPLES
     Get-HelpDesk
@@ -48,15 +49,15 @@ Function Get-HelpDesk {
 
         do { # This do is for preventing the script for running longer than 8 hours
 
-            $Domain = 'usav.org'
+            $Domain = "<Domain.com>"
 
-            $PrimaryDC = "USAV-DCP"
+            $PrimaryDC = "<PDC Hostname>"
 
-            $SecondaryDC = 'USAV-DCB1'
+            $SecondaryDC = "SDC Hostname"
 
-            $PrintServers = 'USAV-Printers', 'NT-FS1', 'Beach-DHCP'
+            $PrintServers = "<Print Server hostname>"
 
-            $AzureAdServer = 'Carbon'
+            $AzureAdServer = "<Azure Sync Hostname>"
 
         $sw = [diagnostics.stopwatch]::StartNew()
 
@@ -126,15 +127,15 @@ Function Get-HelpDesk {
     While($Response -notin 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,'x')
     #===================================================================================================================================
 
-    $Domain = 'usav.org'
+            $Domain = "<Domain.com>"
 
-    $PrimaryDC = "USAV-DCP"
+            $PrimaryDC = "<PDC Hostname>"
 
-    $SecondaryDC = 'USAV-DCB1'
+            $SecondaryDC = "SDC Hostname"
 
-    $PrintServers = 'USAV-Printers', 'NT-FS1', 'Beach-DHCP'
+            $PrintServers = "<Print Server hostname>"
 
-    $AzureAdServer = 'Carbon'
+            $AzureAdServer = "<Azure Sync Hostname>"
 
     if ($Response -eq '1') { 
 
@@ -1322,4 +1323,4 @@ Function Get-HelpDesk {
 
 } # End Function
 
-Get-HelpDesk
+Get-HelpDesk -Verbose
