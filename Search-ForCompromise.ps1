@@ -46,6 +46,8 @@ Function Search-ForCompromise {
 
     ) # End Param
 
+BEGIN {
+
 # ControlAPpListFile is a list of known applications and should not cause any alarm.
 $ControlAppListFile = <\\NETWORKSHARE\file\AppList>
 
@@ -55,9 +57,13 @@ $ControlCUAppListFile = <\\NETWORKSHARE\file\CUAppList>
 # ControlHostsFile should be a copy of C:\Windows\system32\Drivers\etc\hosts If this file is ever edited we want to know it has been changed
 $ControlHostsFile = <\\NETWORKLOCATION\file\hosts>
 
+} # End BEGIN
+
 #======================================================================
 # This part of the function is what runs if function is run locally   |
 #======================================================================
+PROCESS { 
+
 if (!($ComputerName)) { 
 
         Write-Verbose "Finding the top 20 heaviest running processes....`n"
@@ -307,5 +313,13 @@ if (!($ComputerName)) {
         } # End Invoke-Command
  
      } # End Else
+ 
+ } # End PROCESS
+ 
+ END {
+ 
+    Write-Verbose "Execution of command has completed."
+ 
+ } # End END
         
 } # End Function
