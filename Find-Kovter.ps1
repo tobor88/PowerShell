@@ -6,8 +6,12 @@
 .DESCRIPTION
     This cmdlet searches the Windows Registry for Kovter Malware
     If more than one file are found, more than one location will be returned.
-    Written by Rob Osborne - rosborne@osbornepro.com
+
+.NOTES
+    Author: Rob Osborne 
     Alias: tobor
+    Contact: rosborne@osbornepro.com
+    https://roberthosborne.com
 
 .EXAMPLE
    Find-Kovter -ComputerName $ComputerName
