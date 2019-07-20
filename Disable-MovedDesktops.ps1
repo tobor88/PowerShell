@@ -35,7 +35,7 @@ Function Find-File {
     
     $DisabledComputersOU = "OU=Disabled Computers,DC=osbornepro,DC=com"
     
-    Write-Vernose "Finding all computers with hostname of NJ-/NY-### and gets their IP address
+    Write-Verbose "Finding all computers with hostname of NJ-/NY-### and gets their IP address
   
     $ComputersNJ = Get-ADComputer -Filter 'Name -Like "NJ-*"' -Properties Name,IPv4Address
   
