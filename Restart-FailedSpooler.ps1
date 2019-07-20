@@ -1,7 +1,8 @@
 <#
 .Synopsis
-    Restart-FailedSpooler is a cmdlet created to find restart the print spooler whenever a print job failes.
+    Restart-FailedSpooler is a cmdlet created to restart the print spooler whenever a print job fails.
     This cmdlet was designed to run automatically through Task Scheduler and does not accept input.
+    It can restart the Print Spooler on the print server and on the remote computer where the print job failed.
 
 .DESCRIPTION
     The task for this cmdlet is executed when the event log PrintService Error 372, 350, or 314 happens.
