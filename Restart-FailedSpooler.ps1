@@ -29,7 +29,7 @@ Function Restart-FailedSpooler {
 
         $LocalHost = $env:COMPUTERNAME
 
-        $EventID = Get-WinEvent -LogName Microsoft-Windows-PrintService/Admin -MaxEvents 1 | Select-Object -ExpandProperty Id
+        $EventID = Get-WinEvent -LogName "Microsoft-Windows-PrintService/Admin" -MaxEvents 1 | Select-Object -ExpandProperty Id
 
         if ( ($EventID -eq 350) -or ($EventID -eq 314 ) ) {
         
@@ -37,7 +37,7 @@ Function Restart-FailedSpooler {
             
             Try {
 
-                Get-Service "Print Spooler" | Restart-Service
+                Get-Service "Print Spooler" | Restart-Service -Verbose
 
             } # End Try
 
@@ -57,7 +57,7 @@ Function Restart-FailedSpooler {
 
             Try {
 
-                Get-Service "Print Spooler" | Restart-Service
+                Get-Service "Print Spooler" | Restart-Service -Verbose
 
             } # End Try
 
@@ -67,7 +67,7 @@ Function Restart-FailedSpooler {
 
             } # End Catch
     
-           $WordsInMessage = (Get-WinEvent Microsoft-Windows-PrintService/Admin -MaxEvents 1 | Select-Object -ExpandProperty Message | Out-String).Split(' ')
+           $WordsInMessage = (Get-WinEvent -LogName "Microsoft-Windows-PrintService/Admin" -MaxEvents 1 | Select-Object -ExpandProperty Message | Out-String).Split(' ')
 
             foreach ($Word in $WordsInMessage) {
         
@@ -85,7 +85,7 @@ Function Restart-FailedSpooler {
 
                     Try {
 
-                        Get-Service "Print Spooler" | Restart-Service
+                        Get-Service "Print Spooler" | Restart-Service -Verbose
 
                     } # End Try
 
