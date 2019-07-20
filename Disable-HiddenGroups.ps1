@@ -22,7 +22,7 @@ Function Disable-HiddenGroups {
     [CmdletBinding()]
         Param()
 
-    Begin {
+    BEGIN {
 
         if (Get-PSSession | Where-Object -Property ConfigurationName -like 'Microsoft.Exchange') {
 
@@ -38,9 +38,9 @@ Function Disable-HiddenGroups {
 
         Clear-Host
 
-    } # End Begin
+    } # End BEGIN
 
-    Process {
+    PROCESS {
         
         try {
 
@@ -58,9 +58,9 @@ Function Disable-HiddenGroups {
 
         } # End Catch
 
-    } # End Process
+    } # End PROCESS
 
-    End { 
+    END { 
 
         Write-Verbose "Successfully found your Office365 Groups. `nIssuing Command to prevent hiding Office 365 groups from Outlook."
 
@@ -74,7 +74,7 @@ Function Disable-HiddenGroups {
         
         pause
 
-    } # End Finally
+    } # End END
 
 } # End Function
 
