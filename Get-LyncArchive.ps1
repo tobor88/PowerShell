@@ -25,8 +25,7 @@
 
 Function Get-LyncArchives {
     [CmdletBinding()]
-    param()
-
+        param()
 
     BEGIN {
         
@@ -34,9 +33,9 @@ Function Get-LyncArchives {
      
         $CreatedArchiveName = "lyncArchiveServer.osbornepro.com_SqlDatabaseInstanceName"   ##########@@@##  DEFINE ME ################
 
-        $person = Read-Host "Who is the person you want to view the conversation history of? Example: sip:rosborne@osbornepro.com"
+        $Person = Read-Host "Who is the person you want to view the conversation history of? Example: sip:rosborne@osbornepro.com"
 
-        $savePath = "$env:USERPROFILE\Desktop"
+        $SavePath = "$env:USERPROFILE\Desktop"
 
         $StartDate = Read-Host "What should the start date of your search be? Example: 5/1/2019"
 
@@ -51,81 +50,78 @@ Function Get-LyncArchives {
     PROCESS {
 
 
-        try {
+        Try {
          
-            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $savePath -UserUri $person -Verbose 
+            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $SavePath -UserUri $Person -Verbose 
 
             } # End Try
 
-        catch {
+        Catch {
 
             Write-Warning "An error occured. Make sure you entered the sip address correctly."
 
         } # End Catch
 
 
-        $TheList = Get-ChildItem -Path "$savePath\$CreatedArchiveName" -Recurse | Where-Object -Property Name -like "*.eml" | Select-Object -Property Name,DirectoryName 
+        $TheList = Get-ChildItem -Path "$SavePath\$CreatedArchiveName" -Recurse | Where-Object -Property Name -like "*.eml" | Select-Object -Property Name,DirectoryName 
 
         $TheList.Name
 
         Write-Host "Above is a list of EML files. These contain conversation histories for the user you selected. `n$person" -ForegroundColor Yellow
 
-        $otherParty = Read-Host "Enter the email address of the person $person had a conversation with. Example: dixie.normus@osbornepro.com"
+        $OtherParty = Read-Host "Enter the email address of the person $person had a conversation with. Example: dixie.normus@osbornepro.com"
         
-        foreach ($convo in $TheList) {
+        foreach ($Convo in $TheList) {
 
-            $convoDir = $convo.DirectoryName
+            $ConvoDir = $Convo.DirectoryName
 
-            $convoFileName = $convo.Name
+            $ConvoFileName = $Convo.Name
 
-            $convoFullPathName = "$convoDir\$convoFileName"
+            $ConvoFullPathName = "$ConvoDir\$ConvoFileName"
 
-            $containsWord = Get-Content -Path $convoFullPathName | ForEach-Object {$_ -contains "To: $otherParty"}
+            $ContainsWord = Get-Content -Path $ConvoFullPathName | ForEach-Object {$_ -contains "To: $OtherParty"}
 
-            If($containsWord -eq "True") {
+            If($ContainsWord -eq "True") {
 
-                [array]$FileList += $convoFullPathName    
+                [array]$FileList += $ConvoFullPathName    
 
-                Clear-Variable containsWord
+                Clear-Variable ContainsWord
 
             } # End If
 
             else {
 
-                Clear-Variable containsWord
+                Clear-Variable ContainsWord
 
             } # End Else
 
         } # End Foreach
 
-
     } # End PROCESS
 
     END {
 
-
         foreach ($cFile in $FileList) {
 
-            $totalLines = (Get-Content $cFile).Length
+            $TotalLines = (Get-Content $cFile).Length
 
-            [int]$baseLines = $totalLines - 14
+            [int]$BaseLines = $TotalLines - 14
 
-            $baseEncoded = ((Get-Content -Path $cFile | Select-Object -Last $baseLines).TrimEnd("--MIME_Boundary-- ")) | Where-Object {$_ -ne ""}
+            $BaseEncoded = ((Get-Content -Path $cFile | Select-Object -Last $BaseLines).TrimEnd("--MIME_Boundary-- ")) | Where-Object {$_ -ne ""}
             
-            foreach ($lineSpace in $baseEncoded) {
+            foreach ($LineSpace in $BaseEncoded) {
             
-                $base64 += $lineSpace.TrimEnd() | Where-Object {$_ -ne ""}
+                $base64 += $LineSpace.TrimEnd() | Where-Object {$_ -ne ""}
 
             } # End ForEach
                 
-            $printBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64)) 
+            $PrintBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64)) 
 
-            $printBase
+            $PrintBase
 
-            Clear-Variable base64,n,printBase
+            Clear-Variable base64,n,PrintBase
 
         } # End ForEach
-
 
     } # End END
 
