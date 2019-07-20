@@ -27,28 +27,16 @@ Function Disable-HiddenGroups {
         if (Get-PSSession | Where-Object -Property ConfigurationName -like 'Microsoft.Exchange') {
 
             Remove-PSSession -Session *
-
-            $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential $cred -Authentication Basic -AllowRedirection
- 
-            Write-Verbose 'Importing Exchange Online Cmdlets'
-
-            Import-PSSession $Session
-
-            Clear-Host 
-
-        } # End Try
-
-        else {
-
-            $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential $cred -Authentication Basic -AllowRedirection
- 
-            Write-Verbose 'Importing Exchange Online Cmdlets'
-
-            Import-PSSession $Session
-
-            Clear-Host
             
-        } # End Else 
+        } # End if
+
+        $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential $cred -Authentication Basic -AllowRedirection
+ 
+        Write-Verbose 'Importing Exchange Online Cmdlets'
+
+        Import-PSSession $Session
+
+        Clear-Host
 
     } # End Begin
 
@@ -74,22 +62,20 @@ Function Disable-HiddenGroups {
 
     End { 
 
-            Write-Verbose "Successfully found your Office365 Groups. `nIssuing Command to prevent hiding Office 365 groups from Outlook."
+        Write-Verbose "Successfully found your Office365 Groups. `nIssuing Command to prevent hiding Office 365 groups from Outlook."
 
-            foreach ($G in $Group) {
+        foreach ($G in $Group) {
 
-                Set-UnifiedGroup -Identity $G.Name -HiddenFromExchangeClientsEnabled:$False -ErrorAction SilentlyContinue
+            Set-UnifiedGroup -Identity $G.Name -HiddenFromExchangeClientsEnabled:$False -ErrorAction SilentlyContinue
 
-                Write-Verbose "$G `nCompleted"
+            Write-Verbose "$G `nCompleted"
 
-            } # End Foreach
+        } # End Foreach
+        
+        pause
 
     } # End Finally
 
 } # End Function
 
 Disable-HiddenGroups -Verbose
-
-Write-Host "Success! Press Enter to Exit.`n "
-
-pause
