@@ -13,19 +13,18 @@
 
 .EXAMPLES
     Get-HelpDesk
-
 #>
 
 Function Get-HelpDesk {
     param([switch]$Elevated)
 
-    function Test-Admin {
+    Function Test-Admin {
 
         $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
 
         $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 
-    }
+    } # End Test-Admin
 
     if ((Test-Admin) -eq $false)  {
 
@@ -43,21 +42,21 @@ Function Get-HelpDesk {
 
         exit
 
-        } # End If
+    } # End If
 
-        $timeout = new-timespan -Minutes 480 # Time out of script after 8 hours
+    $timeout = new-timespan -Minutes 480 # Time out of script after 8 hours
 
-        do { # This do is for preventing the script for running longer than 8 hours
+    do { # This do is for preventing the script for running longer than 8 hours
 
-            $Domain = "<Domain.com>"
+        $Domain = "<Domain.com>"
 
-            $PrimaryDC = "<PDC Hostname>"
+        $PrimaryDC = "<PDC Hostname>"
 
-            $SecondaryDC = "SDC Hostname"
+        $SecondaryDC = "SDC Hostname"
 
-            $PrintServers = "<Print Server hostname>"
+        $PrintServers = "<Print Server hostname>"
 
-            $AzureAdServer = "<Azure Sync Hostname>"
+        $AzureAdServer = "<Azure Sync Hostname>"
 
         $sw = [diagnostics.stopwatch]::StartNew()
 
@@ -65,8 +64,7 @@ Function Get-HelpDesk {
         param(
             [parameter(Mandatory=$true)][String[]]$Selections,
             [switch]$IncludeExit,
-            [string]$Title = $null
-            )
+            [string]$Title = $null)
 
         $Width = if ($Title) {
                     
@@ -127,17 +125,7 @@ Function Get-HelpDesk {
     While($Response -notin 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,'x')
     #===================================================================================================================================
 
-            $Domain = "<Domain.com>"
-
-            $PrimaryDC = "<PDC Hostname>"
-
-            $SecondaryDC = "SDC Hostname"
-
-            $PrintServers = "<Print Server hostname>"
-
-            $AzureAdServer = "<Azure Sync Hostname>"
-
-    if ($Response -eq '1') { 
+if ($Response -eq '1') { 
 
         Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
 
@@ -152,7 +140,7 @@ Function Get-HelpDesk {
             } # End do
             while (!($TestUserExists))
 
-            Write-Host 'User account has been confirmed to exist.'
+            Write-Host "User account has been confirmed to exist."
 
             try {
         
@@ -187,9 +175,9 @@ Function Get-HelpDesk {
             
             do {
 
-                $who = Read-Host "Whos password do you want to reset? Example: rob.osborne"
+                $Who = Read-Host "Whos password do you want to reset? Example: rob.osborne"
 
-                $TestUserExist = Get-AdUser -Identity $who
+                $TestUserExist = Get-AdUser -Identity $Who
 
             } # End do
             while (!($TestUserExist))
@@ -197,25 +185,47 @@ Function Get-HelpDesk {
             $ChangeP = Read-Host 'Do you want them to change their password at next logon Answer this as either 0 for False or 1 for True'
             
             $BoolValue = try {
+                            
                             [System.Convert]::ToBoolean($ChangeP)
-                            } catch [FormatException] { $BoolValue = $false
-                            } # End Try Catch
+                         
+                         } # End Try 
+                         
+                         catch [FormatException] { 
+                         
+                            $BoolValue = $false
+                         
+                         } # End Catch
 
             function Get-RandomCharacters($length, $characters) {
+            
                 $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.length }
+                
                 $private:ofs=""
-                return [String]$characters[$random]
+               
+               return [String]$characters[$random]
+            
             } # https://activedirectoryfaq.com/2017/08/creating-individual-random-passwords/
+            
             function Scramble-String([string]$inputString){     
+                
                 $characterArray = $inputString.ToCharArray()   
+                
                 $scrambledStringArray = $characterArray | Get-Random -Count $characterArray.Length     
+                
                 $outputString = -join $scrambledStringArray
+                
                 return $outputString 
+            
             } # https://activedirectoryfaq.com/2017/08/creating-individual-random-passwords/
+            
             $password = Get-RandomCharacters -length 10 -characters 'abcdefghiklmnoprstuvwxyz'
+            
             $password += Get-RandomCharacters -length 4 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
+            
             $password += Get-RandomCharacters -length 3 -characters '1234567890'
+            
             $password += Get-RandomCharacters -length 3 -characters '!"§$%&/()=?}][{@#*+'
+            
             $password = Scramble-String $password
  
             Write-Host $password
@@ -245,34 +255,34 @@ Function Get-HelpDesk {
 
         Invoke-Command -HideComputerName $SecondaryDC -ScriptBlock { 
 
-            Write-Host "Example get-pwdset rob.osborne"
+            Write-Host "Example Get-PwdSet rob.osborne"
 
-            Function get-pwdset{
+            Function Get-PwdSet{
                 Param([parameter(Mandatory=$true)][string]$user)
     
-                $use = Get-AdUser $user -Properties passwordlastset,passwordneverexpires
+                $Use = Get-AdUser $User -Properties PasswordLastSet,PasswordNeverExpires
    
-                If($use.PasswordNeverExpires -eq $true) {
+                If ($Use.PasswordNeverExpires -eq $true) {
    
-                    Write-Host $user "last set their password on " $use.PasswordLastSet  "this account has a non-expiring password" -ForegroundColor Yellow
+                    Write-Host $User "last set their password on " $Use.PasswordLastSet  "this account has a non-expiring password" -ForegroundColor Yellow
  
                 } # End if
                 
                 Else {
         
-                    $til = (([datetime]::FromFileTime((Get-AdUser $user -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"))-(Get-Date)).Days
+                    $Til = (([datetime]::FromFileTime((Get-AdUser $User -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"))-(Get-Date)).Days
     
                 } # End Else
                 
-                if ($til -lt "5") {
+                if ($Til -lt "5") {
         
-                    Write-Host $user "last set their password on " $use.PasswordLastSet "it will expire again in " $til " days" -ForegroundColor Red
+                    Write-Host $User "last set their password on " $Use.PasswordLastSet "it will expire again in " $Til " days" -ForegroundColor Red
     
                 } # End if
                 
                 else {
      
-                    Write-Host $user "last set their password on " $use.PasswordLastSet "it will expire again in " $til " days" -ForegroundColor Green
+                    Write-Host $User "last set their password on " $Use.PasswordLastSet "it will expire again in " $Til " days" -ForegroundColor Green
     
                 } # End else
     
@@ -299,7 +309,7 @@ Function Get-HelpDesk {
     #===================================================================================================================================
     elseif ($Response -eq 4) { 
 
-        $printspooler = Read-Host -Prompt "Which Print Spooler do you want to restart.`n$PrintServers"
+        $PrintSpooler = Read-Host -Prompt "Which Print Spooler do you want to restart.`n$PrintServers"
 
         Try {
 
@@ -311,11 +321,11 @@ Function Get-HelpDesk {
     
         Catch {
     
-            if ((Test-NetConnection $printspooler).PingSucceeded) {
+            if ((Test-NetConnection $PrintSpooler).PingSucceeded) {
 
                 Write-Host "There was an issue restarting the print spooler. `nPing test succeeded. `nTrying to restart the service through a different function."
 
-                Invoke-Command -HideComputerName $printspooler {Restart-Service -Name Spooler -Force}
+                Invoke-Command -HideComputerName $PrintSpooler {Restart-Service -Name Spooler -Force}
 
                 Write-Host "Print spooler restarted successfully."
 
@@ -340,11 +350,11 @@ Function Get-HelpDesk {
 
         $TheDevice = Read-Host "What computer do you want to view the installed software? `n`nTo view software installed on local computer enter localhost."
 
-        if ($TheDevice -notlike 'localhost') {
+        if ($TheDevice -notlike $env:COPMUTERNAME) {
 
         Invoke-Command -HideComputerName $TheDevice -ScriptBlock {
 
-    function Get-InstalledSoftware {
+    Function Get-InstalledSoftware {
     <#
     .SYNOPSIS
         Pull software details from registry on one or more computers
@@ -517,7 +527,7 @@ Function Get-HelpDesk {
 
     else {
      
-    function Get-InstalledSoftware {
+    Function Get-InstalledSoftware {
     <#
     .SYNOPSIS
         Pull software details from registry on one or more computers
