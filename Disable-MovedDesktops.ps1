@@ -82,7 +82,7 @@ END {
      
         $IpAddressNY = $CompuNY.IPv4Address
      
-        if ($IpAddressNY -like $NJIPRange )#REMOVE THIS COMMENT TO ADD AN EXCEPTION TO THE RULE# -and ($hostnameNY -xor "NJ-001"))
+        if ($IpAddressNY -like $NJIPRange )#REMOVE THIS COMMENT TO ADD AN EXCEPTION TO THE RULE# -and ($HostNameNY -xor "NJ-001"))
         {
             Set-ADComputer -Identity $HostNameNY -Enabled $False | Move-ADobject -Identity $HostNameNY -TargetPath $Disable 
          
