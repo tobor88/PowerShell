@@ -7,8 +7,12 @@
 .DESCRIPTION
     A recent Microsoft Office Update has changed -HiddenFromExchangeClientsEnabled from default false to default true. 
     This cmdlet can be uesd to change -HiddenFromExchangeClientsEnabled to false for all newly created groups
-    Written by Rob Osborne - rosborne@osbornepro.com 
+
+.NOTES
+    Author: Rob Osborne 
     Alias: tobor
+    Contact: rosborne@osbornepro.com
+    https://roberthosborne.com
 
 .EXAMPLE
    Disable-HiddenGroups 
