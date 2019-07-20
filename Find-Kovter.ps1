@@ -31,38 +31,44 @@ Function Find-Kovter {
                 HelpMessage="Enter The hostname of the remote computer you want to check.")] # End Parameter
             [string[]]$ComputerName
         ) # End param
-BEGIN {
+    BEGIN {
 
-    $KovterNames = 'Win32:Kovter-C', 'Win32/Kovter.C', 'Trojan:Win32/Kovter!rfn', 'Trojan.GenericKD.3112101 (B)', 'Trojan.Kotver', 'Trojan.Kotver!gen1', 'Trojan.Ransomlock.AK', 'Trojan.Ransomlk.AK!gm', 'Symantec', 'Trojan.Win32.Kovter.evv', 'Trojan.GenericKD.3112101', 'Ransom_.956D2004', 'Trojan.GenericKD.3112101', 'Trojan.Kovter!Tocgra7MIok', 'TR/Kovter.352313', 'Trojan.Kovter.88', 'Trojan/Kovter.c', 'Trojan.Win32.Z.Kovter', 'Trojan.Kovter'
+        $KovterNames = 'Win32:Kovter-C', 'Win32/Kovter.C', 'Trojan:Win32/Kovter!rfn', 'Trojan.GenericKD.3112101 (B)', 'Trojan.Kotver', 'Trojan.Kotver!gen1', 'Trojan.Ransomlock.AK', 'Trojan.Ransomlk.AK!gm', 'Symantec', 'Trojan.Win32.Kovter.evv', 'Trojan.GenericKD.3112101', 'Ransom_.956D2004', 'Trojan.GenericKD.3112101', 'Trojan.Kovter!Tocgra7MIok', 'TR/Kovter.352313', 'Trojan.Kovter.88', 'Trojan/Kovter.c', 'Trojan.Win32.Z.Kovter', 'Trojan.Kovter'
     
-    Write-Verbose 'Begining search for Kovter. `nStep 1.) Checking processes...'
+        Write-Verbose 'Begining search for Kovter. `nStep 1.) Checking processes...'
 
-    $Infection = Get-Process -ComputerName $ComputerName -Name mshta
+        $Infection = Get-Process -ComputerName $ComputerName -Name mshta
 
-} # End BEGIN
+    } # End BEGIN
 
-PROCESS {
+    PROCESS {
 
-    if ($Infection) {
+        if ($Infection) {
         
-        Write-Verbose 'Matching Process found for Kovter infection. Begining Registry Search for known Kovter Names.'
+            Write-Verbose 'Matching Process found for Kovter infection. Begining Registry Search for known Kovter Names.'
 
-        start https://www.bleepingcomputer.com/virus-removal/remove-kovter-trojan
+            start https://www.bleepingcomputer.com/virus-removal/remove-kovter-trojan
         
-        sleep 3
+            sleep 3
         
-        start https://www.bleepingcomputer.com/download/rkill/
+            start https://www.bleepingcomputer.com/download/rkill/
 
-    } # End If
+        } # End If
 
-    else { Write-Verbose "Kovter has not been found by it's common name in Processes. `n`nBegin checking registry..." }
+        else { Write-Verbose "Kovter has not been found by it's common name in Processes. `n`nBegin checking registry..." }
     
-    foreach($kovter in $KovterNames) {
+    } # End PROCESS
+
+    END {
+
+        foreach($kovter in $KovterNames) {
             
             Write-Verbose "Checking Windows Registry for Kovter Malware. `nPlease Wait..."
  
             Get-ChildItem -Path HKCU:\Software -Filter $kovter -Recurse -ErrorAction SilentlyContinue
-    
+   
         } # End ForEach
+        
+    } # End END
 
 } # End Function
