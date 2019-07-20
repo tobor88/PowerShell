@@ -8,8 +8,10 @@
     Once the event is triggered the print spooler on the server and the computer trying to print are restarted.
 
 .NOTES
-    Written by Rob Osborne - rosborne@osbornepro.com 
+    Author: Rob Osborne 
     Alias: tobor
+    Contact: rosborne@osbornepro.com
+    https://roberthosborne.com
 
 .EXAMPLE
    Restart-FailedSpooler
