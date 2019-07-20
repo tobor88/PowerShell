@@ -21,7 +21,7 @@
    Disable-MovedDesktops -Verbose
 #>
 
-Function Find-File {
+Function Disable-MovedDesktops {
     [CmdletBinding()]
         param() # End param
 
@@ -96,3 +96,5 @@ END {
   } # End END
   
 } # End Function
+
+Disable-MovedDesktops -Verbose
