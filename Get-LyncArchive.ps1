@@ -10,10 +10,12 @@
     This cmdlet is used to get conversation history for a user and decode the base64 encoded conversation.
     This should save the time of looking through each file and than decoding conversations that might not be what is looked for.
     Has been tested with Lync 2013 and Lync 2010
-
-.AUTHOR
-    Written by Rob Osborne - rosborne@osbornepro.com 
+    
+.NOTES
+    Author: Rob Osborne 
     Alias: tobor
+    Contact: rosborne@osbornepro.com
+    https://roberthosborne.com
 
 .EXAMPLE
    Get-LyncArchives 
