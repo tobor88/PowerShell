@@ -1,6 +1,8 @@
 <#
 .Synopsis
-    Find-ExpiringAccounts is a cmdlet created for Task Scheduler to find expiring accounts and alert the appropriate people. 
+    Find-ExpiringAccounts is a cmdlet created for Task Scheduler to find expiring accounts and alert the appropriate people.
+    I suggest having it run once every 2 or 3 days to receive at least 2 alerts before an account expires to prevent it 
+    from happening if not desired.
     
 .DESCRIPTION
     This cmdlet finds accounts that are expiring soon and can alert through email this is happening in the next 10 days.
