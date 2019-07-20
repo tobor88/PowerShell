@@ -6,9 +6,13 @@
 
 .DESCRIPTION
     Renaming a Team in Office365 does not automatically change the email address. 
-    This cmdlet is used to allow users to rename their Office365/Team email. 
-    Written by Rob Osborne - rosborne@osbornepro.com 
+    This cmdlet is used to allow users to rename their Office365/Team email.
+
+.NOTES
+    Author: Rob Osborne
     Alias: tobor
+    Contact: rosborne@osbornepro.com 
+    https://roberthosborne.com
 
 .EXAMPLE
    Rename-Team
@@ -22,15 +26,15 @@ Function Rename-Team {
     [CmdletBinding()]
        Param() # End Param
 
-    Begin {
+    BEGIN {
         
         if (Get-PSSession | Where-Object -Property ConfigurationName -like 'Microsoft.Exchange') {
 
             Remove-PSSession -Session *
 
-            try {
+            Try {
 
-                $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
+                $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
  
                 Write-Verbose 'Importing Exchange Online Cmdlets'
 
@@ -38,7 +42,7 @@ Function Rename-Team {
 
             } # End Try
 
-            catch {
+            Catch {
 
                 Write-Warning 'There was an issue connecting to Office365 online. Stopping script...'
 
@@ -52,7 +56,7 @@ Function Rename-Team {
         
             try {
 
-                $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
+                $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
  
                 Write-Verbose 'Importing Exchange Online Cmdlets'
 
@@ -80,8 +84,7 @@ Function Rename-Team {
        
             $Name = Get-UnifiedGroup -Identity $Group -ErrorAction SilentlyContinue
       
-            } # End Do
-
+        } # End Do
         While (!($Name))
 
         Write-Host "Successfully selected a Team Name."
@@ -103,7 +106,6 @@ Function Rename-Team {
             } # End Else
 
         } # End Do
-
         While ($TestEmail -like 'False')
 
         Write-Host "Successfully selected a contoso.com email address. Changing email address for $Group to $NewEmail"
@@ -139,5 +141,4 @@ do {
     $Continue = Read-Host "If you would like to change another Team email address type Y and press Enter.`n If you would like to exit just press Enter." 
 
 } # Do
-
 while ($Continue -like 'Y')
