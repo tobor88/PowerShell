@@ -6,7 +6,8 @@
     This cmdlet was created for sysadmins and does not require any switches. Best used if run automatically using Windows Task Scheduler.
 
 .NOTES
-    Author: tobor
+    Author: Rob Osborne 
+    Alias: tobor
     Contact: rosborne@osbornepro.com
     https://roberthosborne.com
 
