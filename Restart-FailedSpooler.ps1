@@ -82,7 +82,7 @@ Function Restart-FailedSpooler {
 
             } # End foreach
 
-            $FailedComputer = $Fail.Replace('.',' ')
+            $FailedComputer = ($Fail.Replace('.',' ')).TrimEnd()
 
                 Invoke-Command -ComputerName $FailedComputer -ScriptBlock {
 
