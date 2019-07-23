@@ -6,7 +6,8 @@
     This cmdlet was created for sysadmins and does not require any switches. 
 
 .NOTES
-    Author: tobor
+    Author: Rob Osborne 
+    Alias: tobor
     Contact: rosborne@osbornepro.com
     https://roberthosborne.com
 
