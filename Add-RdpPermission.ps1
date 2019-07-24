@@ -4,6 +4,7 @@
 
 .DESCRIPTION
     Adds RDP access on a computer for a defined Domain user.
+    
 .NOTES
     Author: Rob Osborne 
     Alias: tobor
