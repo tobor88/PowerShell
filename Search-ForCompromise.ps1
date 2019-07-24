@@ -7,7 +7,7 @@
     This cmdlet is meant to be used to help determine if a computer has been compromised.
     It checks the following items
         1.) Displays the top 20 heaviest processes. Make sure they are all legit.
-        2.) If the hosts file has been altered the IP Addresses are displayed. The functino then requires the admin to enter the IP Addresses manually. This will close any open connections and prevent any more connections to the discovered IP Addresses.
+        2.) If the hosts file has been altered the IP Addresses are displayed. The function then requires the admin to enter the IP Addresses manually. This will close any open connections and prevent any more connections to the discovered IP Addresses.
         3.) If an altered start page is configured it will be shown to the admin who will need to remove the setting.
         4.) Checks local machine and current user registry for any previously unknown applications and shows the unknown apps to the admin. The admin should verify these applications are safe.
         5.) Make sure no proxy settings have been configured/altered.
