@@ -34,19 +34,14 @@
 Function Search-ForCompromise {
 
     [CmdletBinding()]
-        
-        [Parameter(
-            Mandatory=$false,
-            ValueFromPipeline=$True,
-            ValueFromPipelineByPropertyName=$True,
-            HelpMessage="Enter The hostname of the remote computer you want to check."
+        param (  
+            [Parameter(
+                Mandatory=$false,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage="Enter The hostname of the remote computer you want to check."
             )] # End Parameter
-
-    param (
-
-        [string[]]$ComputerName
-
-    ) # End Param
+        [string[]]$ComputerName) # End Param
 
 BEGIN {
 
