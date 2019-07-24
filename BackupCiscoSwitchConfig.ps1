@@ -17,6 +17,7 @@
 #
 #=====================================================================================================
 
+$TftpServerIP = "192.168.1.69"
 $SwitchIP = "192.168.1.5"
 $SshPassword = "P@ssw0rd!"
 $SshUsername = "cisco"
@@ -33,7 +34,7 @@ $LogFile = $SwitchIP + "_" + $formatedDate + ".log"
 $SshCommand = @"
 $username
 $SshPassword
-copy running-config tftp://10.0.2.251/SwitchIP_$Date.txt
+copy running-config tftp://$TftpServerIP/SwitchIP_$Date.txt
 logout
 exit
 logout
