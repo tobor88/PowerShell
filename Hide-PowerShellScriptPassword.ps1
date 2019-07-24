@@ -24,14 +24,7 @@
 
 Function Hide-PowerShellScriptPassword {
     [CmdletBinding()]
-        param(
-        [Parameter(Mandatory=$True,
-                Position=0,
-                ValueFromPipeline=$True,
-                ValueFromPipelineByPropertyName=$True,
-                HelpMessage="New Contacts Name. `n Example: Dixie Normus `n`n If you see this message, you will need to enter the new contacts name.")] # End Parameter
-            [ValidateNotNullorEmpty()]
-        [string[]]$ContactName) # End param
+        param() # End param
 
     BEGIN {
     
