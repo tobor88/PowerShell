@@ -25,12 +25,12 @@ $LogFilePath = C:\Users\Public\Documents\Logs
 $PathToKiTTY = C:\Users\Public\Desktop\KiTTY.exe
 
 # I formatted the date with the year first for better organization in the folder.
-$FormatedDate = get-date -format 'yyyyMMdd-HHmm'
+$FormatedDate = Get-Date -Format 'yyyyMMdd-HHmm'
 
 $Date = Get-Date -Format M.d.yyyy
 
-$ConfigFile = $SwitchIP + "_" + $formatedDate + ".txt" 
-$LogFile = $SwitchIP + "_" + $formatedDate + ".log" 
+$ConfigFile = $SwitchIP + "_" + $FormatedDate + ".txt" 
+$LogFile = $SwitchIP + "_" + $FormatedDate + ".log" 
 $SshCommand = @"
 $username
 $SshPassword
