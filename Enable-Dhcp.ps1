@@ -12,9 +12,9 @@
     https://roberthosborne.com
 
 .EXAMPLE
-   Enable-Dhcp -ComputerName $ComputerName 
+   Enable-Dhcp 
 .EXAMPLE
-   Enable-Dhcp -ComputerName $ComputerName -Verbose
+   Enable-Dhcp -Verbose
 #>
 
 Function Enable-Dhcp {
@@ -64,6 +64,10 @@ Function Enable-Dhcp {
     
     END {
     
+        ipconfig /renew
+    
         Write-Verbose "$ComputerName now using DHCP to obtain and IPv4 address."
     
     } # End END
+    
+} # End Function
