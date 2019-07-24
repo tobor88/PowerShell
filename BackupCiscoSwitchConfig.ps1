@@ -4,6 +4,8 @@
 #===================================================================================================
 #
 # For this script to work you will need KiTTY installed. This can be changed by you of course.
+# https://www.fosshub.com/KiTTY.html Download kitty at that link
+#
 # SSH port 22 will need to be open on the switch
 # A TFTP server will need to be listening and accessible over the network on port 69
 #
