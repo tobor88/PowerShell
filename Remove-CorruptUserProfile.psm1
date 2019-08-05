@@ -28,7 +28,7 @@ Function Remove-CorruptUserProfile
 
             Write-Verbose "$SamAccountName folder has been found. Creating a backup of their profile..."
 
-            Copy-Item -Path "C:\Users\$SamAccountName" -Destination "C:\Users\$SamAccountName.old" -Recurse -Force -ErrorAction "SilentlyContinue" | Out-Null
+            Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force | Out-Null
 
             Write-Verbose "Deleting AppData folder to prevent any corruptions from being moved to the new profile."
 
@@ -44,7 +44,7 @@ Function Remove-CorruptUserProfile
 
     }  # End Function Copy-BackupProfile
 
-    Copy-BackupProfile -SamAccountName $SamAccount -Verbose
+    Copy-BackupProfile -SamAccountName $SamAccountName -Verbose
 
 
     Function Get-UserSid {
@@ -77,14 +77,14 @@ Function Remove-CorruptUserProfile
 
     } # End Function Get-UserSid
 
-    $SID = Get-UserSid -SamAccountName "OsbornePro\$SamAccount" -Verbose
+    $SID = Get-UserSid -SamAccountName "OsbornePro\$SamAccountName" -Verbose
 
     Function Remove-CorruptUserProfileRegistryItem
     {
         [CmdletBinding()]
         param(
-            [Parameter(Mandatory = True,
-                        Position = 0
+            [Parameter(Mandatory = $True,
+                        Position = 0,
                         ValueFromPipeline=$True,
                         ValueFromPipelineByPropertyName=$True,
                         HelpMessage="Enter the users SamAccountName. Example: rob.osborne")] # End Parameter
