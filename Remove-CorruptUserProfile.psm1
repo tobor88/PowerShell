@@ -10,6 +10,10 @@ Function Remove-CorruptUserProfile
             [string[]]$SamAccountName
         ) # End param
 
+# The below variable is used at line 89
+$Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
+
+# PART ONE
     Function Copy-BackupProfile
     {
         [CmdletBinding()]
@@ -26,19 +30,23 @@ Function Remove-CorruptUserProfile
         If (Test-Path "C:\Users\$SamAccountName")
         {
 
-            Write-Verbose "$SamAccountName folder has been found. Creating a backup of their profile..."
+            Write-Verbose "$SamAccountName folder has been found. Renaming profile folder to $SamAccountName.old..."
 
-            Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force | Out-Null
+            Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force -ErrorAction "SilentlyContinue" | Out-Null
 
-            Write-Verbose "Deleting AppData folder to prevent any corruptions from being moved to the new profile."
+            Write-Verbose "Renaming AppData folder to prevent any corruptions from being moved to the new profile."
 
-            Remove-Item -Path "C:\Users\$SamAccountName.old\AppData" -Recurse -Force
+            Rename-Item -Path "C:\Users\$SamAccountName.old\AppData" -Destination "C:\Users\$SamAccountName.old\OLDAppData" -Force -ErrorAction "SilentlyContinue" | Out-Null
+
+            Write-Host "If the user uses sticky notes they are located here: `n`tC:\Users\$SamAccountName\AppData\Roaming\Microsoft\Sticky Notes " -ForegroundColor "Green"
 
         } # End If
         Else
         {
 
             Write-Warning "No user directory found at C:\Users\$SamAccountName Ending script."
+
+            break
 
         } # End Else
 
@@ -47,6 +55,7 @@ Function Remove-CorruptUserProfile
     Copy-BackupProfile -SamAccountName $SamAccountName -Verbose
 
 
+# PART TWO
     Function Get-UserSid {
         [CmdletBinding()]
             param(
@@ -65,7 +74,7 @@ Function Remove-CorruptUserProfile
         If (!($null -eq $ObjSID))
         {
 
-            $objSID.Value
+            $ObjSID.Value
 
         } # End If
         Else
@@ -77,8 +86,10 @@ Function Remove-CorruptUserProfile
 
     } # End Function Get-UserSid
 
-    $SID = Get-UserSid -SamAccountName "OsbornePro\$SamAccountName" -Verbose
+    $SID = Get-UserSid -SamAccountName "$Domain\$SamAccountName" -Verbose
 
+
+# PART THREE
     Function Remove-CorruptUserProfileRegistryItem
     {
         [CmdletBinding()]
@@ -141,5 +152,11 @@ Function Remove-CorruptUserProfile
     } # End Function Remove-CorruptUserProfile
 
     Remove-CorruptUserProfileRegistryItem -SID $SID -Verbose
+
+    Write-Host "Press Enter to Restart Computer now or press Ctrl+C to complete the rest of this task later." -ForegroundColor "Red"
+
+    pause
+
+    Restart-Computer -Force
 
 } # End Function Remove-CorruptedUserProfile
