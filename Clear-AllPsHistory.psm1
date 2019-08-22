@@ -16,8 +16,8 @@
 
 .EXAMPLE
     -------------------------- EXAMPLE 1 --------------------------
-    C:\PS> Remove-OldCaCerts -ComputerName Desktop01 -CAIssuer <string[] Distinguished Name of CA Issuer> [-Verbose]
-    This command deletes all CA Certificates off a remote computer in the Cert:\LocalMachine\My drive
+    C:\PS> Clear-AllPsHistory -Verbose
+    This command clears all PowerShell command history and shows the steps verbosely.
 
 #>
 Function Clear-AllPsHistory
