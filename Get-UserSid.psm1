@@ -19,6 +19,9 @@
 
 .OUTPUTS
     This cmdlet returns a PSObject containing a users SID value.
+    IsPublic    IsSerial    Name     BaseType
+    --------    --------    ----    --------
+    True        True        String  System.Object          
 
 .EXAMPLE
     -----------------------EXAMPLES------------------------------
