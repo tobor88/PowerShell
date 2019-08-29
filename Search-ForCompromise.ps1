@@ -1,6 +1,6 @@
 ﻿<#
 .Synopsis
-    Search-ForCompromise is a cmdlet created to find/identify whether or not a device has been compromised. 
+    Search-ForCompromise is a cmdlet created to find/identify whether or not a device has been compromised.
     This cmdlet was designed for system administrators. No switches need to be defined other than the computer to run this on if desired.
 
 .DESCRIPTION
@@ -13,13 +13,13 @@
         5.) Make sure no proxy settings have been configured/altered.
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
     https://roberthosborne.com
 
 .EXAMPLE
-   Search-ForCompromise -ComputerName $ComputerName
+   Search-ForCompromise -ComputerName $ComputerName -Verbose
 
 .DESCRIPTION
     The ComputerName switch used with Find-Kovter is used for checking a remote computer for Kovter malware.
@@ -34,7 +34,7 @@
 Function Search-ForCompromise {
 
     [CmdletBinding()]
-        param (  
+        param (
             [Parameter(
                 Mandatory=$false,
                 ValueFromPipeline=$True,
@@ -59,9 +59,9 @@ $ControlHostsFile = <\\NETWORKLOCATION\file\hosts>
 #======================================================================
 # This part of the function is what runs if function is run locally   |
 #======================================================================
-PROCESS { 
+PROCESS {
 
-if (!($ComputerName)) { 
+If (!($ComputerName)) {
 
         Write-Verbose "Finding the top 20 heaviest running processes....`n"
 
@@ -69,69 +69,80 @@ if (!($ComputerName)) {
 
         Read-Host "`nAbove is a list of the top 20 heaviest processes currently running. Take note of anything unusual. Press Enter to continue"
 
-# Check for altered hosts file. Block connections to IP Addresses added to the hosts file  
+# Check for altered hosts file. Block connections to IP Addresses added to the hosts file
 
         Write-Verbose "`nDetermining whether or not the hosts file has been altered...."
-    
-        $Diff = Get-Content -Path "C:\Windows\system32\Drivers\etc\hosts" 
+
+        $Diff = Get-Content -Path "C:\Windows\system32\Drivers\etc\hosts"
 
         $Ref = Get-Content -Path $ControlHostsFile
 
-        if (Compare-Object -ReferenceObject $Ref -DifferenceObject $Diff) {
-    
+        If (Compare-Object -ReferenceObject $Ref -DifferenceObject $Diff) {
+
             $Diff
 
             Write-Warning 'Hosts file has been altered. Take note of any IP Addresses and break their connections by completing the next steps.'
 
             $numberofbad = Read-Host 'How many IP Address have been added to the hosts file? Example: 2'
 
-            for ($i = 1; $i -le $numberofbad; $i++) {
- 
-                function Block-BadGuy {    
-                [CmdletBinding()]     
-                param(       
+            For ($i = 1; $i -le $numberofbad; $i++) {
+
+                Function Block-BadGuy {
+                [CmdletBinding()]
+                param(
                     [Parameter(
                         Mandatory=$true,
                         HelpMessage="Enter an IP Address that was added to the hosts file listed in the above output."
-                    )] # End Parameter      
-                [string[]]$IPaddress     
+                    )] # End Parameter
+                [string[]]$IPaddress
                 ) # End Param
 
-                    if ($IPAddress) { 
-        
+                    If ($IPAddress) {
+
                         New-NetFirewallRule -Name "Deny Inbound Connections to $IPAddress" -DisplayName "Deny Inbound Connections from $IPAddress" -Enabled True -Direction Inbound -Protocol ANY -Action Block -Profile ANY -RemoteAddress $IPAddress
 
                         New-NetFirewallRule -Name "Deny Outbound Connections to $IPAddress" -DisplayName "Deny Outbound Connections from $IPAddress" -Enabled True -Direction Outbound -Protocol ANY -Action Block -Profile ANY -RemoteAddress $IPAddress
-                    
+
                         Write-Verbose 'New Firewall rules added to block inbound and outbound connections to the malicious IP Address.'
 
                         $badGuyProcessIDs = Get-NetTCPConnection -RemoteAddress $IPAddress | Select-Object -Property OwningProcess
-            
-                        Foreach ($ProcessId in $badGuyProcessIDs) { 
-            
-                            Stop-Process -Id $ProcessId -Force -PassThru 
-                
+
+                        Foreach ($ProcessId in $badGuyProcessIDs) {
+
+                            Stop-Process -Id $ProcessId -Force -PassThru
+
                             Write-Verbose "Above are the processes that were stopped which connected to the remote address.`nFirewall rules have been added to block anymore connections to those addresses."
 
                         } # End Foreach
 
                       } # End if bad guy IP response
 
-                    else { Write-Warning "No IP Address was entered." }
+                    Else
+                    {
+
+                        Write-Warning "No IP Address was entered."
+
+                    } # End Else
 
                 } # End Function Block-BadGuy
-        
+
             Block-BadGuy -Verbose
-        
+
             } # End for loop
-    
+
         } # End if for finding an altered hosts file
 
-        else { Write-Verbose 'Hosts file has not been altered. Moving on to next check.....' }
+        Else
+        {
+
+            Write-Verbose 'Hosts file has not been altered. Moving on to next check.....'
+
+        } # End Else
 
 # Check for an altered start page for Internet Explorer
- 
-        if (Get-Childitem -Path "HKCU:\software\Microsoft\Internet Explorer\Main\Start Page Redirect=*") {
+
+        If (Get-Childitem -Path "HKCU:\software\Microsoft\Internet Explorer\Main\Start Page Redirect=*")
+        {
 
             Read-Host 'Internet Explorer start page redirect found. Make sure it is not malicious.'
 
@@ -143,51 +154,93 @@ if (!($ComputerName)) {
 
         $LMAppDiff = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\' | Select-Object -Property PSChildName
 
-        if ($LMApplist = Compare-Object -DifferenceObject $LMAppDiff -ReferenceObject $LMAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
-            
+        If ($LMApplist = Compare-Object -DifferenceObject $LMAppDiff -ReferenceObject $LMAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName )
+        {
+
             $LMApplist
 
             Write-Warning 'This is a list of previously unrecorded Application Processes. Check these results to find any possibly malicous applications.'
 
             $LMApplist | Export-Csv -Path $ControlAppListFile -Append
-    
-            } # End if AppList
-        
-        else { Write-Verbose 'No previously unknown application services were found under Local Machine.'}
- 
+
+        } # End if AppList
+
+        Else
+        {
+
+            Write-Verbose 'No previously unknown application services were found under Local Machine.'
+
+        } # End Else
+
 # Checks Current User Registry
 
         $CUAppRef = Import-Csv -Path $ControlCUAppListFile
 
         $CUAppDiff = Get-ChildItem -Path 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\' | Select-Object -Property PSChildName
 
-        if ($Applist = Compare-Object -DifferenceObject $CUAppDiff -ReferenceObject $CUAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
-            
+        If ($Applist = Compare-Object -DifferenceObject $CUAppDiff -ReferenceObject $CUAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName )
+        {
+
             $CUApplist
 
             Write-Warning 'This is a list of previously unrecorded Application Processes. Check these results to find any possibly malicous applications.'
 
             $CUApplist | Export-Csv -Path $ControlCUAppListFile -Append
-    
-            } # End if AppList
-        
-        else { Write-Verbose 'No previously unknown application services were found under Current User.'}
- 
+
+        } # End if AppList
+
+        Else
+        {
+
+            Write-Verbose 'No previously unknown application services were found under Current User.'
+
+        } # End Else
+
  # Check the proxy settings
 
-        if (Get-ChildItem -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Proxy*') {
-          
-            Write-Warning 'Proxy settings have been configured. This may mean trouble.'
- 
-        } else { Write-Verbose 'No proxy settings detected.' }
+        If (Get-ChildItem -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Proxy*')
+        {
 
-     } # End if not ComputerName 
+            Write-Warning 'Proxy settings have been configured. This may mean trouble.'
+
+        } # End If
+        Else
+        {
+
+            Write-Verbose 'No proxy settings detected.'
+
+        } # End Else
+
+  # Checking for ADS
+
+        Write-Verbose 'Checking for Alternate Data Streams...'
+
+        $ADSFiles = Get-ChildItem -Path 'C:\' -Recurse | ForEach-Object { Get-Item $_.FullName -Stream * } | Where-Object { ($_.Stream -ne ':$Data') -and ($_.Stream -ne 'Zone.Identifier') }
+
+        If ($ADSFiles)
+        {
+
+            ForEach ($ADSFile in $ADSFiles)
+            {
+
+                $ADSFilePath = $ADSFile.FileName
+
+                $ADSFileNameStream1,$ADSFileNameStream2 = ($ADSFilePath.PSChildName).Split(':')
+
+                Remove-Item –Path { $ADSFilePath } –Stream { $ADSFileNameStream2 }
+
+            } # End ForEach
+
+        } # End If
+
+     } # End If not ComputerName
  #===============================================================================================
  # This part of the function is used if the function needs to be executed on a remote computer   |
  #================================================================================================
- else {
+ Else {
 
-        Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+        Invoke-Command -ComputerName $ComputerName -ScriptBlock
+        {
 
             Write-Verbose "Finding the top 20 heaviest running processes....`n"
 
@@ -195,69 +248,78 @@ if (!($ComputerName)) {
 
             Read-Host "`nAbove is a list of the top 20 heaviest processes currently running. Take note of anything unusual. Press Enter to continue"
 
-# Check for altered hosts file. Block connections to IP Addresses added to the hosts file 
+# Check for altered hosts file. Block connections to IP Addresses added to the hosts file
 
             Write-Verbose "`nDetermining whether or not the hosts file has been altered...."
-    
-            $Diff = Get-Content -Path "C:\Windows\system32\Drivers\etc\hosts" 
+
+            $Diff = Get-Content -Path "C:\Windows\system32\Drivers\etc\hosts"
 
             $Ref = Get-Content -Path $ControlHostsFile
 
-            if (Compare-Object -ReferenceObject $Ref -DifferenceObject $Diff) {
-    
+            If (Compare-Object -ReferenceObject $Ref -DifferenceObject $Diff)
+            {
+
                 $Diff
 
                 Write-Warning 'Hosts file has been altered. Take note of any IP Addresses and break their connections by completing the next steps.'
 
                 $numberofbad = Read-Host 'How many IP Address have been added to the hosts file? Example: 2'
 
-                for ($i = 1; $i -le $numberofbad; $i++) {
- 
-                    function Block-BadGuy {    
-                    [CmdletBinding()]     
-                    param(       
-                        [Parameter(
-                            Mandatory=$true,
-                            HelpMessage="Enter an IP Address that was added to the hosts file listed in the above output."
-                        )] # End Parameter      
-                    [string[]]$IPaddress     
-                    ) # End Param
+                For ($i = 1; $i -le $numberofbad; $i++)
+                {
 
-                        if ($IPAddress) { 
-        
+                    Function Block-BadGuy
+                    {
+                        [CmdletBinding()]
+                        param(
+                            [Parameter(
+                                Mandatory=$true,
+                                HelpMessage="Enter an IP Address that was added to the hosts file listed in the above output."
+                            )] # End Parameter
+                        [string[]]$IPaddress
+                        ) # End Param
+
+                        If ($IPAddress) {
+
                             New-NetFirewallRule -Name "Deny Inbound Connections to $IPAddress" -DisplayName "Deny Inbound Connections from $IPAddress" -Enabled True -Direction Inbound -Protocol ANY -Action Block -Profile ANY -RemoteAddress $IPAddress
 
                             New-NetFirewallRule -Name "Deny Outbound Connections to $IPAddress" -DisplayName "Deny Outbound Connections from $IPAddress" -Enabled True -Direction Outbound -Protocol ANY -Action Block -Profile ANY -RemoteAddress $IPAddress
-                    
+
                             Write-Verbose 'New Firewall rules added to block inbound and outbound connections to the malicious IP Address.'
 
                             $badGuyProcessIDs = Get-NetTCPConnection -RemoteAddress $IPAddress | Select-Object -Property OwningProcess
-            
-                            Foreach ($ProcessId in $badGuyProcessIDs) { 
-            
-                                Stop-Process -Id $ProcessId -Force -PassThru 
-                
+
+                            ForEach ($ProcessId in $badGuyProcessIDs) {
+
+                                Stop-Process -Id $ProcessId -Force -PassThru
+
                                 Write-Verbose "Above are the processes that were stopped which connected to the remote address.`nFirewall rules have been added to block anymore connections to those addresses."
 
                             } # End Foreach
 
                           } # End if bad guy IP response
 
-                        else { Write-Warning "No IP Address was entered." }
+                        Else { Write-Warning "No IP Address was entered." }
 
                     } # End Function Block-BadGuy
-        
+
                 Block-BadGuy -Verbose
-        
+
                 } # End for loop
-    
+
             } # End if for finding an altered hosts file
 
-            else { Write-Verbose 'Hosts file has not been altered. Moving on to next check.....' }
+            Else
+            {
+
+                Write-Verbose 'Hosts file has not been altered. Moving on to next check.....'
+
+            } # End Else
 
  # Check for altered Internet Explorer Start Page
- 
-            if (Get-Childitem -Path "HKCU:\software\Microsoft\Internet Explorer\Main\Start Page Redirect=*") {
+
+            If (Get-Childitem -Path "HKCU:\software\Microsoft\Internet Explorer\Main\Start Page Redirect=*")
+            {
 
                 Write-Warning 'Internet Explorer start page redirect found. Make sure it is not malicious.'
 
@@ -269,54 +331,80 @@ if (!($ComputerName)) {
 
             $LMAppDiff = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\' | Select-Object -Property PSChildName
 
-            if ($LMApplist = Compare-Object -DifferenceObject $LMAppDiff -ReferenceObject $LMAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
-            
+            If ($LMApplist = Compare-Object -DifferenceObject $LMAppDiff -ReferenceObject $LMAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
+
                 $LMApplist
 
                 Write-Warning 'This is a list of previously unrecorded Application Processes. Check these results to find any possibly malicous applications.'
 
                 $LMApplist | Export-Csv -Path $ControlAppListFile -Append
-    
+
                 } # End if AppList
-        
-            else { Write-Verbose 'No previously unknown application services were found under Local Machine.'}
- 
+
+            Else { Write-Verbose 'No previously unknown application services were found under Local Machine.'}
+
     # Checks Current User Registry
 
             $CUAppRef = Import-Csv -Path $ControlCUAppListFile
 
             $CUAppDiff = Get-ChildItem -Path 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\' | Select-Object -Property PSChildName
 
-            if ($Applist = Compare-Object -DifferenceObject $CUAppDiff -ReferenceObject $CUAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
-            
+            If ($Applist = Compare-Object -DifferenceObject $CUAppDiff -ReferenceObject $CUAppRef -Property PsChildName | Where-Object -Property SideIndicator -like "<=" | Select-Object -ExpandProperty PSChildName ) {
+
                 $CUApplist
 
                 Write-Warning 'This is a list of previously unrecorded Application Processes. Check these results to find any possibly malicous applications.'
 
                 $CUApplist | Export-Csv -Path $ControlCUAppListFile -Append
-    
+
                 } # End if AppList
-        
-            else { Write-Verbose 'No previously unknown application services were found under Current User.'}
- 
+
+            Else { Write-Verbose 'No previously unknown application services were found under Current User.'}
+
     # Check the proxy settings
 
-            if (Get-ChildItem -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Proxy*') {
-          
+            If (Get-ChildItem -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Proxy*')
+            {
+
                 Write-Warning 'Proxy settings have been configured. This may mean trouble.'
- 
-            } else { Write-Verbose 'No proxy settings detected.' }
- 
+
+            }
+            Else
+            {
+
+                Write-Verbose 'No proxy settings detected.'
+
+            } # End Else
+
+            $ADSFiles = Get-ChildItem -Path 'C:\' -Recurse | ForEach-Object { Get-Item $_.FullName -Stream * } | Where-Object { ($_.Stream -ne ':$Data') -and ($_.Stream -ne 'Zone.Identifier') }
+
+            If ($ADSFiles)
+            {
+
+                ForEach ($ADSFile in $ADSFiles)
+                {
+
+                    $ADSFilePath = $ADSFile.FileName
+
+                    $ADSFileNameStream1,$ADSFileNameStream2 = ($ADSFilePath.PSChildName).Split(':')
+
+                    Remove-Item –Path { $ADSFilePath } –Stream { $ADSFileNameStream2 }
+
+                } # End ForEach
+
+            } # End If
+
         } # End Invoke-Command
- 
+
      } # End Else
- 
+
  } # End PROCESS
- 
- END {
- 
+
+END
+{
+
     Write-Verbose "Execution of command has completed."
- 
- } # End END
-        
+
+} # End END
+
 } # End Function

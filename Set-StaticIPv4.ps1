@@ -3,84 +3,122 @@
     Set-StaticIPv4 cmdlet is used to automatically assign a static IPv4 address that is not in use.
 
 .DESCRIPTION
-    This cmdlet was created for sysadmins and does not require any switches. 
+    This cmdlet is used to statically assign an IPv4 Address to a devices interfaces.
+    Useful if you do not know any available IPv4 Addresses and do not feel like looking them up
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
     https://roberthosborne.com
 
 .EXAMPLE
-    Set-StaticIPv4 -Verbose
+    Set-StaticIPv4 -FirstThreeOfIpAddress "192.168.1" -DefaultGateway "192.168.1.1" -ServerAddresses "208.67.222.222","208.67.220.220"
+This example will use a defauly prefix length of 24. I recommend using the -Verbose switch
+
+.EXAMPLE
+    Set-StaticIPv4 -FirstThreeOfIpAddress "172.16.1" -DefaultGateway "172.16.1.1" -ServerAddresses "8.8.8.8" -PrefixLength 22 -Verbose
+This example defines the Prefix Length
 #>
 Function Set-StaticIPv4 {
     [CmdletBinding()]
-        param()
-        
+        param(
+            [Parameter(Position=0,
+                Mandatory=$True,
+                HelpMessage="First 3 values of the subnet to assign the address in. Example: 192.168.1")]
+            [string]$FirstThreeOfIpAddress,
+
+            [Parameter(Position=1,
+                Mandatory=$True,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage="Gateway Address. Example: 192.168.1.1")] # End Parameter
+            [string]$DefaultGateway,
+
+            [Parameter(Position=2,
+                Mandatory=$True,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage="DNS Servers to use. Example: '208.67.222.222','208.67.220.220'")]
+            [string[]]$ServerAddresses,
+
+            [Parameter(Position=3,
+                Mandatory=$False,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage="Enter the subnet prefix length. If this is not defined it will be set to 24. Example: 24")]
+            [int]$PrefixLength) # End param
+
     BEGIN {
-    
-      Write-Verbose "If you have not already set the below options to match your environment edit the BEGIN variables."
-      
-      $MaskBits = 24
-      $Gateway = "192.168.1.1"
-      $Dns = '("208.67.222.222","208.67.220.220")'
-      $IPType = "IPv4"
-      $IpId = (Get-Random -Maximum 253 -Minimum 10)
-      $IP = "192.168.1.$IpId"
-    
+
+    If ($null -eq $PrefixLength)
+    {
+
+        [int]$PrefixLength = 24
+
+    } # End If
+
+    $AddressFamily = "IPv4"
+
+    $IpId = (Get-Random -Maximum 253 -Minimum 10)
+
+    $IP = "$FirstThreeOfIpAddress.$IpId"
+
     } # End BEGIN
-    
+
     PROCESS {
 
-        do {
+        Do {
 
-          if (Test-NetConnection $Ip | Select-Object -Property PingSucceeded | Where-Object -Property Status -EQ $true) {
+          If (Test-Connection $Ip -Count 1)
+          {
 
-                  $IpId = (Get-Random -Maximum 253 -Minimum 10)
+              $IpId = (Get-Random -Maximum 253 -Minimum 10)
 
-                  $IP = "192.168.1.$IpId"
+              $IP = "$FirstThreeOfIpAddress.$IpId"
 
           } # End If
 
-          else {
-          
-              Write-Verbose "Retrieving network adapter to configure"
+          Else {
 
-              $Adapter = Get-NetAdapter | ? {$_.Status -eq "up"}
+              Write-Verbose "Retrieving network adapter to configure..."
+
+              $Adapter = Get-NetAdapter | Where-Object { $_.Status -eq "up" }
 
               Write-Verbose "Removing existing IP, and Gateway from the IPv4 adapter"
 
-              If (($Adapter | Get-NetIPConfiguration).IPv4Address.IPAddress) {
+              $AdapterConfig = $Adapter | Get-NetIPConfiguration
 
-                 $Adapter | Remove-NetIPAddress -AddressFamily $IPType -Confirm:$false
+              If (($AdapterConfig.IPv4Address.IPAddress) -and ($AdapterConfig.Ipv4DefaultGateway))) {
+
+                  Write-Verbose "Removing old IPv4 Address"
+
+                 $Adapter | Remove-NetIPAddress -AddressFamily $AddressFamily -Confirm:$False
+
+                 Write-Verbose "Removing old Default Gateway"
+
+                 $Adapter | Remove-NetRoute -AddressFamily $AddressFamily -Confirm:$False
 
               } # End If
 
-              If (($Adapter | Get-NetIPConfiguration).Ipv4DefaultGateway) {
+              Write-Verbose "Configuring the IPv4 address and default gateway"
 
-                   $Adapter | Remove-NetRoute -AddressFamily $IPType -Confirm:$false
-
-              } # End if
-
-               Write-Verbose "Configuring the IPv4 address and default gateway"
-
-              $Adapter | New-NetIPAddress -AddressFamily $IPType -IPAddress $IP -PrefixLength $MaskBits -DefaultGateway $Gateway
+              $Adapter | New-NetIPAddress -AddressFamily $AddressFamily -IPAddress $IP -PrefixLength $PrefixLength -DefaultGateway $DefaultGateway
 
               Write-Verbose "Configuring the DNS client server IP addresses"
 
-                  $Adapter | Set-DnsClientServerAddress -ServerAddresses $DNS
+              $Adapter | Set-DnsClientServerAddress -ServerAddresses $ServerAddresses
           } # End Else
 
         } # End Do
-        while (Test-NetConnection $Ip | Select-Object -Property PingSucceeded | Where-Object -Property PingSucceeded -EQ $True)
+        While (Test-Connection $Ip -Count 1)
 
     } # End PROCESS
-    
+
     END {
-    
-        $NewIP = (Get-NetIPAddress -AddressFamily IPv4 -PrefixLength $MaskBits).IPAddress
-    
+
+        $NewIP = (Get-NetIPAddress -AddressFamily $AddressFamily -PrefixLength $PrefixLength).IPAddress
+
         Write-Verbose "Your static IPv4 address is $NewIP"
-    
+
     } # End END
