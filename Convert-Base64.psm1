@@ -24,8 +24,10 @@
         Accept wildcard characters?  false
 
     -Encode
+     This switch is used to tell the cmdlet to encode the base64 string
 
     -Decode
+    This switch parameter is used to tell the cmdlet to decode the base64 string 
 
     .INPUTS
     -Value accepts strings from pipeline.
