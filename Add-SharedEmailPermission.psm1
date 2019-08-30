@@ -62,7 +62,7 @@ Function Add-SharedEmailPermission
     If ((Get-PsSession).ConfigurationName -notlike 'Microsoft.Exchange')
     {
 
-        $Session = New-PSSession -ConfigurationName "Microsoft.Exchange" -ConnectionUri "https://ps.outlook.com/PowerShell-LiveID?PSVersion=5.1.14393.2608" -Credential (Get-Crednetial -Message "Enter your global admin credentials for Office365. Example: admin@osbornepro.com") -Authentication "Basic" -AllowRedirection
+        $Session = New-PSSession -ConfigurationName "Microsoft.Exchange" -ConnectionUri "https://ps.outlook.com/PowerShell-LiveID?PSVersion=5.1.14393.2608" -Credential (Get-Credential -Message "Enter your global admin credentials for Office365. Example: admin@osbornepro.com") -Authentication "Basic" -AllowRedirection
 
         Import-PSSession -Session $Session -ErrorAction "SilentlyContinue" | Out-Null
 
