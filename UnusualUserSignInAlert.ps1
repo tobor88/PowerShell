@@ -48,17 +48,7 @@ ForEach ($Assignment in $CsvInformation)
 
     [array]$ExpectedLogonEvents = @()
     [array]$UsersComputers = $CsvInformation | Where-Object -Property 'Name' -like $Assignment.Name | Select-Object -Property 'ComputerName'
-    [array]$TotalUserLogonEvents = Try
-                                    {
-
-                                        Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`']]"
-
-                                    } # End Try
-                                    Catch {
-
-                                        If ($_.Exception -match "No events were found that match the specified selection criteria") { Write-Verbose "No matches found."  } # End If
-
-                                    } # End Catch
+    [array]$TotalUserLogonEvents = Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`']]"
 
     If ($TotalUserLogonEvents)
     {
@@ -68,24 +58,14 @@ ForEach ($Assignment in $CsvInformation)
 
             Write-Host "Setting variable for $C's IP Address"
 
-            $SearchEventName = Get-Variable -Name ($C.Replace('-','')) -ValueOnly
+            [string]$SearchEventName = Get-Variable -Name ($C.Replace('-','')) -ValueOnly
 
             Set-Variable -Name ($C.Replace('-','')) -Value ( (Resolve-DnsName -Name $C).IPAddress)
 
             Write-Host "Getting a total of logon events for $SamAccountName on $C..."
 
-            [array]$ExpectedLogonEvents += Try
-                                             {
+            [array]$ExpectedLogonEvents += Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`'] and EventData[Data[@Name='IpAddress']=`'$SearchEventName`']]"
 
-                                                Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`'] and EventData[Data[@Name='IpAddress']=`'$SearchEventName`']]"
-
-                                             } # End Try
-                                             Catch
-                                             {
-
-                                                 If ($_.Exception -match "No events were found that match the specified selection criteria") { Write-Verbose "No matches found."  } # End If
-
-                                             } # End Catch
 
         } # End ForEach
 
@@ -94,14 +74,14 @@ ForEach ($Assignment in $CsvInformation)
 
             Write-Host "Logon events have been found. Comparing total logon events to Expected logon events.. "
 
-            If ($TotalLogonEvents.Count -gt $ExpectedLogonEvents.Count)
+            If ($TotalUserLogonEvents.Count -gt $ExpectedLogonEvents.Count)
             {
 
                 Write-Host "Total events is greater than expected events. Expect an email."
 
-                $DifferenceEvents = Compare-Object -ReferenceObject $TotalUserLogonEvents -DifferenceObject $ExpectedLogonEvents
+                [array]$DifferenceEvents = Compare-Object -ReferenceObject $TotalUserLogonEvents -DifferenceObject $ExpectedLogonEvents
 
-                $MailBody= $DifferenceEvents.Message + "`r`n`t" + $DifferenceEvents.TimeGenerated | Format-List -Property * | Out-String
+                [string]$MailBody= "$SamAccountName has signed into a deivce outside their assigned computers. Check logs until I find a nice way to send this information. `n`n$UsersComputers`nSID: $SID"
 
                 Send-MailMessage -From "alert@osbornepro.com" -To "notifyme@osbornepro.com" -Subject "AD Event: Unusual Login Occurred" -Body $MailBody -SmtpServer mail.smtp2go.com
 
