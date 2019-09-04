@@ -18,7 +18,7 @@
         Enter a string consisting of spaces and special charcters if desired.DESCRIPTION
 
         Required?                    True
-        Position?                    named
+        Position?                    name
         Default value                None
         Accept pipeline input?       True
         Accept wildcard characters?  false
@@ -27,7 +27,7 @@
      This switch is used to tell the cmdlet to encode the base64 string
 
     -Decode
-    This switch parameter is used to tell the cmdlet to decode the base64 string 
+    This switch parameter is used to tell the cmdlet to decode the base64 string
 
     .INPUTS
     -Value accepts strings from pipeline.
