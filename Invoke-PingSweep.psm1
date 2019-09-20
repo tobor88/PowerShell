@@ -26,6 +26,10 @@ Function Invoke-PingSweep
 
         [array]$Results = @()
 
+        [int]$Timeout = 500
+
+        Write-Host "The below IP Addressess are currently active." -ForegroundColor "Green"
+
         For ($i = 0; $i -le $End; $i++)
         {
 
@@ -34,19 +38,17 @@ Function Invoke-PingSweep
             If ($IP -notlike $LocalIPAddress)
             {
 
-                If (Test-Connection -TargetName $IP -Ping -IPv4 -Count $Count -Buffer 16 -Quiet)
+                $Filter = 'Address="{0}" and Timeout={1}' -f $IP, $Timeout
+
+                If ((Get-WmiObject "Win32_PingStatus" -Filter $Filter).StatusCode -eq 0)
                 {
 
-                    $Results += "$IP`n"
+                    Write-Host $IP -ForegroundColor "Yellow"
 
                 } # End If
 
             } # End If
 
       } # End For
-
-      Write-Host "The below IP Addressess are currently active." -ForegroundColor "Green"
-
-      Write-Host $Results -ForegroundColor "Yellow"
 
 } # End Function Invoke-PingSweep
