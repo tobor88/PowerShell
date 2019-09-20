@@ -15,10 +15,7 @@ Function Invoke-PingSweep
             [int]$End = 254,
 
             [ValidateRange(1,10)]
-            [int]$Count = 1,
-
-            [ValidateRange(1,65535)]
-            [int]$Port) # End param
+            [int]$Count = 1) # End param
 
         [array]$LocalIPAddress = Get-NetIPAddress -AddressFamily "IPv4" | Where-Object { ($_.InterfaceAlias -notmatch "Bluetooth|Loopback") -and ($_.IPAddress -notlike "169.254.*") }  | Select-Object -Property "IPAddress"
 
