@@ -17,7 +17,7 @@ Function Invoke-PingSweep
             [ValidateRange(1,10)]
             [int]$Count = 1) # End param
 
-        [array]$LocalIPAddress = Get-NetIPAddress -AddressFamily "IPv4" | Where-Object { ($_.InterfaceAlias -notmatch "Bluetooth|Loopback") -and ($_.IPAddress -notlike "169.254.*") }  | Select-Object -Property "IPAddress"
+        #[array]$LocalIPAddress = Get-NetIPAddress -AddressFamily "IPv4" | Where-Object { ($_.InterfaceAlias -notmatch "Bluetooth|Loopback") -and ($_.IPAddress -notlike "169.254.*") }  | Select-Object -Property "IPAddress"
 
         [string]$ClassC = $Subnet.Split(".")[0..2] -Join "."
 
@@ -32,8 +32,8 @@ Function Invoke-PingSweep
 
             [string]$IP = "$ClassC.$i"
 
-            If ($IP -notlike $LocalIPAddress)
-            {
+            #If ($IP -notlike $LocalIPAddress)
+          #  {
 
                 $Filter = 'Address="{0}" and Timeout={1}' -f $IP, $Timeout
 
@@ -44,7 +44,7 @@ Function Invoke-PingSweep
 
                 } # End If
 
-            } # End If
+            #} # End If
 
       } # End For
 
