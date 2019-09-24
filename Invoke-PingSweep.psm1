@@ -173,7 +173,12 @@ Function Invoke-PingSweep
             ElseIf ($PsVersionTable.PSEdition -eq 'Core')
             {
 
-                Write-Warning "Results are obtained much faster when using PowerShell on a Windows machine. "
+                If ($i -eq 0)
+                {
+
+                    Write-Host "ATTENTION: Results obtained much faster on a non Core version of PowerShell. " -ForegroundColor Yellow
+
+                } #End If
 
                 If ($IP -notlike $LocalIPAddress)
                 {
@@ -204,10 +209,21 @@ Function Invoke-PingSweep
                         } # End ElseIf
 
                     } # End If
+                    ElseIf (!($Source))
+                    {
+
+                        If (Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Quiet)
+                        {
+
+                            Write-Host $IP -ForegroundColor "Yellow"
+
+                        } # End If
+
+                    } # End ElseIf
                     Else
                     {
 
-                        Write-Error "INPUT ERROR: -Source value can only be Singular or Multiple. Execute command 'Get-Help Invoke-PingSweep -FullDetails' for more info."
+                        Write-Error "INPUT ERROR: '-Source' value can only be Singular or Multiple. Execute command 'Get-Help Invoke-PingSweep -FullDetails' for more info."
 
                         Break
 
@@ -215,14 +231,10 @@ Function Invoke-PingSweep
 
                 } # End If
 
-                If (Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Quiet)
-                {
-
-                    Write-Host $IP -ForegroundColor "Yellow"
-
-                } # End If
-
             } # End ElseIf
+
+            New-Object -TypeName System.Management.Automation.PSCustomObject -Property @(IPAddress =
+            )
 
         } # End For
 
