@@ -222,10 +222,8 @@ Function Invoke-PingSweep
 
                 } # End If
 
-            } # End If
+            } # End ElseIf
 
-        } # End ElseIf
-
-    } # End For
+        } # End For
 
 } # End Function Invoke-PingSweep
