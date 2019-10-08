@@ -46,21 +46,21 @@ Function Restart-PrintSpooler {
                 ValueFromPipeLine=$True,
                 ValueFromPipeLineByPropertyName=$True,
                 HelpMessage="Enter the email address you want to send an alert email to if the print spooler service is down. Example: aler@osbornepro.com")]
-            [string[]]$To
+            [System.Net.Mail.MailAddress]$To
 
             [Parameter(Mandatory=$True,
                 Position=3,
                 ValueFromPipeLine=$True,
                 ValueFromPipeLineByPropertyName=$True,
                 HelpMessage="Enter the email address that will send the alert email. Example: aler@osbornepro.com")]
-            [string[]]$From
+            [System.Net.Mail.MailAddress]$From
 
             [Parameter(Mandatory=$True,
                 Position=4,
                 ValueFromPipeLine=$True,
                 ValueFromPipeLineByPropertyName=$True,
                 HelpMessage="Enter your SMTP Server to use for sending the email. Example: mail.smtp2go.com")]
-            [string[]]$SmtpServer,
+            [Syste.Net.Mail.MailAddress]$SmtpServer,
 
             [Parameter(Mandatory=$True,
                 Position=5,
