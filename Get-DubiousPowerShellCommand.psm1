@@ -65,6 +65,15 @@ Function Get-DubiousPowerShellCommand {
         Elseif (($BadEvent.Properties.Item(0) | Select-Object -ExpandProperty 'Value' | Out-String) -like "bitsadmin*") {$EventInfo = $BadEvent}
         Elseif (($BadEvent.Properties.Item(0) | Select-Object -ExpandProperty 'Value' | Out-String) -like "Start-BitsTransfer*") {$EventInfo = $BadEvent}
 
+        If ($null -eq $EventInfo)
+        {
+
+            Write-Verbose "No malicious commands have been found. Ending rest of script execution. "
+
+            break
+
+        } # End If
+
         $More = $EventInfo.Properties.Item(0)
 
         [array]$UserList = Get-ChildItem -Path 'C:\Users' -ErrorAction 'SilentlyContinue' | Select-Object -ExpandProperty 'Name'
