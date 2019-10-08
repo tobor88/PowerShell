@@ -18,8 +18,8 @@
     https://roberthosborne.com
 
 .EXAMPLE
-    Get-DubiousPowerShellCommand
-
+    Get-DubiousPowerShellCommand -To alert@osbornepro.com -From alerter@osbornepro.com -SmtpServer mail.smtp2go.com -Verbose
+    The above example sends an email to alert@osbornepro.com from alerter@osbornepro.com using SMTP2GO's smtp server if a malicious command is found.
 #>
 Function Get-DubiousPowerShellCommand {
     [CmdletBinding()]
@@ -132,6 +132,12 @@ td {
             Send-MailMessage -From $From -To $To -Subject "Possible PowerShell Attack on $Computer" -BodyAsHtml -Body $MailBody -SmtpServer $SmtpServer
 
         } # End If
+        Else
+        {
+
+            Write-Verbose "No malicious commands found. "
+
+        } # End Else
 
     } # End END
 
