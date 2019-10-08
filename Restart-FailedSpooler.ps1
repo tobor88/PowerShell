@@ -1,113 +1,193 @@
-<#
+﻿<#
 .Synopsis
-    Restart-FailedSpooler is a cmdlet created to restart the print spooler whenever a print job fails.
-    This cmdlet was designed to run automatically through Task Scheduler and does not accept input.
-    It can restart the Print Spooler on the print server and on the remote computer where the print job failed.
+    Restart-PrintSpooler is a cmdlet created to restart the print spooler whenever a print job failes.
+    This cmdlet was designed to run automatically.
 
 .DESCRIPTION
-    The task for this cmdlet is executed when the event log PrintService Error 372, 350, or 314 happens.
+    The task for this cmdlet is executed when the event log PrintService Error 372, 350, and 314 happens.
     Once the event is triggered the print spooler on the server and the computer trying to print are restarted.
+    This runs best as a task in task scheduler.
 
 .NOTES
-    Author: Rob Osborne 
+    Written by Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
     https://roberthosborne.com
 
-.EXAMPLE
-   Restart-FailedSpooler
+.SYNTAX
+    Restart-PrintSpooler -Pattern <string[DesktopNamingConvention]> -User <string SamAccountName> -To <string Email address> -From <string Email Address> -SmtpServer <string {IPv4 Address | FQDN} [-Verbose]
 
 .EXAMPLE
-   Restart-FailedSpooler -Verbose
+   Restart-PrintSpooler -Pattern 'Desktop-' -User 'rob.osborne' -To alert@osbornepro.com -From alerter@osbornepro.com -SmtpServer mail.smtp2go.com
+
+.EXAMPLE
+   Restart-PrintSpooler -Pattern 'Desktop-' -User 'rob.osborne' -To alert@osbornepro.com -From alerter@osbornepro.com -SmtpServer mail.smtp2go.com -Verbose
 
 #>
 
-Function Restart-FailedSpooler {
+Function Restart-PrintSpooler {
     [CmdletBinding()]
-        param()
+        param(
+            [Parameter(Mandatory=$True,
+                Position=0,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True)]
+            [string[]]$Pattern,
 
-    BEGIN {
-    
-        $ComputerIdentifier = "DESKTOP-*" # SET THIS VALUE TO IDENTIFY THE COMPUTER NAMING CONVENTION FOR YOUR ENVIRONMENT. * is a wildcard
+            [Parameter(Mandatory=$True,
+                Position=1,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True,
+                HelpMessage="Enter a the administrators SamAccountName that is being used to Invoke-Command on the remote device attempting to print. Example: 'OP-")]
+            [string[]]$User,
 
-        $LocalHost = $env:COMPUTERNAME
+            [Parameter(Mandatory=$True,
+                Position=2,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True,
+                HelpMessage="Enter the email address you want to send an alert email to if the print spooler service is down. Example: aler@osbornepro.com")]
+            [string[]]$To
 
-        $EventID = Get-WinEvent -LogName "Microsoft-Windows-PrintService/Admin" -MaxEvents 1 | Select-Object -ExpandProperty Id
+            [Parameter(Mandatory=$True,
+                Position=3,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True,
+                HelpMessage="Enter the email address that will send the alert email. Example: aler@osbornepro.com")]
+            [string[]]$From
 
-        if ( ($EventID -eq 350) -or ($EventID -eq 314 ) ) {
-        
-            Write-Verbose "Event ID: $EventID `n`nPerforming print spooler restart on $LocalHost..." 
-            
-            Try {
+            [Parameter(Mandatory=$True,
+                Position=4,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True,
+                HelpMessage="Enter your SMTP Server to use for sending the email. Example: mail.smtp2go.com")]
+            [string[]]$SmtpServer,
 
-                Get-Service "Print Spooler" | Restart-Service -Verbose
+            [Parameter(Mandatory=$True,
+                Position=5,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True,
+                HelpMessage="Enter your domain name. Example: osbornepro.com")]
+            [string[]]$Domain,
+        ) # End param
 
-            } # End Try
+        $EventID = Get-WinEvent -LogName Microsoft-Windows-PrintService/Admin -MaxEvents 1 | Select-Object -ExpandProperty 'Id'
 
-            Catch {
+        If ( ($EventID -eq 350) -or ($EventID -eq 314 ) )
+        {
 
-                Write-Warning "Error Restarting Print Spooler"
+            Write-Verbose "Event ID: $EventID `n`nPerforming print spooler restart on $env:COMPUTERNAME..."
 
-            } # End Catch
+            Restart-Service -Name "Print Spooler" -Force
 
-        } # End if 
+            If ( (Get-Service -Name 'Print Spooler').Status  -ne 'Running' )
+            {
 
-    } # End BEGIN
+                Start-Service -Name 'Print Spooler'
 
-    PROCESS {
+                $Status = (Get-Service -Name 'Print Spooler').Status
 
-        if ($EventID -eq 372) {
+                If ($Status -ne 'Running')
+                {
 
-            Try {
+                    $Body ="Print Spooler service status is in a state that is not running. `nCurrent State: $Status`n`Ensure the service gets back up and running."
 
-                Get-Service "Print Spooler" | Restart-Service -Verbose
+                    Send-MailMessage -To $To -From $From -Subject "Print Spooler Issue on $env:COMPUTERNAME" -SmtpServer $SmtpServer -Priority 'Normal' -Body $Body
 
-            } # End Try
+                    Get-Service -Name 'Print Spooler' | Restart-Service -Force
 
-            Catch {
+                } # End If
 
-                Write-Warning "Error Restarting Print Spooler"
+            } # End If
+            Else
+            {
 
-            } # End Catch
-    
-           $WordsInMessage = (Get-WinEvent -LogName "Microsoft-Windows-PrintService/Admin" -MaxEvents 1 | Select-Object -ExpandProperty Message | Out-String).Split(' ')
+                Write-Verbose "Successfully restarted print spooler on $env:COMPUTERNAME"
 
-            foreach ($Word in $WordsInMessage) {
-        
-                if ($Word -like $ComputerIdentifier) {
+            } # End Else
 
-                    Set-Variable -Name Fail -Value $Word
+        } # End If
+
+        If ($EventID -eq 372)
+        {
+
+            Write-Verbose "Event ID: $EventID `n`nPerforming print spooler restart on $env:COMPUTERNAME..."
+
+            Restart-Service -Name "Print Spooler" -Force
+
+            If ( (Get-Service -Name 'Print Spooler').Status  -ne 'Running' )
+            {
+
+                Start-Service -Name 'Print Spooler'
+
+                $Status = (Get-Service -Name 'Print Spooler').Status
+
+                If ($Status -ne 'Running')
+                {
+
+                    $Body ="Print Spooler service status is in a state that is not running. `nCurrent State: $Status`n`Ensure the service gets back up and running."
+
+                    Send-MailMessage -To $To -From $From -Subject "Print Spooler Issue on $env:COMPUTERNAME" -SmtpServer $SmtpServer -Priority 'Normal' -Body $Body
+
+                    Get-Service -Name 'Print Spooler' | Restart-Service -Force
+
+                } # End If
+
+            } # End If
+             Else
+            {
+
+                Write-Verbose "Successfully restarted print spooler on $env:COMPUTERNAME"
+
+            } # End Else
+
+            Write-Host "If you do not have a password file you can get something to encrypt your password securely at https://github.com/tobor88/PowerShell/blob/master/Hide-PowerShellScriptPassword.ps1"
+            $PasswordFile = "C:\Users\Public\Documents\Key.AESpassword.txt"
+            $KeyFile = "C:\Users\Public\Documents\EncryptionKey"
+            $Key = Get-Content -Path $KeyFile
+            $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (Get-Content -Path $PasswordFile | ConvertTo-SecureString -Key $Key)
+
+            $FailedComputer = (Get-WinEvent Microsoft-Windows-PrintService/Admin -MaxEvents 1 | Select-Object -ExpandProperty 'Message').Split(' ') | Select-String -Pattern $Pattern | Out-String
+
+            Set-Variable -Name ComputerName -Value $FailedComputer.Trim()
+
+            Invoke-Command -HideComputerName ("$ComputerName" + "$Domain") -ScriptBlock {
+
+                Write-Verbose "Event ID: $EventID `n`nPerforming print spooler restart on $env:COMPUTERNAME..."
+
+                Restart-Service -Name "Print Spooler" -Force
+
+                If ( (Get-Service -Name 'Print Spooler').Status  -ne 'Running' )
+                {
+
+                    Start-Service -Name 'Print Spooler'
+
+                    $Status = (Get-Service -Name 'Print Spooler').Status
+
+                    If ($Status -ne 'Running')
+                    {
+
+                        $Body ="Print Spooler service status is in a state that is not running. `nCurrent State: $Status`n`Ensure the service gets back up and running."
+
+                        Send-MailMessage -To $To -From $From -Subject "Print Spooler Issue on $env:COMPUTERNAME" -SmtpServer $SmtpServer -Priority 'Normal' -Body $Body
+
+                        Get-Service -Name 'Print Spooler' | Restart-Service -Force
 
                     } # End If
 
-            } # End foreach
+                } # End If
+                Else
+                {
 
-            $FailedComputer = ($Fail.Replace('.',' ')).TrimEnd()
+                    Write-Verbose "Successfully restarted print spooler on $env:COMPUTERNAME"
 
-                Invoke-Command -ComputerName $FailedComputer -ScriptBlock {
+                } # End Else
 
-                    Try {
+            } -Credential $Cred -UseSSL # End ScriptBlock
 
-                        Get-Service "Print Spooler" | Restart-Service -Verbose
-
-                    } # End Try
-
-                    Catch {
-
-                        Write-Warning "Error Restarting Print Spooler"
-
-                    } # End Catch
-
-                } # End ScriptBlock
-
-    } # End PROCESS
-
-    END {
+        } # End If
 
         Write-Verbose "Restarting Print Spoolers completed"
 
-    } # End END
-
 } # End Function
 
-Restart-FailedSpooler -Verbose
+Restart-PrintSpooler -Verbose
