@@ -42,6 +42,15 @@ $CsvInformation = Import-Csv -Path 'C:\Users\Public\Documents\UserComputerList.c
 
 ForEach ($Assignment in $CsvInformation)
 {
+
+    If ($TotalUserLogonEvents -or $UnexpectedLogons)
+    {
+
+        Clear-Variable -Name TotalUserLogonEvents,UnexpectedLogons
+
+
+    } # End If 
+    
     [string]$SamAccountName = ($Assignment.Name).Replace(' ','.')
     [string]$SID = Get-UserSid -SamAccountName $SamAccountName
     [string]$C = $Device.ComputerName
