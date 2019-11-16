@@ -233,8 +233,7 @@ Function Invoke-PingSweep
 
             } # End ElseIf
 
-            New-Object -TypeName System.Management.Automation.PSCustomObject -Property @(IPAddress =
-            )
+        #    New-Object -TypeName System.Management.Automation.PSCustomObject -Property @(IPAddress =)
 
         } # End For
 

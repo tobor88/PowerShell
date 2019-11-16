@@ -37,79 +37,102 @@ Function Get-UserSid
     } # End Else
 
 } # End Function Get-UserSid
+$SmtpServer = 'smtp.office365.com'
+$AlertEmail = 'alertingemail@domain.com'
 
+# Array of Shared Computer Names is for excluding computers that may be shared such as conference room computers that may be signed into
+[array]$SharedComputerIPs = '10.0.1.1','10.0.2.2','10.0.3.3'
+
+# The below file needs to contain a Name column and a ComputerName column. Names can repeat as the script will still only check each name once.
 $CsvInformation = Import-Csv -Path 'C:\Users\Public\Documents\UserComputerList.csv' -Delimiter ','
 
-ForEach ($Assignment in $CsvInformation)
+$UserList = $CsvInformation | Select-Object -Property 'Name' -Unique
+
+ForEach ($Assignment in $UserList)
 {
+
+    Write-Host "Getting SamAccountName and SID values..." -ForegroundColor 'Cyan'
+
     [string]$SamAccountName = ($Assignment.Name).Replace(' ','.')
+
     [string]$SID = Get-UserSid -SamAccountName $SamAccountName
-    [string]$C = $Device.ComputerName
 
-    [array]$ExpectedLogonEvents = @()
-    [array]$UsersComputers = $CsvInformation | Where-Object -Property 'Name' -like $Assignment.Name | Select-Object -Property 'ComputerName'
-    [array]$TotalUserLogonEvents = Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`']]"
 
-    If ($TotalUserLogonEvents)
+    Write-Host "Getting computers assigned to $SamAccountName......" -ForegroundColor 'Cyan'
+
+    $ResolveTheseCOmputerNames = $CsvInformation | Where-Object -Property 'Name' -like $Assignment.Name | Select-Object -ExpandProperty 'ComputerName'
+
+
+    Write-Host "Translating computernames to Ip Addresses for searching the event logs." -ForegroundColor 'Cyan'
+
+    ForEach ($Device in $ResolveTheseCOmputerNames)
     {
 
-        ForEach ($Device in $UsersComputers)
+        $Ipv4Address = (Resolve-DnsName -Name $Device -ErrorAction SilentlyContinue).IPAddress
+
+        If ($Ipv4Address -like "*.*.*.*")
         {
 
-            Write-Host "Setting variable for $C's IP Address"
-
-            [string]$SearchEventName = Get-Variable -Name ($C.Replace('-','')) -ValueOnly
-
-            Set-Variable -Name ($C.Replace('-','')) -Value ( (Resolve-DnsName -Name $C).IPAddress)
-
-            Write-Host "Getting a total of logon events for $SamAccountName on $C..."
-
-            [array]$ExpectedLogonEvents += Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`'] and EventData[Data[@Name='IpAddress']=`'$SearchEventName`']]"
-
-
-        } # End ForEach
-
-        If ($ExpectedLogonEvents)
-        {
-
-            Write-Host "Logon events have been found. Comparing total logon events to Expected logon events.. "
-
-            If ($TotalUserLogonEvents.Count -gt $ExpectedLogonEvents.Count)
-            {
-
-                Write-Host "Total events is greater than expected events. Expect an email."
-
-                [array]$DifferenceEvents = Compare-Object -ReferenceObject $TotalUserLogonEvents -DifferenceObject $ExpectedLogonEvents
-
-                [string]$MailBody= "$SamAccountName has signed into a deivce outside their assigned computers. Check logs until I find a nice way to send this information. `n`n$UsersComputers`nSID: $SID"
-
-                Send-MailMessage -From "alert@osbornepro.com" -To "notifyme@osbornepro.com" -Subject "AD Event: Unusual Login Occurred" -Body $MailBody -SmtpServer mail.smtp2go.com
-
-            } # End If
-            Else
-            {
-
-                Write-Host "No unexpected logon events found for $SamAccountName. Hooray!"
-
-            } # End Else
+            [array]$SearchIP += $Ipv4Address
 
         } # End If
 
-        Else
+    } # End ForEach
+
+    [array]$ComputerAssignments = @()
+    [array]$ComputerAssignments = $SharedComputerIPs
+    [array]$ComputerAssignments += $SearchIP
+
+
+    Write-Host "Getting log on events for $SamAccountName. Please wait..." -ForegroundColor 'Cyan'
+
+    [regex]$Ipv4Regex = ‘\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b’
+
+    [array]$UserLogonEvents = @()
+    # This event checks the last 24 hours (86400000)
+    [array]$UserLogonEvents = Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4624 and TimeCreated[timediff(@SystemTime) <= 86400000]] and EventData[Data[@Name='TargetUserName']=`'$SamAccountName`']]" -ErrorAction SilentlyContinue
+
+    [array]$EventLoggedInIps = @()
+    [array]$EventLoggedInIps = $UserLogonEvents.Message -Split "`n" | Select-String -Pattern $Ipv4Regex | Select-Object -Unique
+
+    [array]$UnusualSignInIps = @()
+
+    ForEach ($EventIp in $EventLoggedInIps)
+    {
+
+        $CompareValue = ($EventIp | Out-String).Replace('Source Network Address:	','').Trim()
+
+        If ($CompareValue -notin $ComputerAssignments)
         {
 
-            Write-Host "No logon attempts found for $SamAccountName on $C"
+            $UnusualSignInIps += ($CompareValue)
 
-        } # End Else
+        } # End If
+
+    } # End ForEach
+
+    If ($UnusualSignInIps)
+    {
+
+        Write-Host "Combining users with assigned computers into an object...." -ForegroundColor 'Green'
+
+        [array]$FinalInfo = @()
+        [array]$FinalInfo += New-Object -TypeName 'PSObject' -Property @{Name=($Assignment.Name); AssignedComputers=($ComputerAssignments); UnusualLoginLocations=($UnusualSignInIps) }
+
+        [string]$Name = $Assignment.Name
+
+        $Body += "User                     :  $Name `n"
+        $Body += "Assigned Computers       :  $ComputerAssignments `n"
+        $Body += "Unusual Login Locations  :  $UnusualSignInIps `n"
+
+        Send-MailMessage -From $AlertEmail -To $AlertEmail -Subject "Unusual Login Occurred" -BodyAsHtml -Body $Body -SmtpServer $SmtpServer
 
     } # End If
     Else
     {
 
-        Write-Host "No logon events were found for $SamAccountName"
+        Write-Host "No unexpected logon events found for $SamAccountName" -ForegroundColor 'Green'
 
     } # End Else
-
-    Remove-Variable ExpectedLogonEvents,TotalUserLogonEvents
 
 } # End ForEach
