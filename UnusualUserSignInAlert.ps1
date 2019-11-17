@@ -115,6 +115,8 @@ ForEach ($Assignment in $UserList)
 
     } # End ForEach
 
+    $Body = @()
+
     If ($UnusualSignInIps)
     {
 
