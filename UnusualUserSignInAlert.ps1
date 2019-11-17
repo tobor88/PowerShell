@@ -98,7 +98,8 @@ ForEach ($Assignment in $UserList)
     [array]$EventLoggedInIps = $UserLogonEvents.Message -Split "`n" | Select-String -Pattern $Ipv4Regex | Select-Object -Unique
 
     [array]$UnusualSignInIps = @()
-
+    [array]$$ResolvedIps = @()
+    
     ForEach ($EventIp in $EventLoggedInIps)
     {
 
@@ -108,7 +109,8 @@ ForEach ($Assignment in $UserList)
         {
 
             $UnusualSignInIps += ($CompareValue)
-
+            $ResolvedIps += (Resolve-DnsName -Name $CompareValue -ErrorAction SilentlyContinue).Name
+            
         } # End If
 
     } # End ForEach
@@ -116,16 +118,11 @@ ForEach ($Assignment in $UserList)
     If ($UnusualSignInIps)
     {
 
-        Write-Host "Combining users with assigned computers into an object...." -ForegroundColor 'Green'
-
-        [array]$FinalInfo = @()
-        [array]$FinalInfo += New-Object -TypeName 'PSObject' -Property @{Name=($Assignment.Name); AssignedComputers=($ComputerAssignments); UnusualLoginLocations=($UnusualSignInIps) }
-
         [string]$Name = $Assignment.Name
 
         $Body += "User                     :  $Name `n"
-        $Body += "Assigned Computers       :  $ComputerAssignments `n"
         $Body += "Unusual Login Locations  :  $UnusualSignInIps `n"
+        $Body += "IP Resolved to Hostname  :  $ResolvedIps "
 
         Send-MailMessage -From $AlertEmail -To $AlertEmail -Subject "Unusual Login Occurred" -BodyAsHtml -Body $Body -SmtpServer $SmtpServer
 
