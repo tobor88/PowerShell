@@ -64,7 +64,9 @@ ForEach ($Assignment in $UserList)
 
 
     Write-Host "Translating computernames to Ip Addresses for searching the event logs." -ForegroundColor 'Cyan'
-
+    
+    [array]$SearchIP = @()
+    
     ForEach ($Device in $ResolveTheseCOmputerNames)
     {
 
