@@ -122,7 +122,7 @@ PROCESS
     ElseIf ($DomainAdmins.IsPresent)
     {
 
-        $LdapFilter =  "(&(objectCategory=person)(objectClass=user)((memberOf=CN=Domain Admins,OU=Admin Accounts,DC=usav,DC=org)))"
+        $LdapFilter =  "(&(objectCategory=person)(objectClass=user)((memberOf=CN=Domain Admins,OU=Admin Accounts,DC=Domain,DC=Com)))"
         $Search.SearchRoot = $Domain
         $Search.Filter = $LdapFilter
         $Search.SearchScope = "Subtree"
