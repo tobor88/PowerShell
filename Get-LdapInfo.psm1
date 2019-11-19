@@ -120,7 +120,7 @@ PROCESS
 
             $Object
 
-            If ($Null -ne $LocalAdminPwd)
+            If ($LocalAdminPwd)
             {
 
                 Write-Host "Local Administrator Password obtained! " -ForegroundColor 'Green'
