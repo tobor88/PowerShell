@@ -113,19 +113,7 @@ PROCESS
 
             $Object = $Result.GetDirectoryEntry()
 
-            $DomainControllerHostname = $Object.Name
-
-            $LocalAdminPwd = $null
-            $LocalAdminPwd = $Object.'ms-Mcs-AdmPwd'
-
             $Object
-
-            If ($LocalAdminPwd)
-            {
-
-                Write-Host "Local Administrator Password obtained! " -ForegroundColor 'Green'
-
-            } # End If
 
         } # End ForEach
 
