@@ -67,205 +67,206 @@
 
     C:\PS> Get-LdapInfo -DomainControllers
 
-    # This example gets a list of users in the Domain Admins group
+    # This example gets a list of all the Domain Controllers.
+    If executed as an administrator you will also receive the local admin password under the ms-Mcs-AdmPwd attribute value.
 
     -------------------------- EXAMPLE 2 --------------------------
 
     C:\PS> Get-LdapInfo -AllServers
 
-    # This example displays a list of the domains Domain Controllers. Whene executed as an Administrator you will receive the local admin password
+    # This example lists All Servers in the Domain
 
     -------------------------- EXAMPLE 3 --------------------------
 
     C:\PS> Get-LdapInfo -AllMemberServers
 
-    # This example gets a list of users with trusted delegation (unconstrained delegation)
+    # This example lists all Member Servers in the domain
 
     -------------------------- EXAMPLE 4 --------------------------
 
     C:\PS> Get-LdapInfo -DomainTrusts
 
-    # This example gets a list of users with Logon Scripts
+    # This example lists Federated Trust Domains
 
     -------------------------- EXAMPLE 5 --------------------------
 
     C:\PS> Get-LdapInfo -DomainAdmins
 
-    This example gets a list of enabled users in the environment
+    This example lists all Domain Admins in the domain
 
     -------------------------- EXAMPLE 6 --------------------------
 
     C:\PS> Get-LdapInfo -UACTrusted
 
-    This example gets a list of users who do not require a password to log in
+    This example lists users who are trusted with UAC
 
     -------------------------- EXAMPLE 7 --------------------------
 
     C:\PS> Get-LdapInfo -NotUACTrusted
 
-    This example gets a list of users who do not require a preauthentication for kerberos authentications
+    This example lists users who are not trusted for UAC
 
     -------------------------- EXAMPLE 8 --------------------------
 
     C:\PS> Get-LdapInfo -SPNNamedObjects
 
-    # This example gets a list of users in the Domain Admins group
+    # This example lists SPN users
 
     -------------------------- EXAMPLE 9 --------------------------
 
     C:\PS> Get-LdapInfo -EnabledUsers
 
-    # This example displays a list of the domains Domain Controllers. Whene executed as an Administrator you will receive the local admin password
+    # This example lists all Enabled Users
 
     -------------------------- EXAMPLE 10 --------------------------
 
     C:\PS> Get-LdapInfo -PossibleExecutives
 
-    # This example gets a list of users with trusted delegation (unconstrained delegation)
+    # This example finds users with Direct Reports and no manager possibly indicating an executive
 
     -------------------------- EXAMPLE 11 --------------------------
 
     C:\PS> Get-LdapInfo -LogonScript
 
-    # This example gets a list of users with Logon Scripts
+    # This example lists all users who have logon scripts that execute
 
     -------------------------- EXAMPLE 12 --------------------------
 
     C:\PS> Get-LdapInfo -ListAllOU
 
-    This example gets a list of enabled users in the environment
+    This example lists all of the Domains OUs in Acitve Directory
 
     -------------------------- EXAMPLE 13 --------------------------
 
     C:\PS> Get-LdapInfo -ListComputers
 
-    This example gets a list of users who do not require a password to log in
+    This example lists all Active Directory Computers
 
     -------------------------- EXAMPLE 14 --------------------------
 
     C:\PS> Get-LdapInfo -ListContacts
 
-    This example gets a list of users who do not require a preauthentication for kerberos authentications
+    This example lists all Active Directory Contacts
 
     -------------------------- EXAMPLE 15 --------------------------
 
     C:\PS> Get-LdapInfo -ListGroups
 
-    # This example gets a list of users in the Domain Admins group
+    # This example lists all Active Directory Groups
 
     -------------------------- EXAMPLE 16 --------------------------
 
     C:\PS> Get-LdapInfo -ListContainers
 
-    # This example displays a list of the domains Domain Controllers. Whene executed as an Administrator you will receive the local admin password
+    # This example lists Active Directory Containers
 
     -------------------------- EXAMPLE 17 --------------------------
 
     C:\PS> Get-LdapInfo -ListDomainObjects
 
-    # This example gets a list of users with trusted delegation (unconstrained delegation)
+    # This example lists Active Directory Domain Objects
 
     -------------------------- EXAMPLE 18 --------------------------
 
     C:\PS> Get-LdapInfo -ListBuiltInObjects
 
-    # This example gets a list of users with Logon Scripts
+    # This example list Builtin In Active Directory Objects
 
     -------------------------- EXAMPLE 19 --------------------------
 
     C:\PS> Get-LdapInfo -ListBuiltInContainers
 
-    This example gets a list of enabled users in the environment
+    This example lists Built In Active Directory Containers
 
     -------------------------- EXAMPLE 20 --------------------------
 
     C:\PS> Get-LdapInfo -ChangePasswordAtNextLogon
 
-    This example gets a list of users who do not require a password to log in
+    This example lists users who are set to change their password at next logon
 
     -------------------------- EXAMPLE 21 --------------------------
 
     C:\PS> Get-LdapInfo -PasswordNeverExpires
 
-    This example gets a list of users who do not require a preauthentication for kerberos authentications
+    This example list users who have passwords that never expire
 
     -------------------------- EXAMPLE 22 --------------------------
 
     C:\PS> Get-LdapInfo -NoPasswordRequired
 
-    # This example gets a list of users in the Domain Admins group
+    # This example lists users who do not require a password for sign in
 
     -------------------------- EXAMPLE 23 --------------------------
 
     C:\PS> Get-LdapInfo -NoKerberosPreAuthRequired
 
-    # This example displays a list of the domains Domain Controllers. Whene executed as an Administrator you will receive the local admin password
+    # This example lists users where Kerberos Pre Authentication is not enabled
 
     -------------------------- EXAMPLE 24 --------------------------
 
     C:\PS> Get-LdapInfo -PasswordsThatHaveNotChangedInYears
 
-    # This example gets a list of users with trusted delegation (unconstrained delegation)
+    # This example lists users who have passwords that have not changed in years
 
     -------------------------- EXAMPLE 25 --------------------------
 
     C:\PS> Get-LdapInfo -DistributionGroups
 
-    # This example gets a list of users with Logon Scripts
+    # This example lists all the Distribution Groups in Active Directory
 
     -------------------------- EXAMPLE 26 --------------------------
 
     C:\PS> Get-LdapInfo -SecurityGroups
 
-    This example gets a list of enabled users in the environment
+    This example lists all the Security Groups in Active Directory
 
     -------------------------- EXAMPLE 27 --------------------------
 
     C:\PS> Get-LdapInfo -BuiltInGroups
 
-    This example gets a list of users who do not require a password to log in
+    This example lists all Built In Groups in Active Directory
 
     -------------------------- EXAMPLE 28 --------------------------
 
     C:\PS> Get-LdapInfo -AllGlobalGroups
 
-    This example gets a list of users who do not require a preauthentication for kerberos authentications
+    This example lists all Global Groups in Active Directory
 
     -------------------------- EXAMPLE 29 --------------------------
 
     C:\PS> Get-LdapInfo -DomainLocalGroups
 
-    # This example gets a list of users in the Domain Admins group
+    # This example list Domain Local Groups from Active Directory
 
     -------------------------- EXAMPLE 30 --------------------------
 
     C:\PS> Get-LdapInfo -UniversalGroups
 
-    # This example displays a list of the domains Domain Controllers. Whene executed as an Administrator you will receive the local admin password
+    # This example lists the Universal Groups from Active Directory
 
     -------------------------- EXAMPLE 31 --------------------------
 
     C:\PS> Get-LdapInfo -GlobalSecurityGroups
 
-    # This example gets a list of users with trusted delegation (unconstrained delegation)
+    # This example list Global Security Groups from Active Directory
 
     -------------------------- EXAMPLE 32 --------------------------
 
     C:\PS> Get-LdapInfo -UniversalSecurityGroups
 
-    # This example lists Universal Security Gruops
+    # This example lists Universal Security Gruops from Active Directory
 
     -------------------------- EXAMPLE 32 --------------------------
 
     C:\PS> Get-LdapInfo -DomainLocalSecurityGroups
 
-    # This example gets a list of users with Logon Scripts
+    # This example lists Domain Local Security Groups from Active Directory
 
     -------------------------- EXAMPLE 33 --------------------------
 
     C:\PS> Get-LdapInfo -GlobalDistributionGroups
 
-    This example gets a list of users who do not require a preauthentication for kerberos authentications
+    This example lists Global Distribution Groups from Acitve Directory
 
 #>
 Function Get-LdapInfo {
