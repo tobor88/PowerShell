@@ -13,7 +13,7 @@ Function Get-ReverseShell {
             )] # End Parameter
                 [Alias('IP')]
                 [ValidateNotNullorEmpty()]
-            [IPAddress]$IpAddress
+            [IPAddress]$IpAddress,
 
             [Parameter(
                 Mandatory=$True,
