@@ -9,7 +9,8 @@ Function Get-ReverseShell {
                 Mandatory=$True,
                 Position=0,
                 ValueFromPipeline=$True,
-                ValueFromPipelineByPropertyName = $True
+                ValueFromPipelineByPropertyName = $True,
+                HelpMessage='Enter the IP Address of the attacker machine'
             )] # End Parameter
                 [Alias('IP')]
                 [ValidateNotNullorEmpty()]
@@ -18,7 +19,8 @@ Function Get-ReverseShell {
             [Parameter(
                 Mandatory=$True,
                 Position=1,
-                ValueFromPipeline=$False
+                ValueFromPipeline=$False,
+                HelpMessage='Enter the port the attack machine is listening on'
             )] # End Parameter
                 [Alias('p','P')]
                 [ValidateNotNullorEmpty()]
