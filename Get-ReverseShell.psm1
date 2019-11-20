@@ -12,7 +12,6 @@ Function Get-ReverseShell {
                 ValueFromPipelineByPropertyName = $True,
                 HelpMessage='Enter the IP Address of the attacker machine'
             )] # End Parameter
-                [Alias('IP')]
                 [ValidateNotNullorEmpty()]
             [IPAddress]$IpAddress,
 
@@ -22,7 +21,6 @@ Function Get-ReverseShell {
                 ValueFromPipeline=$False,
                 HelpMessage='Enter the port the attack machine is listening on'
             )] # End Parameter
-                [Alias('p','P')]
                 [ValidateNotNullorEmpty()]
                 [ValidateRange(1,65535)]
             [int32]$Port
