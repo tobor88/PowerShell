@@ -182,7 +182,8 @@
 
     C:\PS> Get-LdapInfo -ChangePasswordAtNextLogon
 
-    This example lists users who are set to change their password at next logon
+    This example lists users who are set to change their password at next logon.DESCRIPTION
+    If a user does not have a "Logon Name" Configured in AD they will be returned with this results as well.
 
     -------------------------- EXAMPLE 21 --------------------------
 
@@ -204,9 +205,9 @@
 
     -------------------------- EXAMPLE 24 --------------------------
 
-    C:\PS> Get-LdapInfo -PasswordsThatHaveNotChangedInYears
+    C:\PS> Get-LdapInfo -PasswordsThatHaveNotChangedInYears | Where-Object -Property Path -notlike "*OU=Disabled*"
 
-    # This example lists users who have passwords that have not changed in years
+    # This example lists users who have passwords that have not changed in years who are also not in a Disabled group
 
     -------------------------- EXAMPLE 25 --------------------------
 
@@ -478,7 +479,7 @@ Function Get-LdapInfo {
     END
     {
 
-        Remove-Variable LdapFilter, Search, Result, Results, Object
+        Remove-Variable LdapFilter, Search, Result, Results, Object -ErrorAction 'SilentlyContinue'
 
         Write-Verbose "LDAP Query complete. "
 
