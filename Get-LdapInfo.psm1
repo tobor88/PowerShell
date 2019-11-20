@@ -1,7 +1,8 @@
 <#
 .SYNOPSIS
     Perform LDAP Queries of the current domain. This requires a user account in order to execute the cmdlet.
-
+    
+    There seems to be an issue querying LDAP while device is connceted over Direct Access
 
 
 .NOTES
@@ -89,76 +90,47 @@ Function Get-LdapInfo {
 BEGIN
 {
 
-    $Domain = New-Object System.DirectoryServices.DirectoryEntry
-    $Search = New-Object System.DirectoryServices.DirectorySearcher
-
-} # End BEGIN
-
-PROCESS
-{
-
     If ($DomainControllers.IsPresent)
     {
 
         $LdapFilter = "(primaryGroupID=516)"
 
-        $Search.SearchRoot = $Domain
-        $Search.Filter = $LdapFilter
-        $Search.SearchScope = "Subtree"
-
-        $Results = $Search.FindAll()
-
-        ForEach ($Result in $Results)
-        {
-
-            $Object = $Result.GetDirectoryEntry()
-
-            $Object
-
-        } # End ForEach
-
     } # End If
-
     ElseIf ($DomainAdmins.IsPresent)
     {
 
         $LdapFilter =  "(&(objectCategory=person)(objectClass=user)((memberOf=CN=Domain Admins,OU=Admin Accounts,DC=Domain,DC=Com)))"
-        $Search.SearchRoot = $Domain
-        $Search.Filter = $LdapFilter
-        $Search.SearchScope = "Subtree"
-
-        $Results = $Search.FindAll()
-
-        ForEach ($Result in $Results)
-        {
-
-            $Object = $Result.GetDirectoryEntry()
-            $Object
-
-        } # End ForEach
-
-    } # End
-
+    
+    } # End ElseIf
     ElseIf ($UAC.IsPresent)
     {
 
         $LdapFilter =  "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
-        $Search.SearchRoot = $Domain
-        $Search.Filter = $LdapFilter
-        $Search.SearchScope = "Subtree"
+        
+    } # End ElseIf
+    
+} # End BEGIN
 
-        $Results = $Search.FindAll()
+PROCESS
+{
 
-        ForEach ($Result in $Results)
-        {
+    $Domain = New-Object System.DirectoryServices.DirectoryEntry
+    $Search = New-Object System.DirectoryServices.DirectorySearcher
+    
+    $Search.SearchRoot = $Domain
+    $Search.Filter = $LdapFilter
+    $Search.SearchScope = "Subtree"
 
-            $Object = $Result.GetDirectoryEntry()
+    $Results = $Search.FindAll()
 
-            $Object
+    ForEach ($Result in $Results)
+    {
 
-        } # End ForEach
+        $Object = $Result.GetDirectoryEntry()
 
-    } # End If
+        $Object
+
+    } # End ForEach
 
 } # End PROCESS
 
