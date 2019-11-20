@@ -65,9 +65,9 @@
 
     -------------------------- EXAMPLE 1 --------------------------
 
-    C:\PS> Get-LdapInfo -DomainControllers
+    C:\PS> Get-LdapInfo -DomainControllers | Select-Object -Property 'Name','ms-Mcs-AdmPwd'
 
-    # This example gets a list of all the Domain Controllers.
+    # This example gets a list of all the Domain Controllers and displays the local admin password. (Requires Administrator Execution to get password attribute )
     If executed as an administrator you will also receive the local admin password under the ms-Mcs-AdmPwd attribute value.
 
     -------------------------- EXAMPLE 2 --------------------------
