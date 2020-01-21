@@ -153,7 +153,6 @@ Function Invoke-PingSweep
             [string]$IP = "$ClassC.$i"
 
             If ($PsVersionTable.PSEdition -ne 'Core')
-<<<<<<< HEAD
             {
 
                 If ($IP -notlike $LocalIPAddress)
@@ -217,96 +216,90 @@ Function Invoke-PingSweep
                 } # End If
 
                 If (Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Quiet)
-=======
-            {
-
-                If ($IP -notlike $LocalIPAddress)
->>>>>>> 4ac445578333b9ca6d1cfb28e66ba75ba9e9f0df
                 {
 
-                    $Filter = 'Address="{0}" and Timeout={1}' -f $IP, $Timeout
-
-                    If ((Get-WmiObject "Win32_PingStatus" -Filter $Filter).StatusCode -eq 0)
+                    If ($IP -notlike $LocalIPAddress)
                     {
 
-                        Write-Host $IP -ForegroundColor "Yellow"
+                        $Filter = 'Address="{0}" and Timeout={1}' -f $IP, $Timeout
 
-                    } # End If
-
-                } # End If
-
-            } # End If
-            ElseIf ($PsVersionTable.PSEdition -eq 'Core')
-            {
-
-                If ($i -eq 0)
-                {
-
-                    Write-Host "ATTENTION: Results obtained much faster on a non Core version of PowerShell. " -ForegroundColor Yellow
-
-                } #End If
-
-                If ($IP -notlike $LocalIPAddress)
-                {
-
-                    If ( ($Source -like 'Singular') -or ($Source -like 'Multiple') )
-                    {
-
-                        If ($Source -like 'Singular')
-                        {
-
-                            $SourceIP = "$ClassC." + ($End - 1)
-
-                            Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Source $SourceIP -Quiet
-
-                        } # End If
-                        ElseIf ($Source -like 'Multiple')
-                        {
-
-                            For ($x = ($Start - 1); $x -le ($End - $Start); $x++)
-                            {
-
-                                $SourceIP = "$ClassC.$x"
-
-                                Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Source $SourceIP -Quiet
-
-                            } # End For
-
-                        } # End ElseIf
-
-                    } # End If
-                    ElseIf (!($Source))
-                    {
-
-                        If (Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Quiet)
+                        If ((Get-WmiObject "Win32_PingStatus" -Filter $Filter).StatusCode -eq 0)
                         {
 
                             Write-Host $IP -ForegroundColor "Yellow"
 
                         } # End If
 
-                    } # End ElseIf
-                    Else
-                    {
-
-                        Write-Error "INPUT ERROR: '-Source' value can only be Singular or Multiple. Execute command 'Get-Help Invoke-PingSweep -FullDetails' for more info."
-
-                        Break
-
-                    } # End Else
+                    } # End If
 
                 } # End If
+                ElseIf ($PsVersionTable.PSEdition -eq 'Core')
+                {
 
-            } # End ElseIf
+                    If ($i -eq 0)
+                    {
+
+                        Write-Host "ATTENTION: Results obtained much faster on a non Core version of PowerShell. " -ForegroundColor Yellow
+
+                    } #End If
+
+                    If ($IP -notlike $LocalIPAddress)
+                    {
+
+                        If ( ($Source -like 'Singular') -or ($Source -like 'Multiple') )
+                        {
+
+                            If ($Source -like 'Singular')
+                            {
+
+                                $SourceIP = "$ClassC." + ($End - 1)
+
+                                Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Source $SourceIP -Quiet
+
+                            } # End If
+                            ElseIf ($Source -like 'Multiple')
+                            {
+
+                                For ($x = ($Start - 1); $x -le ($End - $Start); $x++)
+                                {
+
+                                    $SourceIP = "$ClassC.$x"
+
+                                    Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Source $SourceIP -Quiet
+
+                                } # End For
+
+                            } # End ElseIf
+
+                        } # End If
+                        ElseIf (!($Source))
+                        {
+
+                            If (Test-Connection -BufferSize 16 -ComputerName $IP -Count $Count -Quiet)
+                            {
+
+                                Write-Host $IP -ForegroundColor "Yellow"
+
+                            } # End If
+
+                        } # End ElseIf
+                        Else
+                        {
+
+                            Write-Error "INPUT ERROR: '-Source' value can only be Singular or Multiple. Execute command 'Get-Help Invoke-PingSweep -FullDetails' for more info."
+
+                            Break
+
+                        } # End Else
+
+                    } # End If
 
         #    New-Object -TypeName System.Management.Automation.PSCustomObject -Property @(IPAddress =)
 
-<<<<<<< HEAD
-        } # End ElseIf
+                } # End ElseIf
 
-    } # End For
-=======
+            } # End For
+
         } # End For
->>>>>>> 4ac445578333b9ca6d1cfb28e66ba75ba9e9f0df
 
 } # End Function Invoke-PingSweep
