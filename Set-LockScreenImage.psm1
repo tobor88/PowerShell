@@ -1,11 +1,42 @@
 <#
+.NAME 
+	Set-LockScreenImage
+
+
 .SYNOPSIS
 	Set-LockScreenImage function is used to set the lock screen image of a remote computer.
 	The image is copied from the file server and than set as the lock screen image.
 
+
 .DESCRIPTION
 	Set-LockScreenImage sets the lock screen image for company computers.
 	I recommend using the Verbose paramter to monitor progress
+
+
+.PARAMETERS
+    -ComputerName <String[]>
+        Specifies the computers on which the command runs. The default is the local computer.
+
+        Type the NETBIOS name, IP address, or fully qualified domain name of one or more computers in a comma-separated list. To specify the local computer, type the computer name, localhost, or a dot (.).
+
+        On Windows Vista and later versions of the Windows operating system, to include the local computer in the value of ComputerName , you must open Windows PowerShell by using the Run as administrator option.
+
+        Required?                    false
+        Position?                    0
+        Default value                None
+        Accept pipeline input?       False
+		Accept wildcard characters?  false
+		
+
+    -Path <String[]>
+        Specifies the path to an item. Get-Content gets the content of the item. Wildcards are permitted.
+
+        Required?                    true
+        Position?                    1
+        Default value                None
+        Accept pipeline input?       True (ByPropertyName)
+        Accept wildcard characters?  false
+
 
 .NOTES
 	Author: Rob Osborne
@@ -13,16 +44,26 @@
 	Contact: rosborne@osbornepro.com
 	https://roberthosborne.com
 
-.EXAMPLE
-	Set-LockScreenImage -Path \\files\networkshare$
 
+.EXAMPLE
+    -------------------------- EXAMPLE 1 --------------------------
+
+    C:\PS> Set-LockScreenImage -Path \\files\networkshare$
 	The above commands changes the lock screen image for the local computer
 
-.EXAMPLE
-	Set-LockScreenImage -ComputerName Dirka1 -Path \\files\networkshare$ -Verbose
+
+	-------------------------- EXAMPLE 2 --------------------------
+	
+	C:\PS> Set-LockScreenImage -ComputerName Dirka1 -Path \\files\networkshare$ -Verbose
 
 	The above command changes the lock screen image for a remote computer verbosely
 
+.INPUTS
+	System.String[], System.String[]
+
+
+.OUTPUTS
+	None
 #>
 
 Function Set-LockScreenImage
@@ -34,7 +75,7 @@ Function Set-LockScreenImage
 			 HelpMessage = "Enter the name of a remote computer. Leave blank to change local host's lock screen.")]
 		[string[]]$ComputerName,
 
-			 [Parameter(Mandatory = $false,
+			 [Parameter(Mandatory = $True,
 			   Position = 1,
 			   HelpMessage = "Enter the network directory location of the new lock screen image. Leave blank to use the default image.")]
 		[string[]]$Path) # End param
@@ -61,7 +102,7 @@ Function Set-LockScreenImage
 
 			$Session = New-PsSession -ComputerName $ComputerName -Credential $Cred -EnableNetworkAccess
 
-			Invoke-Command -Session $Session -ScriptBlock { New-PsDrive -Name Q -PSProvider FileSystem -Root '\\networkshare\files$\Backgrounds' -Description "Temp mapping for lock screen image transfer." -Scope Global -Persist -Verbose -Credential (Get-Credential -Message "Credentials need to be entered again on the remote machine because it is a different machine.") }
+			Invoke-Command -Session $Session -ScriptBlock { New-PsDrive -Name Q -PSProvider FileSystem -Root $Path -Description "Temp mapping for lock screen image transfer." -Scope Global -Persist -Verbose -Credential (Get-Credential -Message "Credentials need to be entered again on the remote machine because it is a different machine.") }
 
 		} # End Else
 
@@ -139,7 +180,7 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 
 		Write-Verbose "Creating copy location..."
 
-		New-PSDrive -Name Q -Root '\\networkshare\files$\Backgrounds' -PSProvider FileSystem -Scope Global -Persist -Description "Temp mapping for lock screen image file." | Out-Null
+		New-PSDrive -Name Q -Root $Path -PSProvider FileSystem -Scope Global -Persist -Description "Temp mapping for lock screen image file." | Out-Null
 
 		$LocalImageLocation = 'C:\Users\Public\Pictures\LockScreenImage.png'
 
