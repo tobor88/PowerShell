@@ -1,4 +1,5 @@
 # IMPORTANT NOTE: I made this to spped up the process of testing a BOF in the PWK course. All this script does is restart a service if it is not running and opens Immunity Debuger.
+# Also close out Immunity Debugger before running this script. This should display the still open PowerShell window for you to start everything up again. 
 
 # Run script as administrator
 param([switch]$Elevated)
