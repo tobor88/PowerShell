@@ -67,7 +67,7 @@ PROCESS
         {
 
             Write-Verbose "[*] Attempting to connect to port 636 on $Computadora"
-            $LDAPS = [ADSI]("LDAP://" + $ComputerName + ":636")
+            $LDAPS = [ADSI]("LDAP://" + $Computadora + ":636")
 
         }  # End Try
         Catch
@@ -92,7 +92,7 @@ PROCESS
         }  # End Else
 
         $Obj += New-Object -TypeName PSObject -Property @{Server="$Computadora";Protocol="$Protocol"}
-
+	
     }  # End ForEach
 
 }  # End PROCESS
