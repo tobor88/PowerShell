@@ -1,4 +1,143 @@
 # This script can be used to map network shares automatically by having the task run on startup. It maps drive shares based on group memberships
+$Domain = Read-Host "Enter domain here. If your domain is DOMAIN.COM enter DOMAIN"
+
+<#
+.NAME
+    Convert-SID
+
+
+.SYNOPSIS
+    This cmdlet is for translating an SID to a username or a username to an SID.
+
+
+.SYNTAX
+    Convert-SID [-Username] <string[]> [<CommonParameters>]
+
+    Convert-SID [-SID] <string[]> [<CommonParameters>]
+
+
+.PARAMETER Username
+    If the username parameter value is specified it this cmdlet will result in the SID value of the user.
+
+.PARAMETER SID
+    If the SID parameter value is specified this cmdlet will result in the username value associated with the SID.
+
+
+.EXAMPLE
+    -------------------------- EXAMPLE 1 --------------------------
+    C:\PS> $Pipe = New-Object PSObject -Property @{SID='S-1-5-21-2860287465-2011404039-792856344-500'}
+    C:\PS> $Pipe | Convert-SID
+
+    -------------------------- EXAMPLE 2 --------------------------
+    C:\PS> Convert-SID -Username 'j.smith'
+    C:\PS> Convert-SID -Username j.smith@domain.com
+
+    -------------------------- EXAMPLE 3 --------------------------
+    C:\PS> Convert-SID -SID S-1-5-21-2860287465-2011404039-792856344-500
+    C:\PS> Convert-SID -SID 'S-1-5-21-2860287465-2011404039-792856344-500'
+
+
+.NOTES
+    Author: Robert H. Osborne
+    Alias: tobor
+    Contact: rosborne@osbornepro.com
+
+
+.LINK
+    https://github.com/tobor88
+    https://www.powershellgallery.com/profiles/tobor
+    https://roberthosborne.com
+
+
+.INPUTS
+    System.Array of Usernames or SIDs can be piped to this cmdlet based on property value name.
+
+
+.OUTPUTS
+    System.Management.Automation.PSCustomObject
+
+#>
+Function Convert-SID {
+    [CmdletBinding(DefaultParameterSetName = 'Username')]
+        param(
+            [Parameter(
+                ParameterSetName='Username',
+                Position=0,
+                Mandatory=$True,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True)]  # End Parameter
+            [ValidateNotNullOrEmpty()]
+            [Alias('User','SamAccountName')]
+            [String[]]$Username,
+
+            [Parameter(
+                ParameterSetName='SID',
+                Position=0,
+                Mandatory=$True,
+                ValueFromPipeLine=$True,
+                ValueFromPipeLineByPropertyName=$True)]  # End Parameter
+            [ValidateNotNullOrEmpty()]
+            [ValidatePattern('S-\d-(?:\d+-){1,14}\d+')]
+            [String[]]$SID)  # End param
+
+
+BEGIN
+{
+
+    [array]$Obj = @()
+
+    Write-Verbose "[*] Obtaining username and SID information for defined value"
+
+}  # End BEGIN
+PROCESS
+{
+
+    For ($i = 0; $i -lt (Get-Variable -Name ($PSCmdlet.ParameterSetName) -ValueOnly).Count; $i++)
+    {
+
+        $Values = Get-Variable -Name ($PSCmdlet.ParameterSetName) -ValueOnly
+
+        New-Variable -Name ArrayItem -Value ($Values[$i])
+
+        Switch ($PSCmdlet.ParameterSetName)
+        {
+            SID {$ObjSID = New-Object -TypeName System.Security.Principal.SecurityIdentifier($ArrayItem); $ObjUser = $ObjSID.Translate([System.Security.Principal.NTAccount])}
+            Username {$ObjUser = New-Object -TypeName System.Security.Principal.NTAccount($ArrayItem); $ObjSID = $ObjUser.Translate([System.Security.Principal.SecurityIdentifier])}
+        }  # End Switch
+
+        $Obj += New-Object -TypeName "PSObject" -Property @{
+            Username = $ObjUser.Value
+            SID = $ObjSID.Value
+        }   # End Property
+
+        Remove-Variable -Name ArrayItem
+
+    }  # End For
+
+}  # End PROCESS
+END
+{
+
+    Write-Output $Obj
+
+}  # End END
+
+}  # End Function Convert-SID
+
+
+$First,$Last = ($env:USERNAME).Split(".")
+$Drivename = $First[0]+$Last
+$Token = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$GroupSIDs = $Token.Groups
+$GroupNames = @()
+ForEach ($G in $GroupSIDs) 
+{ 
+
+    $GroupNames += (Convert-SID -SID $G).Username.Replace('$DOMAIN\','')
+    
+}  # End ForEach
+
+
 $First,$Last = ($env:USERNAME).Split(".")
 $DriveName = $First[0]+$Last
 # DriveName is for mapping personal drives using the First Name Initial + Lastname naming context. Change to whatever you like
@@ -10,14 +149,12 @@ $DriveHashTable.BullsShare += "C"
 $DriveHashTable.BullsShare += "Bulls"
 $DriveHashTable.BullsShare += "\\files.$env:USERDNSDOMAIN\Bulls$"
 $DriveHashTable.BullsShare += "\\files\Bulls$"
-$DriveHashTable.BullsShare += 'Michael Jordan', 'Scottie Pippen', 'Steve Kerr', 'Dennis Rodman', 'Ron Harper', 'Toni Kukoc'
 
 $DriveHashTable.KnickShare = @()
 $DriveHashTable.KnickShare += "N"
 $DriveHashTable.KnickShare += "Knicks"
 $DriveHashTable.KnickShare += "\\files.$env:USERDNSDOMAIN\Knicks$\$Drivename"
 $DriveHashTable.KnickShare += "\\files\Knicks$\$Drivename"
-$DriveHashTable.KnickShare += 'John Starks', 'Allan Houston', 'Patrick Ewing', 'Charles Oakley', 'Chris Childs', 'Charlie Ward'
 
 $DriveHashTable.UserShare = @()
 $DriveHashTable.UserShare += "U"
@@ -33,10 +170,6 @@ ForEach ($Drive in $DriveHashTable.Keys)
     $DriveLocation = $DriveHashTable.$Drive.Item(2)
     $DriveBackupLocation = $DriveHashTable.$Drive.Item(3)
 
-    Write-Output "[*] Starting drive mapping check for $Drive"
-    $GroupMembership = Get-WmiObject -Query "SELECT * FROM Win32_GroupUser WHERE GroupComponent=`"Win32_Group.Domain='$env:USERDNSDOMAIN',Name='$DrivesGroup'`""
-
-
     Write-Output "[*] Checking group membership"
 
     $GroupMembers = @()
@@ -48,8 +181,9 @@ ForEach ($Drive in $DriveHashTable.Keys)
         $GroupMembers += ("$Name`n").Replace("""","")
 
     }  # End ForEach
-
-    If ($GroupMembers.Contains("$env:USERNAME") -or $GroupMembers.Contains("$env:USERNAME`n"))
+    
+            # Knicks is the group name                  # This knicks is the Key Variable name
+    If (($GroupNames.Contains('Knicks') -and $Drive -eq 'Knicks') -or ($GroupNames.Contains('Bulls') -and $Drive -eq 'Bulls') -or ($GroupNames.Contains('Staff') -and $Drive -eq 'User Share Drive'))
     {
 
         If (!(Get-PsDrive -Name $DrivesLetter -ErrorAction 'SilentlyContinue') )
@@ -58,7 +192,7 @@ ForEach ($Drive in $DriveHashTable.Keys)
             Try
             {
 
-		            Write-Output "[*] Mapping drive $DriveLetter"
+		Write-Output "[*] Mapping drive $DriveLetter"
                 New-PSDrive -Name $DrivesLetter -Root $DriveLocation -PSProvider 'FileSystem' -Persist -Scope 'Global' -ErrorAction 'SilentlyContinue'
 
             } # End try
@@ -66,7 +200,7 @@ ForEach ($Drive in $DriveHashTable.Keys)
             Catch
             {
 
-		            Write-Output "[!] Failed to map $DriveLetter. Attempting backup location"
+		Write-Output "[!] Failed to map $DriveLetter. Attempting backup location"
                 New-PSDrive -Name $DrivesLetter -Root $DriveBackupLocation -PSProvider 'FileSystem' -Persist -Scope 'Global' -ErrorAction 'SilentlyContinue'
 
             } # End Catch
