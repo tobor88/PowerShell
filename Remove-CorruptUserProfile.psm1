@@ -11,7 +11,7 @@ Function Remove-CorruptUserProfile
         ) # End param
 
 # The below variable is used at line 89
-$Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
+$Domain = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()).Name
 
 # PART ONE
     Function Copy-BackupProfile
@@ -25,28 +25,27 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
                 ValueFromPipelineByPropertyName=$True,
                 HelpMessage = "Enter a SamAccountName for the user profile. Example: rob.osborne"
             )] # End Parameter
-        [string[]]$SamAccountName) # End param
+        [String[]]$SamAccountName) # End param
+
+BEGIN
+{
 
         If (Test-Path "C:\Users\$SamAccountName")
         {
 
             Write-Verbose "$SamAccountName folder has been found. Renaming profile folder to $SamAccountName.old..."
-
             Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force -ErrorAction "SilentlyContinue" | Out-Null
 
             Write-Verbose "Renaming AppData folder to prevent any corruptions from being moved to the new profile."
-
             Rename-Item -Path "C:\Users\$SamAccountName.old\AppData" -Destination "C:\Users\$SamAccountName.old\OLDAppData" -Force -ErrorAction "SilentlyContinue" | Out-Null
 
-            Write-Host "If the user uses sticky notes they are located here: `n`tC:\Users\$SamAccountName\AppData\Roaming\Microsoft\Sticky Notes " -ForegroundColor "Green"
+            Write-Output "[*] If the user uses sticky notes they are located here: `n`tC:\Users\$SamAccountName\AppData\Roaming\Microsoft\Sticky Notes "
 
         } # End If
         Else
         {
 
-            Write-Warning "No user directory found at C:\Users\$SamAccountName Ending script."
-
-            break
+            Throw "[!] No user directory found at C:\Users\$SamAccountName Ending script."
 
         } # End Else
 
@@ -54,6 +53,9 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
 
     Copy-BackupProfile -SamAccountName $SamAccountName -Verbose
 
+}  # End BEGIN
+PROCESS
+{
 
 # PART TWO
     Function Get-UserSid {
@@ -68,7 +70,6 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
         [string[]]$SamAccountName) # End param
 
         $ObjUser = New-Object System.Security.Principal.NTAccount($SamAccountName)
-
         $ObjSID = $ObjUser.Translate([System.Security.Principal.SecurityIdentifier])
 
         If (!($null -eq $ObjSID))
@@ -102,7 +103,6 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
         [string[]]$SID) # End param
 
         $ProfileListPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$SID"
-
         $ProfileGuidPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileGUID"
 
         If (Test-Path -Path $ProfileListPath)
@@ -118,7 +118,7 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
         Else
         {
 
-            Write-Warning "$ProfileListPath location not found."
+            Write-Output "[!] $ProfileListPath location not found."
 
         } # End Else
 
@@ -145,18 +145,24 @@ $Domain = Read-Host "What domain is the user a part of? Example: OsbornePro"
         Else
         {
 
-            Write-Warning "$ProfileGuidPath location not found."
+            Write-Output "[!] $ProfileGuidPath location not found."
 
         } # End Else
 
     } # End Function Remove-CorruptUserProfile
 
+}  # End PROCESS
+END
+{
+
     Remove-CorruptUserProfileRegistryItem -SID $SID -Verbose
 
-    Write-Host "Press Enter to Restart Computer now or press Ctrl+C to complete the rest of this task later." -ForegroundColor "Red"
+    Write-Output "[*] Press Enter to Restart Computer now or press Ctrl+C to complete the rest of this task later."
 
-    pause
+    Pause
 
     Restart-Computer -Force
+   
+ }  # End END
 
 } # End Function Remove-CorruptedUserProfile
