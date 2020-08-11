@@ -1,39 +1,57 @@
 <#
-.Synopsis
-    Get-PublicIp is used to get the public ip address of the local device.
+.SYNOPSIS
+    This cmdlet is used to get the public ip address of the local device.
+
 
 .DESCRIPTION
     Get-PublicIp gets the public IP address of the local machine and displays other info as well such as Provider, City, etc.
+    This is done thanks to an API at https://ipinfo.io/json
+
 
 .NOTES
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
+    
+    
+.LINKS
     https://roberthosborne.com
+    https://osbornepro.com
+    https://github.com/tobor88
+    https://gitlab.com/tobor88
+    
 
 .EXAMPLE
-   Get-PublicIP
+    ----------------- EXAMPLE 1 --------------------
+   PS> Get-PublicIP
+   
+.INPUTS
+    None
+   
+   
+.OUTPUTS
+    PSCustomObject
+    
 #>
 
 Function Get-PublicIp {
     [CmdletBinding()]
         param()
 
-    $IpInfo = Invoke-RestMethod https://ipinfo.io/json
+    $IpInfo = Invoke-RestMethod -Uri https://ipinfo.io/json
 
-    If ($null -like $IpInfo) {
+    If ($Null -like $IpInfo) 
+    {
 
       $IpInfo = Invoke-RestMethod http://ipinfo.io/json
 
-    } # End If
+    }  # End If
+    Else 
+    {
 
-    Else {
+      Throw "Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."
 
-      Write-Warning "Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."
-
-      break
-
-    } # End Else
+    }  # End Else
 
     $Obj = New-Object -TypeName "PsObject" -Property @{IPv4 = $IpInfo.Ip
                                               Hostname = $IpInfo.Hostname
