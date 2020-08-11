@@ -85,7 +85,7 @@ Function Resolve-DirectAccessCollectLogs {
             [Switch][Bool]$Restart
         )  # End param
 
-$RegistryPath = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NcaSvc"
+$RegistryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\NcaSvc"
 $DWORDName = "SvcHostSplitDisable"
 $Permission = "SeAssignPrimaryTokenPrivilege"
 
