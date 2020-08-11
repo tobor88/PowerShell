@@ -71,18 +71,18 @@ Function Resolve-DirectAccessCollectLogs {
     [CmdletBinding()]
         param(
             [Parameter(
-                ParameterSetName="Permission"
-                Mandatory=$True,
+                ParameterSetName="Permission",
+                Mandatory=$True)]  # End Parameter
             [Switch][Bool]$PermissionChange,
 
             [Parameter(
-                ParameterSetName="Split"
-                Mandatory=$True,
+                ParameterSetName="Split",
+                Mandatory=$True)]  # End Parameter
             [Switch][Bool]$DisableSplitProcess,
 
             [Parameter(
-                Mandatory=$False,
-            [Switch][Bool]$Restart)]  # End Parameter
+                Mandatory=$False)]  # End Parameter
+            [Switch][Bool]$Restart
         )  # End param
 
 $RegistryPath = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NcaSvc"
