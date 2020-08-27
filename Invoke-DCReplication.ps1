@@ -188,7 +188,7 @@ END
         Write-Verbose "Executing command over WinRM"
         Invoke-Command -ArgumentList $Domain -HideComputerName $PDC -ScriptBlock {
 
-            Get-ADReplicationPartnerMetadata -Target "$Args" -Scope Domain | Select-Object -Property "Server","LastReplicationSuccess" | Format-Table -AutoSize
+            Get-ADReplicationPartnerMetadata -Target "$Args" -Scope Domain | Select-Object -Property "Server","LastReplicationSuccess"
 
         }  # End Invoke-Command
 
