@@ -49,8 +49,8 @@
 
 
 .OUTPUTS
-System.Management.Automation.PSRemotingJob, System.Management.Automation.Runspaces.PSSession, or the output of the
-invoked command
+    System.Management.Automation.PSRemotingJob, System.Management.Automation.Runspaces.PSSession, or the output of the
+    invoked command
     This cmdlet returns a job object, if you use the AsJob parameter. If you specify the InDisconnectedSession
     parameter, Invoke-Command returns a PSSession object. Otherwise, it returns the output of the invoked command,
     which is the value of the ScriptBlock parameter.
