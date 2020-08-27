@@ -161,7 +161,7 @@ END
         If ($SkipAllCertChecks.IsPresent)
         {
 
-            Write-Verboe "Executing command over WinRM over HTTPS and ignoring certification warnings"
+            Write-Verbose "Executing command over WinRM over HTTPS and ignoring certification warnings"
             Invoke-Command -ArgumentList $Domain -HideComputerName $PDC -UseSSL -SessionOption $SessionOption -ScriptBlock {
 
                 Get-ADReplicationPartnerMetadata -Target "$Args" -Scope Domain | Select-Object -Property "Server","LastReplicationSuccess" | Format-Table -AutoSize
@@ -172,7 +172,7 @@ END
         Else
         {
 
-            Write-Verboe "Executing command over WinRM over HTTPS"
+            Write-Verbose "Executing command over WinRM over HTTPS"
             Invoke-Command -ArgumentList $Domain -HideComputerName $PDC -UseSSL -ScriptBlock {
 
                 Get-ADReplicationPartnerMetadata -Target "$Args" -Scope Domain | Select-Object -Property "Server","LastReplicationSuccess" | Format-Table -AutoSize
