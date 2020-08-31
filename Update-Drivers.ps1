@@ -138,12 +138,10 @@ PROCESS
     If ($Updates.Count -eq 0)
     {
     
-        Write-Output "[*] All drivers are up to date"
-        
-        Exit 0
-    
+        Write-Output "[*] All drivers are up to date" 
+
     }  # End If 
-    If (($Updates.Count -gt 0) -and ($SearchResult.Updates.Where({$_.Filter -like $Name})))
+    ElseIf (($Updates.Count -gt 0) -and ($SearchResult.Updates.Where({$_.Filter -like $Name})))
     {
 
         Write-Verbose "Searching for $Name in available updates"
@@ -182,7 +180,7 @@ PROCESS
         {
 
             Write-Verbose "[*] Downloading $Name"
-
+            
 
             Write-Verbose "[*] Installing $Name"
 
