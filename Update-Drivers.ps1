@@ -135,6 +135,14 @@ PROCESS
     $SearchResult = $Searcher.Search($Criteria)
     $Updates = $SearchResult.Updates
 
+    If ($Updates.Count -eq 0)
+    {
+    
+        Write-Output "[*] All drivers are up to date"
+        
+        Exit 0
+    
+    }  # End If 
     If (($Updates.Count -gt 0) -and ($SearchResult.Updates.Where({$_.Filter -like $Name})))
     {
 
