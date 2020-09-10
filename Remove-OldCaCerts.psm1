@@ -1,48 +1,47 @@
 <#
 .SYNOPSIS
-    Remove-OldCaCerts is a cmdlet that is used to remove all old CA Certificates from a computer.
+This cmdlet is a cmdlet that is used to remove all old CA Certificates from a computer.
 
-.SYNTAX
-    Remove-OldCaCerts [-ComputerName] <string[] Hostname or FQDN> -CAIssuer <string[] Distinguished Name of CA Issuer> [-Verbose]
 
 .DESCRIPTION
-    Remove an old Certificate Authorities certificates from a computer. This is accomplished by defining a computer to delete the old CA Certs from.DESCRIPTION
-    If no computername is defined the local computer becomes the default computer to remove old CA Certificates from.DESCRIPTION
-    The CA issuer also needs to be defined. This can be found in your envrionemt by opening an certs in MMC local computer certificates Add in and viewing the CA Issuer.DESCRIPTION
-    The format of the CA issuer needs to be in Distinguished name format. Example: 'CN=CAIssuer,DC=domain,DC=com'
+Remove an old Certificate Authorities certificates from a computer. This is accomplished by defining a computer to delete the old CA Certs from.DESCRIPTION
+If no computername is defined the local computer becomes the default computer to remove old CA Certificates from.DESCRIPTION
+The CA issuer also needs to be defined. This can be found in your envrionemt by opening an certs in MMC local computer certificates Add in and viewing the CA Issuer.DESCRIPTION
+The format of the CA issuer needs to be in Distinguished name format. Example: 'CN=CAIssuer,DC=domain,DC=com'
 
-.PARAMETERS
-    -ComputerName <String[]>
-            Specifies a remote computer. The default is the local computer.
 
-            Type the NetBIOS name, an Internet Protocol (IP) address, or a fully qualified domain name (FQDN) of a remote computer. To specify the local computer, type the computer name, a dot (.), or localhost.
+.PARAMETER ComputerName
+Specifies a remote computer. The default is the local computer. Type the NetBIOS name, an Internet Protocol (IP) address, or a fully qualified domain name (FQDN) of a remote computer. To specify the local computer, type the computer name, a dot (.), or localhost.
 
-            This parameter does not rely on Windows PowerShell remoting. You can use the ComputerName parameter of Remove-OldCaCerts even if your computer is not configured to run remote commands.
-
-            Required?                    false
-            Position?                    named
-            Default value                None
-            Accept pipeline input?       True
-            Accept wildcard characters?  false
 
 .INPUTS
-    Computer Name
+Computer Name
+This cmdlet accepts an input objects specified with the ComputerName parameter.
 
-    This cmdlet accepts an input objects specified with the ComputerName parameter.
 
 .OUTPUTS
-    No output. This deletes old CA Certificates
+No output. This deletes old CA Certificates
+
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+Author: Rob Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://roberthosborne.com
+https://osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.hackthebox.eu/profile/52286
+https://www.linkedin.com/in/roberthosborne/
+https://www.youracclaim.com/users/roberthosborne/badges
 
 .EXAMPLE
-    -------------------------- EXAMPLE 1 --------------------------
-   C:\PS> Remove-OldCaCerts -ComputerName Desktop01 -CAIssuer <string[] Distinguished Name of CA Issuer> [-Verbose]
-   This command deletes all CA Certificates off a remote computer in the Cert:\LocalMachine\My drive
+Remove-OldCaCerts -ComputerName Desktop01 -CAIssuer <string[] Distinguished Name of CA Issuer> [-Verbose]
+# This command deletes all CA Certificates off a remote computer in the Cert:\LocalMachine\My drive
 
 #>
 
