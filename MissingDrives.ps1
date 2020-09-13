@@ -1,5 +1,5 @@
 # This script can be used to map network shares automatically by having the task run on startup. It maps drive shares based on group memberships
-$Domain = Read-Host "Enter domain here. If your domain is DOMAIN.COM enter DOMAIN"
+$Domain = $env:USERDNSDOMAIN.Split('.')
 
 <#
 .NAME
