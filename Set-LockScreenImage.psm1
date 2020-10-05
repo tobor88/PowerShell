@@ -7,7 +7,7 @@ This function is used to set the lock screen image of a remote computer. The ima
 This cmdlet sets the lock screen image for company computers. I recommend using the Verbose paramter to monitor progress
 
 
-.PARAMETERS ComputerName
+.PARAMETER ComputerName
 Specifies the computers on which the command runs. The default is the local computer.
 Type the NETBIOS name, IP address, or fully qualified domain name of one or more computers in a comma-separated list. To specify the local computer, type the computer name, localhost, or a dot (.).
 On Windows Vista and later versions of the Windows operating system, to include the local computer in the value of ComputerName , you must open Windows PowerShell by using the Run as administrator option.
