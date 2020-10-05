@@ -1,69 +1,55 @@
 <#
-.NAME 
-	Set-LockScreenImage
-
-
 .SYNOPSIS
-	Set-LockScreenImage function is used to set the lock screen image of a remote computer.
-	The image is copied from the file server and than set as the lock screen image.
+This function is used to set the lock screen image of a remote computer. The image is copied from the file server and than set as the lock screen image.
 
 
 .DESCRIPTION
-	Set-LockScreenImage sets the lock screen image for company computers.
-	I recommend using the Verbose paramter to monitor progress
+This cmdlet sets the lock screen image for company computers. I recommend using the Verbose paramter to monitor progress
 
 
-.PARAMETERS
-    -ComputerName <String[]>
-        Specifies the computers on which the command runs. The default is the local computer.
+.PARAMETERS ComputerName
+Specifies the computers on which the command runs. The default is the local computer.
+Type the NETBIOS name, IP address, or fully qualified domain name of one or more computers in a comma-separated list. To specify the local computer, type the computer name, localhost, or a dot (.).
+On Windows Vista and later versions of the Windows operating system, to include the local computer in the value of ComputerName , you must open Windows PowerShell by using the Run as administrator option.
 
-        Type the NETBIOS name, IP address, or fully qualified domain name of one or more computers in a comma-separated list. To specify the local computer, type the computer name, localhost, or a dot (.).
-
-        On Windows Vista and later versions of the Windows operating system, to include the local computer in the value of ComputerName , you must open Windows PowerShell by using the Run as administrator option.
-
-        Required?                    false
-        Position?                    0
-        Default value                None
-        Accept pipeline input?       False
-		Accept wildcard characters?  false
-		
-
-    -Path <String[]>
-        Specifies the path to an item. Get-Content gets the content of the item. Wildcards are permitted.
-
-        Required?                    true
-        Position?                    1
-        Default value                None
-        Accept pipeline input?       True (ByPropertyName)
-        Accept wildcard characters?  false
+.PARAMETER Path
+Specifies the path to an item. Get-Content gets the content of the item. Wildcards are permitted.
 
 
 .NOTES
-	Author: Rob Osborne
-	Alias: tobor
-	Contact: rosborne@osbornepro.com
-	https://roberthosborne.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+https://roberthosborne.com
 
 
 .EXAMPLE
-    -------------------------- EXAMPLE 1 --------------------------
-
-    C:\PS> Set-LockScreenImage -Path \\files\networkshare$
-	The above commands changes the lock screen image for the local computer
+Set-LockScreenImage -Path \\files\networkshare$
+# The above commands changes the lock screen image for the local computer
 
 
-	-------------------------- EXAMPLE 2 --------------------------
-	
-	C:\PS> Set-LockScreenImage -ComputerName Dirka1 -Path \\files\networkshare$ -Verbose
-
-	The above command changes the lock screen image for a remote computer verbosely
+.EXAMPLE	
+Set-LockScreenImage -ComputerName Dirka1 -Path \\files\networkshare$ -Verbose
+# The above command changes the lock screen image for a remote computer verbosely
 
 .INPUTS
-	System.String[], System.String[]
+System.String[], System.String[]
 
 
 .OUTPUTS
-	None
+None
+
+
+.LINK
+https://roberthsoborne.com
+https://osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.youracclaim.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
 #>
 
 Function Set-LockScreenImage
@@ -73,15 +59,15 @@ Function Set-LockScreenImage
 		[Parameter(Mandatory = $false,
 			 Position = 0,
 			 HelpMessage = "Enter the name of a remote computer. Leave blank to change local host's lock screen.")]
-		[string[]]$ComputerName,
+		[String[]]$ComputerName,
 
 			 [Parameter(Mandatory = $True,
 			   Position = 1,
 			   HelpMessage = "Enter the network directory location of the new lock screen image. Leave blank to use the default image.")]
-		[string[]]$Path) # End param
+		[String[]]$Path) # End param
 
 
-	If ($null -ne $ComputerName)
+	If ($Null -ne $ComputerName)
 	{
 
 		$TestConnection = Test-Connection -ComputerName $ComputerName -Count 1
@@ -96,12 +82,11 @@ Function Set-LockScreenImage
 		} # End If
 		Else
 		{
+		
 			$Cred = Get-Credential -Message "Enter admin credentials to make changes on the remote machine."
 
 			Write-Verbose "Connection test to $ComputerName was successful..."
-
 			$Session = New-PsSession -ComputerName $ComputerName -Credential $Cred -EnableNetworkAccess
-
 			Invoke-Command -Session $Session -ScriptBlock { New-PsDrive -Name Q -PSProvider FileSystem -Root $Path -Description "Temp mapping for lock screen image transfer." -Scope Global -Persist -Verbose -Credential (Get-Credential -Message "Credentials need to be entered again on the remote machine because it is a different machine.") }
 
 		} # End Else
@@ -111,15 +96,12 @@ Function Set-LockScreenImage
 			Write-Verbose "Setting lock screen image for $ComputerName"
 
 			Write-Verbose "Creating copy location..."
-
+			
 			$LocalImageLocation = 'C:\Users\Public\Pictures\LockScreenImage.png'
-
 			$RegistryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
-
 			$PropertyName = "LockScreenImage"
 
 			Write-Verbose "Copying image to local location..."
-
 			Copy-Item -Path "Q:\LockScreenImage.png" -Destination $LocalImageLocation -Force | Out-Null
 
 			If (!(Test-Path -Path $RegistryPath))
@@ -135,7 +117,6 @@ Function Set-LockScreenImage
 			{
 
 				Write-Verbose "Creating Item Property"
-
 				New-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
 
 			} # End If
@@ -143,7 +124,6 @@ Function Set-LockScreenImage
 			Write-Verbose "Setting Item Property..."
 
 			Set-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
-
 			Get-ItemProperty -Path $RegistryPath -Name $PropertyName
 
 			Write-Verbose "Updating lock screen image change..."
@@ -183,20 +163,16 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 		New-PSDrive -Name Q -Root $Path -PSProvider FileSystem -Scope Global -Persist -Description "Temp mapping for lock screen image file." | Out-Null
 
 		$LocalImageLocation = 'C:\Users\Public\Pictures\LockScreenImage.png'
-
 		$RegistryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
-
 		$PropertyName = "LockScreenImage"
 
 		Write-Verbose "Copying image to local location..."
-
 		Copy-Item -Path "Q:\LockScreenImage.png" -Destination $LocalImageLocation -Force | Out-Null
 
 		If (!(Test-Path -Path $RegistryPath))
 		{
 
 			Write-Verbose "Registry path $RegistryPath does not exist. Creating entry..."
-
 			New-Item -Path $RegistryPath -Name LockScreenImage -Force | Out-Null
 
 		} # End If
@@ -205,15 +181,12 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 		{
 
 			Write-Verbose "Creating Item Property"
-
 			New-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
 
 		} # End If
 
 		Write-Verbose "Setting Item Property..."
-
 		Set-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
-
 		Get-ItemProperty -Path $RegistryPath -Name $PropertyName
 
 		Write-Verbose "Updating lock screen image change..."
