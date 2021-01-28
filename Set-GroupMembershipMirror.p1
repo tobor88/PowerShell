@@ -101,6 +101,14 @@ BEGIN
         
         
     }  # End Else
+    
+    $Port = 389
+    If ($UseLDAPS.IsPresent)
+    {
+    
+        $Port = 636
+    
+    }  # End If
 
 }  # End BEGIN
 PROCESS
