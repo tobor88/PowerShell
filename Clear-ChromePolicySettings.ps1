@@ -26,7 +26,7 @@ Clear-ChromePolicySettings -ComputerName DESKTOP01.domain.com,DESKTOP02.domain.c
 Clear-ChromePolicySettings -ComputerName DESKTOP01.domain.com,DESKTOP02.domain.com -UseSSL
 # This example clears the group policy settings that affect the Chrome browser on remote devices DESKTOP01 and DESKTOP02 using WinRM over HTTPS
 
-    
+
 .NOTES
 Author: Robert H. Osborne
 Alias: tobor
@@ -93,13 +93,13 @@ Function Clear-ChromePolicySettings {
                     Write-Output "[!] FAILURE: $Path was unable to be deleted"
 
                 }  # End If
-                Else 
+                Else
                 {
 
                     Write-Output "[*] SUCCESS: Deleted settings at $Path"
 
                 }  # End Else
-                
+
             }  # End ForEach
 
         }  # End Switch Local
@@ -118,7 +118,7 @@ Function Clear-ChromePolicySettings {
 
                 Write-Verbose "Stopping open Chrome processes"
                 Get-Process -Name chrome -ErrorAction SilentlyContinue | Stop-Process | Out-Null
-                
+
                 Write-Verbose "Removing Chrome Policy Settings from $env:COMPUTERNAME"
                 Remove-Item -Path $Args -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
 
@@ -127,15 +127,15 @@ Function Clear-ChromePolicySettings {
 
                     If ((Test-Path -Path $Path) -and ($Path -ne 'HKLM:\Software\Google\Chrome'))
                     {
-    
+
                         Write-Output "[!] FAILURE: $Path was unable to be deleted"
-    
+
                     }  # End If
-                    Else 
+                    Else
                     {
-    
+
                         Write-Output "[*] SUCCESS: Deleted settings at $Path"
-    
+
                     }  # End Else
 
                 }  # End ForEach

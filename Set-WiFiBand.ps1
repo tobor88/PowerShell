@@ -15,10 +15,10 @@ Define the 802.11 Standard you want to set the band to use.
 
 
 .EXAMPLE
-Set-WiFiBand -InterfaceIndex 11 -Band 2.4GHz -Standard 
+Set-WiFiBand -InterfaceIndex 11 -Band 2.4GHz -Standard
 # This example decodes Base64 to a string in ASCII format
-    
-    
+
+
 .NOTES
 Author: Robert H. Osborne
 Alias: tobor
@@ -52,7 +52,7 @@ Function Set-WiFiBand {
                 Mandatory=$False,
                 ValueFromPipeline=$False)]  # End Parameter
             [String[]]$AdapterName,
-           
+
             [Parameter(
                 Mandatory=$True,
                 ValueFromPipeline=$False,
@@ -68,9 +68,9 @@ Function Set-WiFiBand {
         $Adapter = Get-NetAdapter -Name "W*Fi*" | Select-Object -First 1
 
     }  # End If
-    
+
     $802Values = Get-NetAdapterAdvancedProperty -Name $Adapter.Name | Where-Object -Property DisplayName -like "*802.11*" | Select-Object -Property "DisplayName","DisplayValue","RegistryValue","ValidDisplayValues","ValidRegistryValues"
-    
+
     Switch ($Standard)
     {
 
@@ -102,10 +102,10 @@ Function Set-WiFiBand {
                 Set-NetAdapterAdvancedProperty -Name $Adapter.Name -DisplayName "Wireless Mode" -DisplayValue $Standard
                 Write-Output "[*] Modifying $DisplayValue51 to $Standard"
 
-            }  # End If   
+            }  # End If
 
         }  # End If
-        Else 
+        Else
         {
 
             $DisplayValue51 = $V.DisplayValue
@@ -118,10 +118,10 @@ Function Set-WiFiBand {
                 Set-NetAdapterAdvancedProperty -Name $Adapter.Name -DisplayName "Wireless Mode" -DisplayValue $Standard
                 Write-Output "[*] Modifying $DisplayValue51 to $Standard"
 
-            }  # End If            
+            }  # End If
 
         }  # End Else
-    
+
     }  # End ForEach
 
 }  # End Function Set-WiFiBand
