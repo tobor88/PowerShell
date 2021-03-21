@@ -17,13 +17,13 @@ $SharedSecret = ( -Join ((0x30..0x39) + ( 0x41..0x5A) + ( 0x61..0x7A) | Get-Rand
 
 Write-Output "`n`t[-] SHARED SECRET : $SharedSecret`n"
 
-Write-Output "[*] Creating RADIUS client groups. This can be a subnet or single IP for clients allowed to authenticate to the RADIUS server"
+Write-Output "[*] Creating RADIUS client groups. This can be a subnet or single IP for RADIUS clients allowed to authenticate to the RADIUS server. (Not computers, an example would be RADIUS proxies, Network Access Servers, and Access Points)"
 $Loop = 'y'
 While ($Loop -like "y*")
 {
 
-    $Address = Read-Host -Prompt "Define a single IP address or subnet range used by your Wireless network/clients EXAMPLE: 10.0.0.0/24"
-    $Name = Read-Host -Prompt "Define a name for this client/subnet to make it identifiable to you. EXAMPLE: NJ Wireless Clients"
+    $Address = Read-Host -Prompt "Define a single IP address or subnet range used EXAMPLE: 10.0.0.0/24"
+    $Name = Read-Host -Prompt "Define a name for this client/subnet to make it identifiable to you. EXAMPLE: NJ Wireless APs"
 
     New-NpsRadiusClient -Address $Address -Name $Name -SharedSecret $SharedSecret
 
