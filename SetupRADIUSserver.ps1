@@ -1,7 +1,6 @@
 # Easily Invoke DC Replication to access newly created certificate tempaltes right away
 # LINK : https://github.com/tobor88/PowerShell/blob/master/Invoke-DCReplication.ps1
 
-
 # This script is used to help set up the RADIUS configuration on Windows Server 2019
 Write-Output "[*] Installing Network Policy Authentication Server and management tools on $env:COMPUTERNAME"
 Install-WindowsFeature -Name "NPAS" -IncludeManagementTools
@@ -32,4 +31,8 @@ While ($Loop -like "y*")
 }  # End While
 
 Write-Warning "Save the Shared Secret value $SharedSecret for later use if you have not already done so"
+
+Write-Output "[*] If you would like to ensure TLSv1.2 is used by the Supplicants you can issue the below PowerShell command to force TLSv1.2 in the EAPOL communication"
+Write-Output "New-ItemProperty -Path 'HKLM:SYSTEM\CurrentControlSet\Services\RasMan\PPP\EAP\13' -Name TlsVersion -Value 3072"
+
 Pause
