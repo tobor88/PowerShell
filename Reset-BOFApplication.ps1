@@ -50,10 +50,10 @@
     Reset-BOFApplication -Name "Sync Breeze Enterprise"
     This example resets the Sync Breeze service by its "Name: Sync Breeze Enterprise" and open immunity debugger from "C:\Users\Public\Desktop\Immunity Debugger.lnk"
 
-    
+
 .DESCRIPTION
     IMPORTANT NOTE: I made this to spped up the process of testing a BOF in the PWK course. All this script does is restart a service if it is not running and opens Immunity Debuger.
-    Also close out Immunity Debugger before running this script. This should display the still open PowerShell window for you to start everything up again. 
+    Also close out Immunity Debugger before running this script. This should display the still open PowerShell window for you to start everything up again.
 
 
 .INPUTS
@@ -76,7 +76,7 @@
 .LINK
     https://github.com/tobor88
     https://www.powershellgallery.com/profiles/tobor
-    https://roberthosborne.com
+    https://osbornepro.com
 
 #>
 Function Reset-BOFApplication {

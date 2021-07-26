@@ -5,17 +5,17 @@
     The user will need to be granted permissions to change this setting and also be the groups owner. Or you can jsut do it for them.
 
 .DESCRIPTION
-    A recent Microsoft Office Update has changed -HiddenFromExchangeClientsEnabled from default false to default true. 
+    A recent Microsoft Office Update has changed -HiddenFromExchangeClientsEnabled from default false to default true.
     This cmdlet can be uesd to change -HiddenFromExchangeClientsEnabled to false for all newly created groups
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
-   Disable-HiddenGroups 
+   Disable-HiddenGroups
 
 .EXAMPLE
    Disable-HiddenGroups -Verbose
@@ -31,11 +31,11 @@ Function Disable-HiddenGroups {
         if (Get-PSSession | Where-Object -Property ConfigurationName -like 'Microsoft.Exchange') {
 
             Remove-PSSession -Session *
-            
+
         } # End if
 
         $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential $cred -Authentication Basic -AllowRedirection
- 
+
         Write-Verbose 'Importing Exchange Online Cmdlets'
 
         Import-PSSession $Session
@@ -45,13 +45,13 @@ Function Disable-HiddenGroups {
     } # End BEGIN
 
     PROCESS {
-        
+
         try {
 
             Write-Verbose "Obtaining list of all Office365 Team Display Names `n Please wait......."
 
             $UnifiedGroup = Get-UnifiedGroup | Select-Object -Property DisplayName
-   
+
         } # End Try
 
         catch {
@@ -64,7 +64,7 @@ Function Disable-HiddenGroups {
 
     } # End PROCESS
 
-    END { 
+    END {
 
         Write-Verbose "Successfully found your Office365 Groups. `nIssuing Command to prevent hiding Office 365 groups from Outlook."
 
@@ -75,7 +75,7 @@ Function Disable-HiddenGroups {
             Write-Verbose "$G `nCompleted"
 
         } # End Foreach
-        
+
         pause
 
     } # End END

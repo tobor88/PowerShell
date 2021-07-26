@@ -10,7 +10,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
     Add-SharedEmailPermission -Identity <string[] UserPrincipalName> -Mailbox <string[] Shared Email Address> [-SendAs] [-FullAccess] [-Verbose]

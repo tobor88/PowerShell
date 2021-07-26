@@ -1,19 +1,19 @@
 <#
 .Synopsis
-    Hide-PowerShellScriptPassword is a cmdlet that is used to create a couple of keys that can be used to prevent storing a password 
+    Hide-PowerShellScriptPassword is a cmdlet that is used to create a couple of keys that can be used to prevent storing a password
     in clear text inside of a PowerShell script. It creates and AES encrypted file contents and key to unlock the secret and never
     display the password in clear text. This should be run as an administrator.
 
 .DESCRIPTION
     Create multiple files that can be used to prevent the usage of clear text passwords stored in clear text.
     This should be run as an administrator.
-    Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generating-a-20-character-hex-string-with-powershell/ 
+    Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generating-a-20-character-hex-string-with-powershell/
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
    Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
@@ -27,68 +27,68 @@ Function Hide-PowerShellScriptPassword {
         param() # End param
 
     BEGIN {
-    
+
        $KeyFilePath = C:\Users\Public\Documents\Keys
-       
+
        $AESPasswordPath = C:\Users\Public\Documents\Password
-    
+
         Function Get-RandomHexNumber{
-            param( 
+            param(
                 [int] $length = 20,
                 [string] $chars = "0123456789ABCDEF") # End param
-                
+
         $Bytes = New-object "System.Byte[]" $Length
-        
+
         $Rnd = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
-        
+
         $Rnd.GetBytes($Bytes)
-        
+
         $Result = ""
-        
+
         1..$Length | Foreach {
-        
-            $Result += $Chars[ $Bytes[$_] ForEach-Object $Chars.Length ]    
-            
+
+            $Result += $Chars[ $Bytes[$_] ForEach-Object $Chars.Length ]
+
         } # End Foreach
-        
+
         $Result
-        
+
         } # End Function Get-RandomHexNumber
-        
+
     } # End BEGIN
-        
+
     PROCESS {
-    
+
         Write-Verbose "Creating a random 32-bit key and storing it to a file. (Maximum Key Size is 32)
 
         $Var = Get-RandomHexNumber -Length 20
 
         $KeyFile = New-Item -ItemType File -Name $Var -Path $KeyFilePath
 
-        $Key = New-Object Byte[] 32 
+        $Key = New-Object Byte[] 32
 
         [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($Key)
 
-        $Key | Out-File $KeyFile 
-        
+        $Key | Out-File $KeyFile
+
         Write-Verbose "Encryption key file has been created."
-        
+
     } # End PROCESS
 
     END {
 
         Write-Verbose "Invoking the stored key to create the encrypted password"
-        
+
         $Pass = Read-Host -Prompt "Enter the password you want to AES encrypt for a script"
-        
-        $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath  
-        
+
+        $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath
+
         $KeyFile = "$KeyFilePath\$Var"
-        
+
         $Key = Get-Content $KeyFile
-        
+
         $Password = "$Pass" | ConvertTo-SecureString -AsPlainText -Force
-        
+
         $Password | ConvertFrom-SecureString -key $Key | Out-File $PasswordFile
 
         Write-Host "Use the below lines to insert your encrypted credentials into the script"

@@ -12,7 +12,7 @@
     Written by Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .SYNTAX
     Restart-PrintSpooler -Pattern <string[DesktopNamingConvention]> -User <string SamAccountName> -To <string Email address> -From <string Email Address> -SmtpServer <string {IPv4 Address | FQDN} [-Verbose]

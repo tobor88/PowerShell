@@ -33,7 +33,7 @@ Contact: rosborne@osbornepro.com
 
 
 .LINK
-https://roberthsoborne.com
+https://osbornepro.com
 https://writeups.osbornepro.com
 https://btps-secpack.com
 https://github.com/tobor88
@@ -56,26 +56,26 @@ Function Set-GroupMembershipMirror {
     [CmdletBinding()]
         param(
             [Parameter(
-                Mandatory=$True, 
+                Mandatory=$True,
                 Position=0,
                 ValueFromPipeline=$False,
                 HelpMessage="Define a group by its name that contains the members you want added to a new group.")]  # End Parameter
             [string]$Group,
 
              [Parameter(
-                Mandatory=$True, 
+                Mandatory=$True,
                 Position=1,
                 ValueFromPipeLine=$False,
                 HelpMessage="Define the name of a group you want members added too.")]  # End Parameter
             [string]$NewGroup,
-            
+
             [Parameter(
                 Mandatory=$False)]  # End Parameter
             [Switch][Bool]$UseLDAPS
-            
+
         )  # End param
 
-BEGIN 
+BEGIN
 {
 
     $DomainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
@@ -87,9 +87,9 @@ BEGIN
 
     If ( ($GroupFound) -and ($NewGroupFound) )
     {
-        
+
         Write-Verbose "[*] Both defined groups were successfully discovered in AD"
-        
+
         $FindGroup = Get-ADGroup -Identity $GroupFound.DistinguishedName -Server $PDC -Properties *
         $NewGroupDN = $NewGroupFound.DistinguishedName
 
@@ -98,22 +98,22 @@ BEGIN
     {
 
         Throw "The group name you specified was not found in AD"
-        
-        
+
+
     }  # End Else
-    
+
     $Port = 389
     If ($UseLDAPS.IsPresent)
     {
-    
+
         $Port = 636
-    
+
     }  # End If
 
 }  # End BEGIN
 PROCESS
 {
-    
+
     Write-Verbose "[*] Getting member properties"
     ForEach ($Member in $FindGroup.member)
     {
@@ -130,11 +130,11 @@ PROCESS
         $DN = $Member.DistinguishedName
         $FullName = $Member.Name
 
-        $Management = [adsi]"LDAP://$PDC:$Port/$NewGroupDN" 
+        $Management = [adsi]"LDAP://$PDC:$Port/$NewGroupDN"
         $User = "LDAP://$PDC:$Port/$DN"
 
         Write-Output "[*] Adding $FullName to $Group Group"
-        $Management.Add($User) 
+        $Management.Add($User)
 
     }  # End ForEach
 

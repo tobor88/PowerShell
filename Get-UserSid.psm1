@@ -12,7 +12,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .INPUTS
     This cmdlet accepts value from the pipeline if it uses the property SamAccountName
@@ -21,7 +21,7 @@
     This cmdlet returns a PSObject containing a users SID value.
     IsPublic    IsSerial    Name     BaseType
     --------    --------    ----    --------
-    True        True        String  System.Object          
+    True        True        String  System.Object
 
 .EXAMPLE
     -----------------------EXAMPLES------------------------------

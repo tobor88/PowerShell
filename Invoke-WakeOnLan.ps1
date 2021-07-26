@@ -10,9 +10,9 @@
 
 .DESCRIPTION
     Invoke-WakeOnLan sends a Wake On LAN packet to a machine's MAC address(s) that you specify.
- 
 
-.PARAMETER 
+
+.PARAMETER
     -LinkLayerAddress [<String[]>]
         Specifies an array of link-layer addresses. The WOL packet gets sent to the link-layer addresses you specify.
 
@@ -40,25 +40,25 @@
     Invoke-WakeOnLan
     This example sends a wake on lan packet in to the broadcast MAC address FFFFFFFFFF
 
- 
+
 .INPUTS
     None
- 
+
 
 .OUTPUTS
     None
- 
+
 
 .NOTES
     Author: Robert H. Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 #>
 Function Invoke-WakeOnLan {
     [CmdletBinding()]
-        param( 
+        param(
             [Parameter(
                 Mandatory=$False,
                 Position=0,
@@ -66,25 +66,25 @@ Function Invoke-WakeOnLan {
                 HelpMessage="MAC address of target machine to wake up")]
             [ValidatePattern("^([0-9A-Fa-f]{2}){5}([0-9A-Fa-f]{2})$")]
             [string]$Mac = "FFFFFFFFFF")  # End param
- 
- 
+
+
     Set-StrictMode -Version Latest
 
     Try
     {
 
         $Broadcast = ([System.Net.IPAddress]::Broadcast)
- 
+
         Write-Verbose "Creating UDP object"
         $UdpClient = New-Object -TypeName Net.Sockets.UdpClient
         $IPEndPoint = New-Object -TypeName Net.IPEndPoint $Broadcast, 9
- 
+
 
         $MacAddress = [Net.NetworkInformation.PhysicalAddress]::Parse($Mac.ToUpper())
- 
+
         Write-Verbose "Building the WOL Packet"
         $Packet =  [Byte[]](,0xFF*6)+($MacAddress.GetAddressBytes()*16)
- 
+
         Write-Verbose "Broadcasting UDP packets to the IP endpoint of the machine"
         $UdpClient.Send($Packet, $Packet.Length, $IPEndPoint) | Out-Null
         $UdpClient.Close()

@@ -16,7 +16,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
    Search-ForCompromise -ComputerName $ComputerName -Verbose

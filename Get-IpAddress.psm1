@@ -10,7 +10,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
     Get-IpAddress
@@ -32,5 +32,5 @@ Function Get-IpAddress
         Write-Warning "No network IPv4 Addresses are configured"
 
     } # End Catch
-    
+
 } # End Function Get-IpAddress

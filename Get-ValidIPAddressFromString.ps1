@@ -29,8 +29,8 @@ Contact: rosborne@osbornepro.com
 
 
 .LINK
-https://roberthsoborne.com
 https://osbornepro.com
+https://writeups.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
@@ -58,13 +58,13 @@ Function Get-ValidIPAddressFromString {
                 ValueFromPipelineByPropertyName=$False,
                 HelpMessage="`n[H] Enter a string to extract the IPv4 address out of `n[E] EXAMPLE: Log File 8/6/2020 10.10.10.10. DENY TCP")]  # End Parameter
             [String]$String,
-        
+
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$True,
                 ValueFromPipeline=$False)]  # End Parameter
             [String]$Path)  # End param
-       
+
 
     $Obj = @()
     $Regex=‘(?<Address>((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))’
@@ -79,24 +79,24 @@ Function Get-ValidIPAddressFromString {
 
                 If (($Line -Match $Regex) -and ($Obj -notcontains $Matches.Address))
                 {
-    
+
                         $Obj += $Matches.Address
-        
+
                 }  # End If
 
 
 
             }  # End ForEach
-            
+
             Return $Obj
-        
+
         }  # End File Switch
 
         'Line' {
-        
+
             If ($String -Match $Regex)
             {
-                
+
                 $Obj = $Matches.Address
 
             }  # End If
@@ -105,6 +105,6 @@ Function Get-ValidIPAddressFromString {
 
         }  # End Default Switch
 
-    }  # End Switch 
+    }  # End Switch
 
 }  # End Function Get-ValidIPAddressFromString

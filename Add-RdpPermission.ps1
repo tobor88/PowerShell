@@ -1,15 +1,15 @@
 <#
 .Synopsis
-    Add-RdpPermission is a cmdlet that is used for adding RDP permissions onto a remote computer for a Domain user. 
+    Add-RdpPermission is a cmdlet that is used for adding RDP permissions onto a remote computer for a Domain user.
 
 .DESCRIPTION
     Adds RDP access on a computer for a defined Domain user.
-    
+
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
    Add-RdpPermission -ComputerName $ComputerName -AdUser $SamAccountUserName
@@ -39,16 +39,16 @@ Function Add-RdpPermission {
 
 ) # End param
 
-    Invoke-Command -ComputerName $ComputerName -ScriptBlock { 
-                   
-                       net LOCALGROUP "Remote Desktop Users" /ADD "$AdUser" 
-                   
+    Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+
+                       net LOCALGROUP "Remote Desktop Users" /ADD "$AdUser"
+
                        net LOCALGROUP "Remote Desktop Users"
 
                        Write-Host "If you have received an error message you either will need to run the command as an adminstrator or the user is already a member of allowed RDP users."
-                   
+
                        Read-Host "Press Enter to Exit"
-           
+
     } # End Invoke-Command
 
 } # End Function

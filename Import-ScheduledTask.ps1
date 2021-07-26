@@ -28,7 +28,7 @@ Import-ScheduledTask -Path C:\Windows\Temp\TaskImportName.xml -TaskName "My Task
 # This example imports a scheduled task xml file and creates a task on the local device
 
 .EXAMPLE
-Import-ScheduledTask -Path C:\Windows\Temp\TaskImportName.xml -TaskName "My Task" -TaskPath "\" -User SYSTEM -ComputerName 'DC01.osbornepro.com', '10.0.1.1' 
+Import-ScheduledTask -Path C:\Windows\Temp\TaskImportName.xml -TaskName "My Task" -TaskPath "\" -User SYSTEM -ComputerName 'DC01.osbornepro.com', '10.0.1.1'
 # This example imports a scheduled task xml file and creates a task on DC01.domain.com and 10.0.1.1
 
 
@@ -47,8 +47,8 @@ Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask
 
 
 .LINK
-https://roberthosborne.com
 https://osbornepro.com
+https://writeups.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
@@ -94,7 +94,7 @@ Function Import-ScheduledTask {
             [String[]]$ComputerName = $env:COMPUTERNAME
         )  # End param
 
-    
+
     $Xml = Get-Content -Path $Path | Out-String
 
     ForEach ($C in $ComputerName)

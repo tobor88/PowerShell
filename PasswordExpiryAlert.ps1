@@ -9,8 +9,8 @@
   Contact: rosborne@osbornepro.com
 
 .LINKS
-  https://roberthosborne.com
   https://osbornepro.com
+  https://writeups.osbornepro.com
   https://github.com/tobor88
   https://gitlab.com/tobor88
   https://www.powershellgallery.com/profiles/tobor
@@ -55,17 +55,17 @@ td {
         background-color: #ffffff;
 }
 </style>
-"@ # End CSS 
+"@ # End CSS
 
-ForEach ($Users in $UserDetails) 
+ForEach ($Users in $UserDetails)
 {
 
-    $ExpirationDate = $Users.ExpiryDate 
+    $ExpirationDate = $Users.ExpiryDate
 
     If (($ExpirationDate -eq $TodaysDate) -or ($ExpirationDate -eq $TodaysDate.AddDays(1)) -or ($ExpirationDate -eq $TodaysDate.AddDays(2)))
     {
 
-        $ExpiredPasswords += $Users 
+        $ExpiredPasswords += $Users
 
         $ToWhom = $Users.DisplayName
 
@@ -73,18 +73,18 @@ ForEach ($Users in $UserDetails)
         $NoteLine1 = "This Message was Sent on $(Get-Date -Format 'MM/dd/yyyy HH:mm:ss') from IT as a friendly reminder."
         $PostContent1 = "<br><p><font size='2'><i>$NoteLine1</i></font>"
         $MailBody1 = $Users | ConvertTo-Html -Head $Css -PostContent $PostContent1 -PreContent $PreContent1 -Body "Attention $ToWhom, <br><br>If you have received this email your sign in password has expired. <br><br>You can reset your password using the following link: <a href='https://account.activedirectory.windowsazure.com/ChangePassword.aspx?BrandContextID=O365&ruO365='>HERE</a> <br><br>If you are in the office on a company device press Ctrl + Alt + Del and click the Change Password button. If you are using the VPN you will need to connect to the VPN before changing your password. <br><br><hr><br>" | Out-String
-        
+
         # Alerts IT by sending an email
         $From1 = $Users.Mail | Out-String
 
-        Try 
+        Try
         {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REQUIRED: Your $EnvDomain Password Has Expired" -BodyAsHtml -Body $MailBody1 -SmtpServer $SmtpServer -Priority High
-        
+
         } # End Try
 
-        Catch 
+        Catch
         {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REQUIRED: Your $EnvDomain Password Has Expired" -BodyAsHtml -Body $MailBody1 -SmtpServer $SmtpServer -Priority High
@@ -92,13 +92,13 @@ ForEach ($Users in $UserDetails)
             Send-MailMessage -From $From -To $ToAdmin -Subject "Forward This Email Alert to $From1. Auto Send Failed" -BodyAsHtml -Body $MailBody1 -SmtpServer $SmtpServer
 
         } # End Catch
-  
+
     } # End if
 
-    If (($TodaysDate -ge $ExpirationDate.AddDays(-15)) -and ($TodaysDate -le $ExpirationDate)) 
+    If (($TodaysDate -ge $ExpirationDate.AddDays(-15)) -and ($TodaysDate -le $ExpirationDate))
     {
 
-        $ExpiringSoon += $Users 
+        $ExpiringSoon += $Users
 
         $ToWho = $Users.DisplayName
 
@@ -109,14 +109,14 @@ ForEach ($Users in $UserDetails)
 
         $From = $Users.Mail | Out-String
 
-        Try 
+        Try
         {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REQUIRED: Your $EnvDomain Password is Expiring Soon" -BodyAsHtml -Body $MailBody -SmtpServer $SmptServer -Priority Normal
-        
+
         } # End Try
 
-        Catch 
+        Catch
         {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REUQIRED: Your $EnvDomain Password is Expiring Soon" -BodyAsHtml -Body $MailBody -SmtpServer $SmptServer -Priority Normal
@@ -127,30 +127,30 @@ ForEach ($Users in $UserDetails)
 
     } # End Elseif
 
-    Else 
+    Else
     {
 
         Write-Output "[*] No passwords expiring in the next 14 days or less."
 
     } # End Else
- 
+
 } # End Foreach
 
 
-If ($ExpiredPasswords) 
+If ($ExpiredPasswords)
 {
 
-    $MBody1 = $ExpiredPasswords | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password has expired notification.<br><br><hr><br>" | Out-String 
+    $MBody1 = $ExpiredPasswords | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password has expired notification.<br><br><hr><br>" | Out-String
 
     Send-MailMessage -From $From -To $ToAdmin -Subject "Users Whos Passwords Have Expired" -BodyAsHtml -Body $MBody1 -SmtpServer $SmtpServer
-  
+
 } # End if
-       
+
 
 If ($ExpiringSoon)
-{    
-        
-    $MBody = $ExpiringSoon | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password exipring notification.<br><br><hr><br>" | Out-String 
+{
+
+    $MBody = $ExpiringSoon | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password exipring notification.<br><br><hr><br>" | Out-String
 
     Send-MailMessage -From $From -To $ToAdmin -Subject "Users Who Received Password Expiring Notifications" -BodyAsHtml -Body $MBody -SmtpServer $SmptServer
 

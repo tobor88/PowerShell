@@ -12,26 +12,26 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    
-    
+
+
 .LINKS
-    https://roberthosborne.com
     https://osbornepro.com
+    https://writeups.osbornepro.com
     https://github.com/tobor88
     https://gitlab.com/tobor88
-    
+
 
 .EXAMPLE
     ----------------- EXAMPLE 1 --------------------
    PS> Get-PublicIP
-   
+
 .INPUTS
     None
-   
-   
+
+
 .OUTPUTS
     PSCustomObject
-    
+
 #>
 
 Function Get-PublicIp {
@@ -40,13 +40,13 @@ Function Get-PublicIp {
 
     $IpInfo = Invoke-RestMethod -Uri https://ipinfo.io/json
 
-    If ($Null -like $IpInfo) 
+    If ($Null -like $IpInfo)
     {
 
       $IpInfo = Invoke-RestMethod http://ipinfo.io/json
 
     }  # End If
-    Else 
+    Else
     {
 
       Throw "Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."

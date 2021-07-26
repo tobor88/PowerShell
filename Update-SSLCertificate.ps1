@@ -4,9 +4,9 @@ This cmdlet has the following requirements
  - OpenSSL : This cmdlet requires openssl to be saved in one of the $env:PATH locations. OpenSSL is used to extract certificates from the PFX file. PFX file needs to be password protected
  - PFX File : This cmdlet requires a PFX file to be saved somewhere locally on the machine this cmdlet is being run from
  - WinRM : WinRM needs to be enabled in the environment in order to execute the needed commands on remote computers
- - LetsEncrypt : IMPORTANT: I assume this is being used with a wildcard LetsEncrypt certificate. If you are using a different 3rd party provider you will need to modify the Select-Object -Skip <Value> to fix your requirements which is used to convert OpenSSL extracted certificates into useful certificates 
+ - LetsEncrypt : IMPORTANT: I assume this is being used with a wildcard LetsEncrypt certificate. If you are using a different 3rd party provider you will need to modify the Select-Object -Skip <Value> to fix your requirements which is used to convert OpenSSL extracted certificates into useful certificates
 This cmdlet works by extracting the public certificate, private key certificate, and CA chain certificates from a PFX file using the password you provide and PFX file you define
-This will also restart the service(s) if you define the -Service parameter. 
+This will also restart the service(s) if you define the -Service parameter.
 This will use WinRM over HTTPS to connect with remote computers if you use the -UseSSL parameter
 
 
@@ -41,7 +41,7 @@ Contact: rosborne@osbornepro.com
 
 
 .LINK
-https://roberthsoborne.com
+https://osbornepro.com
 https://writeups.osbornepro.com
 https://btps-secpack.com
 https://github.com/tobor88
@@ -109,7 +109,7 @@ Function Update-SSLCertificate {
                 ParameterSetName="File",
                 Mandatory=$False)]  # End Parameter
             [String]$CADestination,
-            
+
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$False,
@@ -138,22 +138,22 @@ Function Update-SSLCertificate {
                 ParameterSetName="File",
                 Mandatory=$False)]  # End Parameter
             [String[]]$Service,
-            
+
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True,
                 HelpMessage = "[H] Define the site name of the IIS Site to update the certificate on. EXAMPLE: Default Web Site")]  # End Parameter
             [String]$SiteName,
-            
+
             [Parameter(
                 ParameterSetName="IIS",
-                Mandatory=$False, 
+                Mandatory=$False,
                 ValueFromPipeline=$True,
                 ValueFromPipelineByPropertyName=$True,
                 HelpMessage="[H] Define the remote host(s) to update the certificate on `n[E] EXAMPLE: desktop01.domain.com, server.domain.com")]  # End Parameter
            [Parameter(
                 ParameterSetName="File",
-                Mandatory=$False, 
+                Mandatory=$False,
                 ValueFromPipeline=$True,
                 ValueFromPipelineByPropertyName=$True,
                 HelpMessage="[H] Define the remote host(s) to update the certificate on `n[E] EXAMPLE: desktop01.domain.com, server.domain.com")]  # End Parameter
@@ -166,7 +166,7 @@ Function Update-SSLCertificate {
                 ParameterSetName="File",
                 Mandatory=$False)]  # End Parameter
             [switch][bool]$UseSSL,
-            
+
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True)]  # End Parameter
@@ -204,17 +204,17 @@ BEGIN {
         Throw "[x] Cretificate file and Key file required to be saved in same location"
 
     }  # End If
-    
+
     If ($Null -eq $PfxCertificate)
     {
-    
+
         Write-Output "[*] Obtaining latest wildcard certificate file from the default Certify Community Edition's save location"
         $CertifySavePath = Get-ChildItem -Path "C:\ProgramData\Certify\assets\_.*.*\" | Select-Object -ExpandProperty "FullName"
         $PfxCertificate = Get-ChildItem -Path $CertifySavePath -Filter "*.pfx" | Where-Object -Property "CreationTime" -like "$($(Get-Date -Format MM/dd/yyyy))*" | Select-Object -First 1 -ExpandProperty "FullName"
         $FileName = $PfxCertificate.Split("\")[-1]
 
     }  # End If
-    
+
     Write-Output "[*] Extracting Private Key using openssl"
     openssl pkcs12 -in $PfxCertificate -nocerts -nodes -out "$CertifySavePath\key.txt" -passin pass:"$KeyPassword"
     Get-Content -Path "$CertifySavePath\key.txt" | Select-Object -Skip 4 | Out-File -FilePath "$KeyPath" -Encoding utf8
@@ -245,19 +245,19 @@ PROCESS {
                     Write-Output "[x] Unable to reach $Cn using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
                 }  # End If
-                Else 
+                Else
                 {
-                
+
                     Invoke-Command -HideComputerName $Cn -UseSSL:$Bool -ArgumentList $SiteName,$PfxCertificate,$SecurePassword,$Credential,$Source -ScriptBlock {
 
                         Import-Module -Name WebAdministration -Global
-                        
+
                         $SiteName = $Args[0]
                         $PfxCertificate = $Args[1]
                         $SecurePassword = $Args[2]
                         $Credential = $Args[3]
                         $Source = $Args[4]
-                        
+
                         $PfxFile = $PfxCertificate.Split("\")[-1]
                         $PfxDir = $PfxCertificate.Replace("\$PfxFile", "")
                         $PfxNet = $$PfxDir.Replace("C:\","$Source\C$\")
@@ -267,24 +267,24 @@ PROCESS {
 
                         Write-Output "[*] Importing PFX certificate into local machine store"
                         Import-PfxCertificate -FilePath "T:\$PfxFile" -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
-                        
+
                         Write-Output "[*] Obtaining thumbprint of certificate with the subject name CN=*.$($($env:USERDNSDOMAIN.ToLower())) that was created today"
                         $Thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { ($_.Subject -eq "CN=*.$($($env:USERDNSDOMAIN.ToLower()))") -and ($_.NotBefore -like "$($(Get-Date -Format MM/dd/yyyy))*") } | Select-Object -ExpandProperty Thumbprint
 
                         ForEach ($S in $SiteName)
                         {
-                        
+
                             Write-Output "[*] Defining new wildcard certificate on $env:COMPUTERNAME for the site $Site"
                             $Binding = Get-WebBinding -Name $Site -Protocol "https"
                             $Binding.AddSslCertificate($Thumbprint, "my")
-                        
+
                         }  # End ForEach
 
                         Write-Output "[*] Restarting the IIS service"
                         iisreset /RESTART
 
                     }  # End Invoke-Command
-                    
+
                 }  # End Else
 
             }  # End ForEach
@@ -299,7 +299,7 @@ PROCESS {
                 Write-Output "[x] Unable to reach $ComputerName using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
             }  # End If
-            Else 
+            Else
             {
 
                 $PfxContents = [Convert]::ToBase64String((Get-Content -Path $PfxCertificate -Encoding Byte))
@@ -323,7 +323,7 @@ PROCESS {
                     $PfxCertificate = $Args[11]
                     $KeyPassword = $Args[12]
                     $Source = $Args[13]
-                        
+
                     $PfxFile = $PfxCertificate.Split("\")[-1]
                     $PfxDir = $PfxCertificate.Replace("\$PfxFile", "")
                     $PfxNet = $$PfxDir.Replace("C:\","$Source\C$\")
@@ -344,7 +344,7 @@ PROCESS {
                     Write-Output "[*] Moving over new certificate files"
                     New-Item -Path $CertDestination.Replace("C:\","\\$env:COMPUTERNAME\C$\") -ItemType File -Value $CertContents -Force
                     New-Item -Path $KeyDestination.Replace("C:\","\\$env:COMPUTERNAME\C$\") -ItemType File -Value $KeyContents -Force
-                    
+
                     Write-Output "[*] Importing the PFX certificate"
                     $SecurePassword = ConvertTo-SecureString -String $KeyPassword -Force –AsPlainText
                     $Bytes = [Convert]::FromBase64String($PfxContents))

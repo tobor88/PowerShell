@@ -12,10 +12,10 @@
     CONFIGURE LINE 77 ManagementUserAccount Variable
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
    Add-ADNewContact -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
@@ -33,7 +33,7 @@ Function Add-ADNewContact {
                 ValueFromPipelineByPropertyName=$True,
                 HelpMessage="New Contacts Name. `n Example: Dixie Normus `n`n If you see this message, you will need to enter the new contacts name.")] # End Parameter
             [ValidateNotNullorEmpty()]
-        [string[]]$ContactName, # 
+        [string[]]$ContactName, #
 
         [Parameter(Mandatory=$True,
                 Position=1,
@@ -58,7 +58,7 @@ Function Add-ADNewContact {
     } # End BEGIN
 
     PROCESS {
-        
+
             $Username = $env:USERNAME
 
             $Path = "ou=CONTACTS,dc=OSBORNEPRO,dc=COM"
@@ -66,19 +66,19 @@ Function Add-ADNewContact {
             Write-Verbose "New contact will be added to the below OU`n$Path`n"
 
             $NameCount = $ContactName.Split(' ').Count
-                
+
             if ($NameCount -eq 2) {
-        
+
                 $FirstName,$LastName = $ContactName.Split(' ')
 
                 New-ADObject -Type Contact -Name $ContactName -Path $Path -OtherAttributes @{'GivenName'="$FirstName";'SN'="$LastName";'Mail'=$ContactEmail;'ProxyAddresses'="SMTP:"+$ContactEmail;'targetAddress'="SMTP:"+$ContactEmail}
 
                 ForEach ($GName in $GroupName) {
-                
-                    $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM" 
-                
+
+                    $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM"
+
                     $NewContact = "LDAP://usav-dcp:389/cn=$Gname,$Path"
-                
+
                     $ManagementUserAccount.Add($NewContact)
 
                 } # End ForEach
@@ -86,17 +86,17 @@ Function Add-ADNewContact {
             } # End If
 
             elseif ($NameCount -eq 3) {
-        
+
                 $FirstName,$MiddleName,$LastName = $ContactName.Split(' ')
 
                 New-ADObject -Type Contact -Name $ContactName -Path $Path -OtherAttributes @{'GivenName'="$FirstName";'SN'="$LastName";'Mail'=$ContactEmail;'ProxyAddresses'="SMTP:"+$ContactEmail;'targetAddress'="SMTP:"+$ContactEmail}
 
                 ForEach ($GName in $GroupName) {
-                
-                    $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM" 
-                
+
+                    $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM"
+
                     $NewContact = "LDAP://usav-dcp:389/cn=$Gname,$Path"
-                
+
                     $ManagementUserAccount.Add($NewContact)
 
                 } # End ForEach
@@ -104,7 +104,7 @@ Function Add-ADNewContact {
             } # End Elseif
 
             elseif ($NameCount -ge 4 ) {
-        
+
                 Write-Warning "Too many names for this cmdlet to handle."
 
                 break

@@ -27,7 +27,7 @@
 .LINK
     https://github.com/tobor88
     https://www.powershellgallery.com/profiles/tobor
-    https://roberthosborne.com
+    https://osbornepro.com
 
 
 .INPUTS
@@ -92,7 +92,7 @@ PROCESS
         }  # End Else
 
         $Obj += New-Object -TypeName PSObject -Property @{Server="$Computadora";Protocol="$Protocol"}
-	
+
     }  # End ForEach
 
 }  # End PROCESS

@@ -25,9 +25,9 @@ Get-BatteryReport -Path C:\Users\user\Documents\BatteryReport.html
 Get-BatteryReport -ComputerName Laptop01.domain.com -Path $env:USERPROFILE\Documents\BatteryReport.html -UseSSL
 # This examples saves the battery report for remote device Laptop01.domain.com to \\$env:COMPUTERNAME\C$\Users\user\Documents\BatteryReport.html. This communication happens using WinRM over HTTPS
 
-.EXAMPLE 
+.EXAMPLE
 Get-BatteryReport
-# This example saves the battery report for the local machine to $env:USERPROFILE\Documents\BatteryReport.html 
+# This example saves the battery report for the local machine to $env:USERPROFILE\Documents\BatteryReport.html
 
 
 .NOTES
@@ -45,8 +45,8 @@ None
 
 
 .LINK
-https://roberthsoborne.com
 https://osbornepro.com
+https://writeups.osbornepro.com
 https://btps-secpack.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
@@ -99,7 +99,7 @@ Function Get-BatteryReport {
             {
 
                 Write-Verbose "Obtaining battery report from $C and saving it to $Path"
-                Invoke-Command -HideComputerName $C -ArgumentList $Path -UseSSL:$Bool -ScriptBlock { 
+                Invoke-Command -HideComputerName $C -ArgumentList $Path -UseSSL:$Bool -ScriptBlock {
 
                     cmd /c powercfg /batteryreport /output $Args[0]
 

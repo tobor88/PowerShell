@@ -5,14 +5,14 @@
     The user may need to be granted permissions to change this setting and also be the groups owner. Or you can just do it for them.
 
 .DESCRIPTION
-    Renaming a Team in Office365 does not automatically change the email address. 
+    Renaming a Team in Office365 does not automatically change the email address.
     This cmdlet is used to allow users to rename their Office365/Team email.
 
 .NOTES
     Author: Rob Osborne
     Alias: tobor
-    Contact: rosborne@osbornepro.com 
-    https://roberthosborne.com
+    Contact: rosborne@osbornepro.com
+    https://osbornepro.com
 
 .EXAMPLE
    Rename-Team
@@ -27,7 +27,7 @@ Function Rename-Team {
        Param() # End Param
 
     BEGIN {
-        
+
         if (Get-PSSession | Where-Object -Property ConfigurationName -like 'Microsoft.Exchange') {
 
             Remove-PSSession -Session *
@@ -35,7 +35,7 @@ Function Rename-Team {
             Try {
 
                 $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
- 
+
                 Write-Verbose 'Importing Exchange Online Cmdlets'
 
                 Import-PSSession $Session
@@ -47,17 +47,17 @@ Function Rename-Team {
                 Write-Warning 'There was an issue connecting to Office365 online. Stopping script...'
 
             } # End Catch
-            
-            Clear-Host 
+
+            Clear-Host
 
         } # End Try
 
         else {
-        
+
             try {
 
                 $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/" -Credential (Get-Credential) -Authentication Basic -AllowRedirection
- 
+
                 Write-Verbose 'Importing Exchange Online Cmdlets'
 
                 Import-PSSession $Session
@@ -71,28 +71,28 @@ Function Rename-Team {
             } # End Catch
 
             Clear-Host
-            
-        } # End Else 
+
+        } # End Else
 
     } # End Begin
 
     Process {
 
         do {
-        
+
             $Group = Read-Host "What is the current name of the Team you want to change the email address of?"
-       
+
             $Name = Get-UnifiedGroup -Identity $Group -ErrorAction SilentlyContinue
-      
+
         } # End Do
         While (!($Name))
 
         Write-Host "Successfully selected a Team Name."
 
         do {
-        
+
             $NewEmail = Read-Host "What should the new email address be?"
-       
+
             if ($NewEmail -like "*@contoso.com") {
 
                 $TestEmail = 'True'
@@ -138,7 +138,7 @@ do {
 
     Rename-Team -Verbose
 
-    $Continue = Read-Host "If you would like to change another Team email address type Y and press Enter.`n If you would like to exit just press Enter." 
+    $Continue = Read-Host "If you would like to change another Team email address type Y and press Enter.`n If you would like to exit just press Enter."
 
 } # Do
 while ($Continue -like 'Y')

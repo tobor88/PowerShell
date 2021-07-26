@@ -20,7 +20,7 @@ Specifies the path to an item. Get-Content gets the content of the item. Wildcar
 Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
-https://roberthosborne.com
+https://osbornepro.com
 
 
 .EXAMPLE
@@ -28,7 +28,7 @@ Set-LockScreenImage -Path \\files\networkshare$
 # The above commands changes the lock screen image for the local computer
 
 
-.EXAMPLE	
+.EXAMPLE
 Set-LockScreenImage -ComputerName Dirka1 -Path \\files\networkshare$ -Verbose
 # The above command changes the lock screen image for a remote computer verbosely
 
@@ -82,7 +82,7 @@ Function Set-LockScreenImage
 		} # End If
 		Else
 		{
-		
+
 			$Cred = Get-Credential -Message "Enter admin credentials to make changes on the remote machine."
 
 			Write-Verbose "Connection test to $ComputerName was successful..."
@@ -96,7 +96,7 @@ Function Set-LockScreenImage
 			Write-Verbose "Setting lock screen image for $ComputerName"
 
 			Write-Verbose "Creating copy location..."
-			
+
 			$LocalImageLocation = 'C:\Users\Public\Pictures\LockScreenImage.png'
 			$RegistryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
 			$PropertyName = "LockScreenImage"

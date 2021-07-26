@@ -6,10 +6,10 @@
     This cmdlet was created for sysadmins and does not require any switches. Best used if run automatically using Windows Task Scheduler.
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
     Reset-KerbKeys -Verbose
@@ -23,14 +23,14 @@ Function Reset-KerbKeys {
 
       $Email = alert.email@osbornepro.com
       $SmtpServer = smtp.derp.com
-      
+
       $User = "Robo.username@osbornepro.com"
       $PasswordFile = "C:\Users\Public\Documents\Keys\passwordfile.txt"
       $KeyFile = "C:\Users\Public\Documents\Keys\passwordkeyfile.txt"
       $key = Get-Content -Path $KeyFile
       $cred1 = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (Get-Content -Path $PasswordFile | ConvertTo-SecureString -Key $key)
 
-      Install-Module AzureAD -Credential $cred2 -Force 
+      Install-Module AzureAD -Credential $cred2 -Force
 
       Write-Verbose "Discovering location of AzureADSSO.psd1"
 
@@ -56,7 +56,7 @@ Function Reset-KerbKeys {
 
   END {
 
-      $Status = Get-AzureADSSOStatus 
+      $Status = Get-AzureADSSOStatus
 
       Send-MailMessage -To $Email -From $Email -Subject "Kerberos Keys Rotated" -Body "$Satus" -SmtpServer $SmtpServer -Priority Normal
 

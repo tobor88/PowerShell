@@ -10,15 +10,15 @@
     This cmdlet is used to get conversation history for a user and decode the base64 encoded conversation.
     This should save the time of looking through each file and than decoding conversations that might not be what is looked for.
     Has been tested with Lync 2013 and Lync 2010
-    
+
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
-   Get-LyncArchives 
+   Get-LyncArchives
 
 .EXAMPLE
    Get-LyncArchives -Verbose
@@ -30,9 +30,9 @@ Function Get-LyncArchives {
         param()
 
     BEGIN {
-        
+
         $ArchiveDatabase = "ArchivingDatabase:lyncArchiveServer.osbornepro.com"            ##########@@@##  DEFINE ME ################
-     
+
         $CreatedArchiveName = "lyncArchiveServer.osbornepro.com_SqlDatabaseInstanceName"   ##########@@@##  DEFINE ME ################
 
         $Person = Read-Host "Who is the person you want to view the conversation history of? Example: sip:rosborne@osbornepro.com"
@@ -53,8 +53,8 @@ Function Get-LyncArchives {
 
 
         Try {
-         
-            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $SavePath -UserUri $Person -Verbose 
+
+            Export-CsArchivingData -Identity $ArchiveDatabase -StartDate $StartDate -EndDate $EndDate -OutputFolder $SavePath -UserUri $Person -Verbose
 
             } # End Try
 
@@ -65,14 +65,14 @@ Function Get-LyncArchives {
         } # End Catch
 
 
-        $TheList = Get-ChildItem -Path "$SavePath\$CreatedArchiveName" -Recurse | Where-Object -Property Name -like "*.eml" | Select-Object -Property Name,DirectoryName 
+        $TheList = Get-ChildItem -Path "$SavePath\$CreatedArchiveName" -Recurse | Where-Object -Property Name -like "*.eml" | Select-Object -Property Name,DirectoryName
 
         $TheList.Name
 
         Write-Host "Above is a list of EML files. These contain conversation histories for the user you selected. `n$person" -ForegroundColor Yellow
 
         $OtherParty = Read-Host "Enter the email address of the person $person had a conversation with. Example: dixie.normus@osbornepro.com"
-        
+
         foreach ($Convo in $TheList) {
 
             $ConvoDir = $Convo.DirectoryName
@@ -85,7 +85,7 @@ Function Get-LyncArchives {
 
             If($ContainsWord -eq "True") {
 
-                [array]$FileList += $ConvoFullPathName    
+                [array]$FileList += $ConvoFullPathName
 
                 Clear-Variable ContainsWord
 
@@ -110,14 +110,14 @@ Function Get-LyncArchives {
             [int]$BaseLines = $TotalLines - 14
 
             $BaseEncoded = ((Get-Content -Path $cFile | Select-Object -Last $BaseLines).TrimEnd("--MIME_Boundary-- ")) | Where-Object {$_ -ne ""}
-            
+
             foreach ($LineSpace in $BaseEncoded) {
-            
+
                 $base64 += $LineSpace.TrimEnd() | Where-Object {$_ -ne ""}
 
             } # End ForEach
-                
-            $PrintBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64)) 
+
+            $PrintBase = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64))
 
             $PrintBase
 

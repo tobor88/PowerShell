@@ -46,7 +46,7 @@ $Domain = $env:USERDNSDOMAIN.Split('.')
 .LINK
     https://github.com/tobor88
     https://www.powershellgallery.com/profiles/tobor
-    https://roberthosborne.com
+    https://osbornepro.com
 
 
 .INPUTS
@@ -130,11 +130,11 @@ $Drivename = $First[0]+$Last
 $Token = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 $GroupSIDs = $Token.Groups
 $GroupNames = @()
-ForEach ($G in $GroupSIDs) 
-{ 
+ForEach ($G in $GroupSIDs)
+{
 
     $GroupNames += (Convert-SID -SID $G).Username.Replace('$DOMAIN\','')
-    
+
 }  # End ForEach
 
 
@@ -181,7 +181,7 @@ ForEach ($Drive in $DriveHashTable.Keys)
         $GroupMembers += ("$Name`n").Replace("""","")
 
     }  # End ForEach
-    
+
             # Knicks is the group name                  # This knicks is the Key Variable name
     If (($GroupNames.Contains('Knicks') -and $Drive -eq 'Knicks') -or ($GroupNames.Contains('Bulls') -and $Drive -eq 'Bulls') -or ($GroupNames.Contains('Staff') -and $Drive -eq 'User Share Drive'))
     {

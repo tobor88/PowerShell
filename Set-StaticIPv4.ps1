@@ -10,7 +10,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
     Set-StaticIPv4 -FirstThreeOfIpAddress "192.168.1" -DefaultGateway "192.168.1.1" -ServerAddresses "208.67.222.222","208.67.220.220"

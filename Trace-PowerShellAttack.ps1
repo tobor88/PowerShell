@@ -2,16 +2,16 @@
 .Synopsis
     Trace-PowerShellAttack is a cmdlet created for Task Scheduler to find malicious commands executed in PowerShell.
     I suggest having it run once every 15 minutes to keep alerts somewhat live.
-    
+
 .DESCRIPTION
     The Trace-PowerShellAttack cmdlet looks at executed commands and alerts an admin by email if the command matches a common attack.
     The attacker command doesn't have to be successful it just has to be executed.
 
 .NOTES
-    Author: Rob Osborne 
+    Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLE
    Trace-PowerShellAttack
@@ -50,13 +50,13 @@ td {
 }
 </style>
 "@
-    
+
     $FromEmail = "from@osbornepro.com"
     $SmtpServer = "smtpserver.com"
     $Computer = $env:COMPUTERNAME
 
     Write-Verbose "Pulling events in search of possibly malicious commands."
-    
+
     [array]$BadEvent = Get-WinEvent -FilterHashtable @{logname="Windows PowerShell"; id=800} -MaxEvents 100 | Where-Object { ($_.Message -like "*Pipeline execution details for command line:*IEX*") -or ($_.Message -like "*Pipeline execution details for command line:*certutil") -or ($_.Message -like "*Pipeline execution details for command line:*bitsadmin*") -or ($_.Message -like "*Pipeline execution details for command line:*Start-BitsTransfer*") -or ($_.Message -like "*Pipeline execution details for command line:*vssadmin*") -or ($_.Message -like "*Pipeline execution details for command line:*Invoke-Expression*") }
 
     If (($BadEvent.Properties.Item(0) | Select-Object -ExpandProperty 'Value' | Out-String) -like "IEX*") {$EventInfo = $BadEvent}
@@ -91,7 +91,7 @@ td {
     If ( ($More.Value -like "*IEX (New-Object net.webclient).downloadstring(*") -or ($More.Value -like "Certutil*-f*") -or ($More.Value -like "vssadmin*") -or ($More.Value -like "bitsadmin*") -or ($More.Value -like "Start-BitsTransfer*") )
      {
 
-        $TableInfo = $EventInfo | Select-Object -Property 'MachineName', 'Message' 
+        $TableInfo = $EventInfo | Select-Object -Property 'MachineName', 'Message'
         $PreContent = "<Title>PowerShell RCE Monitoring Alert: Watches for Malicious Commands</Title>"
         $NoteLine = "$(Get-Date -format 'MM/dd/yyyy HH:mm:ss')"
         $PostContent = "<br><p><font size='2'><i>$NoteLine</i></font>"
@@ -107,5 +107,3 @@ td {
 
 
 } # End Function
-
-

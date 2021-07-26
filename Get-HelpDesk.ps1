@@ -9,7 +9,7 @@
     Author: Rob Osborne
     Alias: tobor
     Contact: rosborne@osbornepro.com
-    https://roberthosborne.com
+    https://osbornepro.com
 
 .EXAMPLES
     Get-HelpDesk
@@ -35,7 +35,7 @@ Function Get-HelpDesk {
         } # End if
 
         else {
-    
+
             Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
 
         } # End Else
@@ -67,27 +67,27 @@ Function Get-HelpDesk {
             [string]$Title = $null)
 
         $Width = if ($Title) {
-                    
+
                         $Length = $Title.Length; $Length2 = $Selections | ForEach-Object {$_.length} | Sort-Object -Descending | Select-Object -First 1;$Length2,$Length | Sort-Object -Descending | Select-Object -First 1
-                    
+
                     } # End if
-                    
-                    else { 
-                    
-                        $Selections | ForEach-Object {$_.length} | Sort-Object -Descending | Select-Object -First 1 
-                    
+
+                    else {
+
+                        $Selections | ForEach-Object {$_.length} | Sort-Object -Descending | Select-Object -First 1
+
                     } # End Else
 
         $Buffer = if (($Width*1.5) -gt 78) {
-        
+
                     [math]::floor((78-$width)/2)
-                    
+
                     } # End if
-                    
+
                     else {
-                    
+
                         [math]::floor($width/4)
-                    
+
                     } # End else
 
         if($Buffer -gt 6) { $Buffer = 6 }
@@ -117,7 +117,7 @@ Function Get-HelpDesk {
     do{
 
         MenuMaker -Selections 'UNLOCK Users Account','RESET Users Password','EXPIRATION of Password','PRINTER Spooler Reset','LIST Installed Applications on a Device','REMOTE Access to a Computer','GROUP Members List','Log User Out of Computer','REBOOT Time','USERNAME to SID','Lookup a Certificate by its Thumbprint','FIRST Name Change','LAST Name Change','Perform a Group Policy Update','Sync Azure and Active Directory','Find a Files Location','Disable Hibernate','Add User to a File or Folders Permssions','JOB Title and Department Change' -Title 'IT Help Desk Tasks' -IncludeExit
- 
+
         $Response = Read-Host 'Select a task to carry out.'
 
     } # End Do
@@ -125,9 +125,9 @@ Function Get-HelpDesk {
     While($Response -notin 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,'x')
     #===================================================================================================================================
 
-if ($Response -eq '1') { 
+if ($Response -eq '1') {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             Import-Module ActiveDirectory
 
@@ -135,7 +135,7 @@ if ($Response -eq '1') {
 
                 $samAccountName = Read-Host "What is the users Sam Account Name Example: firs.last"
 
-                $TestUserExists = Get-AdUser -Identity $samAccountName 
+                $TestUserExists = Get-AdUser -Identity $samAccountName
 
             } # End do
             while (!($TestUserExists))
@@ -143,19 +143,19 @@ if ($Response -eq '1') {
             Write-Host "User account has been confirmed to exist."
 
             try {
-        
+
                 $TestUserExists | Unlock-ADAccount -Verbose
 
                 Write-Host "-User "$samAccountName" unlocked"
-            
+
                 } # End Try
 
             catch {
-            
+
                 $Error[0]
 
                 Write-Warning "There was an issue unlocking $samAccountName."
-        
+
             } # End Catch
 
         pause
@@ -167,12 +167,12 @@ if ($Response -eq '1') {
     } # End 1 Unlock user account
     #===================================================================================================================================
 
-    elseif ($Response -eq '2') { 
+    elseif ($Response -eq '2') {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
-    
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
+
             Import-Module ActiveDirectory
-            
+
             do {
 
                 $Who = Read-Host "Whos password do you want to reset? Example: rob.osborne"
@@ -183,63 +183,63 @@ if ($Response -eq '1') {
             while (!($TestUserExist))
 
             $ChangeP = Read-Host 'Do you want them to change their password at next logon Answer this as either 0 for False or 1 for True'
-            
+
             $BoolValue = try {
-                            
+
                             [System.Convert]::ToBoolean($ChangeP)
-                         
-                         } # End Try 
-                         
-                         catch [FormatException] { 
-                         
+
+                         } # End Try
+
+                         catch [FormatException] {
+
                             $BoolValue = $false
-                         
+
                          } # End Catch
 
             function Get-RandomCharacters($length, $characters) {
-            
+
                 $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.length }
-                
+
                 $private:ofs=""
-               
+
                return [String]$characters[$random]
-            
+
             } # https://activedirectoryfaq.com/2017/08/creating-individual-random-passwords/
-            
-            function Scramble-String([string]$inputString){     
-                
-                $characterArray = $inputString.ToCharArray()   
-                
-                $scrambledStringArray = $characterArray | Get-Random -Count $characterArray.Length     
-                
+
+            function Scramble-String([string]$inputString){
+
+                $characterArray = $inputString.ToCharArray()
+
+                $scrambledStringArray = $characterArray | Get-Random -Count $characterArray.Length
+
                 $outputString = -join $scrambledStringArray
-                
-                return $outputString 
-            
+
+                return $outputString
+
             } # https://activedirectoryfaq.com/2017/08/creating-individual-random-passwords/
-            
+
             $password = Get-RandomCharacters -length 10 -characters 'abcdefghiklmnoprstuvwxyz'
-            
+
             $password += Get-RandomCharacters -length 4 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
-            
+
             $password += Get-RandomCharacters -length 3 -characters '1234567890'
-            
+
             $password += Get-RandomCharacters -length 3 -characters '!"§$%&/()=?}][{@#*+'
-            
+
             $password = Scramble-String $password
- 
+
             Write-Host $password
 
             $password = Read-Host "`nEnter the users new password or use the one above." | ConvertTo-SecureString -AsPlainText -Force -Verbose
-    
+
             if (Set-ADAccountPassword $who -Reset -NewPassword $password -PassThru) {
-    
+
                 Set-ADUser -Identity $who -ChangePasswordAtLogon $BoolValue
 
                 Get-AdUser $who -Properties * | Select-Object -Property name, pass*
-    
+
                 Write-Host "Verify their password was changed in the Password Last Set field"
-        
+
                 } # End if
 
             } # End Invoke
@@ -251,76 +251,76 @@ if ($Response -eq '1') {
     } # End 2 Reset a users password
     #===================================================================================================================================
 
-    elseif ($Response -eq '3') { 
+    elseif ($Response -eq '3') {
 
-        Invoke-Command -HideComputerName $SecondaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $SecondaryDC -ScriptBlock {
 
             Write-Host "Example Get-PwdSet rob.osborne"
 
             Function Get-PwdSet{
                 Param([parameter(Mandatory=$true)][string]$user)
-    
+
                 $Use = Get-AdUser $User -Properties PasswordLastSet,PasswordNeverExpires
-   
+
                 If ($Use.PasswordNeverExpires -eq $true) {
-   
+
                     Write-Host $User "last set their password on " $Use.PasswordLastSet  "this account has a non-expiring password" -ForegroundColor Yellow
- 
+
                 } # End if
-                
+
                 Else {
-        
+
                     $Til = (([datetime]::FromFileTime((Get-AdUser $User -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"))-(Get-Date)).Days
-    
+
                 } # End Else
-                
+
                 if ($Til -lt "5") {
-        
+
                     Write-Host $User "last set their password on " $Use.PasswordLastSet "it will expire again in " $Til " days" -ForegroundColor Red
-    
+
                 } # End if
-                
+
                 else {
-     
+
                     Write-Host $User "last set their password on " $Use.PasswordLastSet "it will expire again in " $Til " days" -ForegroundColor Green
-    
+
                 } # End else
-    
+
             } # End Function
-            
+
             do {
 
                 $User = Read-Host "Who is the person in question? Example: rob.osborne"
 
-                $UserExist = Get-AdUser -Identity $User 
-                
+                $UserExist = Get-AdUser -Identity $User
+
             } # End do
             while (!($UserExist))
 
             Get-PwdSet $User
-    
+
          } # End Invoke-Command
-    
+
     pause
- 
+
     Clear-Host
 
-     } # End 3 Lookup password expiration 
+     } # End 3 Lookup password expiration
     #===================================================================================================================================
-    elseif ($Response -eq 4) { 
+    elseif ($Response -eq 4) {
 
         $PrintSpooler = Read-Host -Prompt "Which Print Spooler do you want to restart.`n$PrintServers"
 
         Try {
 
             Restart-Service -InputObject $(Get-Service -ComputerName $printspooler -Name spooler) -Force
-        
+
             Write-Host 'Print Spooler Restarted'
-  
+
         } # End Try
-    
+
         Catch {
-    
+
             if ((Test-NetConnection $PrintSpooler).PingSucceeded) {
 
                 Write-Host "There was an issue restarting the print spooler. `nPing test succeeded. `nTrying to restart the service through a different function."
@@ -336,9 +336,9 @@ if ($Response -eq '1') {
                 Write-Warning "Ping test failed. Connection to print server could not be established."
 
             } # End else
-    
+
         } # End Catch
-    
+
     pause
 
     Clear-Host
@@ -346,7 +346,7 @@ if ($Response -eq '1') {
      } # End 4 Reset print spooler
     #===================================================================================================================================
 
-    elseif ($Response -eq 5) { 
+    elseif ($Response -eq 5) {
 
         $TheDevice = Read-Host "What computer do you want to view the installed software? `n`nTo view software installed on local computer enter localhost."
 
@@ -391,21 +391,21 @@ if ($Response -eq '1') {
             [Parameter(
                 Position = 0,
                 ValueFromPipeline=$true,
-                ValueFromPipelineByPropertyName=$true, 
+                ValueFromPipelineByPropertyName=$true,
                 ValueFromRemainingArguments=$false
             )]
             [ValidateNotNullOrEmpty()]
             [Alias('CN','__SERVER','Server','Computer')]
                 [string[]]$ComputerName = $env:computername,
-        
+
                 [string]$DisplayName = $null,
-        
+
                 [string]$Publisher = $null
         )
 
         Begin
         {
-        
+
             #define uninstall keys to cover 32 and 64 bit operating systems.
             #This will yeild only 32 bit software and double entries on 64 bit systems running 32 bit PowerShell
                 $UninstallKeys = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
@@ -419,7 +419,7 @@ if ($Response -eq '1') {
             #Loop through each provided computer.  Provide a label for error handling to continue with the next computer.
             :computerLoop foreach($computer in $computername)
             {
-            
+
                 Try
                 {
                     #Attempt to connect to the localmachine hive of the specified computer
@@ -436,7 +436,7 @@ if ($Response -eq '1') {
                 #Loop through the 32 bit and 64 bit registry keys
                 foreach($uninstallKey in $UninstallKeys)
                 {
-            
+
                     Try
                     {
                         #Open the Uninstall key
@@ -445,8 +445,8 @@ if ($Response -eq '1') {
 
                         #If the reg key exists...
                         if($regkey)
-                        {    
-                                        
+                        {
+
                             #Retrieve an array of strings containing all the subkey names
                                 $subkeys = $regkey.GetSubKeyNames()
 
@@ -455,20 +455,20 @@ if ($Response -eq '1') {
                                 {
 
                                     #Build the full path to the key for this software
-                                        $thisKey = $UninstallKey+"\\"+$key 
-                            
+                                        $thisKey = $UninstallKey+"\\"+$key
+
                                     #Open the subkey for this software
                                         $thisSubKey = $null
                                         $thisSubKey=$reg.OpenSubKey($thisKey)
-                            
+
                                     #If the subkey exists
                                     if($thisSubKey){
                                         try
                                         {
-                            
+
                                             #Get the display name.  If this is not empty we know there is information to show
                                                 $dispName = $thisSubKey.GetValue("DisplayName")
-                                
+
                                             #Get the publisher name ahead of time to allow filtering using Publisher parameter
                                                 $pubName = $thisSubKey.GetValue("Publisher")
 
@@ -486,7 +486,7 @@ if ($Response -eq '1') {
                                                     DisplayName = $dispname
                                                     Publisher = $pubName
                                                     Version = $thisSubKey.GetValue("DisplayVersion")
-                                                    UninstallString = $thisSubKey.GetValue("UninstallString") 
+                                                    UninstallString = $thisSubKey.GetValue("UninstallString")
                                                     InstallDate = $thisSubKey.GetValue("InstallDate")
                                                 } | select ComputerName, DisplayName, Publisher, Version, UninstallString, InstallDate
                                             }
@@ -512,7 +512,7 @@ if ($Response -eq '1') {
                             Write-Error "Registry access to $computer denied.  Check your permissions.  Details: $_"
                             continue computerLoop
                         }
-                    
+
                     }
                 }
             }
@@ -526,7 +526,7 @@ if ($Response -eq '1') {
     } # End If
 
     else {
-     
+
     Function Get-InstalledSoftware {
     <#
     .SYNOPSIS
@@ -564,21 +564,21 @@ if ($Response -eq '1') {
             [Parameter(
                 Position = 0,
                 ValueFromPipeline=$true,
-                ValueFromPipelineByPropertyName=$true, 
+                ValueFromPipelineByPropertyName=$true,
                 ValueFromRemainingArguments=$false
             )] # End Paramter
             [ValidateNotNullOrEmpty()]
             [Alias('CN','__SERVER','Server','Computer')]
                 [string[]]$ComputerName = $env:computername,
-        
+
                 [string]$DisplayName = $null,
-        
+
                 [string]$Publisher = $null
         ) # End Param
 
         Begin
         {
-        
+
             #define uninstall keys to cover 32 and 64 bit operating systems.
             #This will yeild only 32 bit software and double entries on 64 bit systems running 32 bit PowerShell
                 $UninstallKeys = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
@@ -592,7 +592,7 @@ if ($Response -eq '1') {
             #Loop through each provided computer.  Provide a label for error handling to continue with the next computer.
             :computerLoop foreach($computer in $computername)
             {
-            
+
                 Try
                 {
                     #Attempt to connect to the localmachine hive of the specified computer
@@ -609,7 +609,7 @@ if ($Response -eq '1') {
                 #Loop through the 32 bit and 64 bit registry keys
                 foreach($uninstallKey in $UninstallKeys)
                 {
-            
+
                     Try
                     {
                         #Open the Uninstall key
@@ -618,8 +618,8 @@ if ($Response -eq '1') {
 
                         #If the reg key exists...
                         if($regkey)
-                        {    
-                                        
+                        {
+
                             #Retrieve an array of strings containing all the subkey names
                                 $subkeys = $regkey.GetSubKeyNames()
 
@@ -628,20 +628,20 @@ if ($Response -eq '1') {
                                 {
 
                                     #Build the full path to the key for this software
-                                        $thisKey = $UninstallKey+"\\"+$key 
-                            
+                                        $thisKey = $UninstallKey+"\\"+$key
+
                                     #Open the subkey for this software
                                         $thisSubKey = $null
                                         $thisSubKey=$reg.OpenSubKey($thisKey)
-                            
+
                                     #If the subkey exists
                                     if($thisSubKey){
                                         try
                                         {
-                            
+
                                             #Get the display name.  If this is not empty we know there is information to show
                                                 $dispName = $thisSubKey.GetValue("DisplayName")
-                                
+
                                             #Get the publisher name ahead of time to allow filtering using Publisher parameter
                                                 $pubName = $thisSubKey.GetValue("Publisher")
 
@@ -659,7 +659,7 @@ if ($Response -eq '1') {
                                                     DisplayName = $dispname
                                                     Publisher = $pubName
                                                     Version = $thisSubKey.GetValue("DisplayVersion")
-                                                    UninstallString = $thisSubKey.GetValue("UninstallString") 
+                                                    UninstallString = $thisSubKey.GetValue("UninstallString")
                                                     InstallDate = $thisSubKey.GetValue("InstallDate")
                                                 } | select ComputerName, DisplayName, Publisher, Version, UninstallString, InstallDate
                                             } # End if
@@ -669,7 +669,7 @@ if ($Response -eq '1') {
                                             #Error with one specific subkey, continue to the next
                                             Write-Error "Unknown error: $_"
                                             Continue
-                                        } 
+                                        }
                                     } # End if
                                 } # End Foreach
                         } # End if
@@ -685,68 +685,68 @@ if ($Response -eq '1') {
                             Write-Error "Registry access to $computer denied.  Check your permissions.  Details: $_"
                             continue computerLoop
                         } # End if
-                    
+
                     } # End Catch
                 } # End Foreach
             } # End Foreach
 
         } # End Process
-        
+
     } # End Function
 
     Get-InstalledSoftware -Verbose | Select-Object -Property InstallDate, DisplayName
 
     } # End else
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 5 List installed applications
     #===================================================================================================================================
-    elseif ($Response -eq 6) { 
-   
+    elseif ($Response -eq 6) {
+
         $computer = Read-Host -Prompt "Enter their Desktops hostname. Example: DesktopComp06"
- 
+
         $option = Read-Host -Prompt "To add a User enter 1. To Delete a User enter 0"
-  
+
         if ($option -like '1') {
-   
-            Invoke-Command -HideComputerName $computer { 
-                
-                $user = Read-Host -Prompt "Enter the users SamAccountName. Example: rob.osborne" 
-                    
-                net LOCALGROUP "Remote Desktop Users" /ADD "$User" 
-                     
+
+            Invoke-Command -HideComputerName $computer {
+
+                $user = Read-Host -Prompt "Enter the users SamAccountName. Example: rob.osborne"
+
+                net LOCALGROUP "Remote Desktop Users" /ADD "$User"
+
                 net LOCALGROUP "Remote Desktop Users"
 
-            } # End Invoke-Command 
-                     
-        } # End if
-   
-        elseif ($option -like '0') {
-        
-            Invoke-Command -HideComputerName $computer { 
-       
-                $user = Read-Host -Prompt "Enter the users SamAccountName. Example: rob.osborne" 
-      
-                net LOCALGROUP "Remote Desktop Users" /DELETE "$User" 
-            
-                net LOCALGROUP "Remote Desktop Users"
-                
             } # End Invoke-Command
-                   
+
+        } # End if
+
+        elseif ($option -like '0') {
+
+            Invoke-Command -HideComputerName $computer {
+
+                $user = Read-Host -Prompt "Enter the users SamAccountName. Example: rob.osborne"
+
+                net LOCALGROUP "Remote Desktop Users" /DELETE "$User"
+
+                net LOCALGROUP "Remote Desktop Users"
+
+            } # End Invoke-Command
+
          } # End elseif
 
-     pause 
- 
+     pause
+
      Clear-Host
 
      } # End 6 Add or delete user to Remote Desktop Users allowed list
     #===================================================================================================================================
-    elseif ($Response -eq 7) { 
+    elseif ($Response -eq 7) {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             Import-Module ActiveDirectory
 
@@ -762,9 +762,9 @@ if ($Response -eq '1') {
             Write-Host "Group has been verified to exist."
 
             Get-ADUser -Filter * -Properties DisplayName,memberof | ForEach-Object { New-Object PSObject -Property @{
- 
+
                 UserName = $_.DisplayName
- 
+
                 Groups = ($_.memberof | Get-ADGroup | Where-Object {$_.GroupCategory -eq "Security"} | Select-Object -ExpandProperty Name) -join ","
 
             } # End Properties
@@ -779,43 +779,43 @@ if ($Response -eq '1') {
 
     } # End 7 List all members of a group
     #===================================================================================================================================
-    elseif ($Response -eq 8) { 
+    elseif ($Response -eq 8) {
 
         $computadora = Read-Host -Prompt 'What is the computers hostname? Example: DesktopComp08'
 
-        quser /server:$computadora 
+        quser /server:$computadora
 
         $session = Read-Host -Prompt 'What is the Session ID of the user you want logged out? Example: 2'
 
         try {
-    
-            Invoke-RDUserLogoff -HostServer $computadora -UnifiedSessionId $session -Force -Credential (Get-Credential -Message 'Use Admin Credentials') 
-        
-        } # End Try 
 
-        catch { 
-        
+            Invoke-RDUserLogoff -HostServer $computadora -UnifiedSessionId $session -Force -Credential (Get-Credential -Message 'Use Admin Credentials')
+
+        } # End Try
+
+        catch {
+
             $Error[0]
-    
+
             Write-Host 'Invoke-RdUserLogoff cmdlet failed. Attempting to use Get-WmiObject to log user off.'
 
-            (Get-WmiObject -Class Win32_OperatingSystem -ComputerName $computadora).Win32Shutdown(4) 
-        
+            (Get-WmiObject -Class Win32_OperatingSystem -ComputerName $computadora).Win32Shutdown(4)
+
         } # End Catch
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 8 Log User off a Device
     #====================================================================================================================================
 
-    elseif ($Response -eq 9) { 
+    elseif ($Response -eq 9) {
 
         $machine = Read-Host -Prompt "Look up the last reboot time for which device? Example: DesktopComp09"
 
         try {
-        
+
             Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $machine | Select-Object -Property csname, lastbootuptime
 
         } # End Try
@@ -828,7 +828,7 @@ if ($Response -eq '1') {
 
         } # End Catch
 
-    pause 
+    pause
 
     Clear-Host
 
@@ -844,24 +844,24 @@ if ($Response -eq '1') {
         $objSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 
         if (!($objSID -eq $null)) {
-    
+
             Write-Host "Resolved user's sid: " $objSID.Value
-        
+
             } # End if
 
         else {
-    
+
             Write-Host "SID Lookup failed."
-    
+
         } # End Else
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 10 Resolve Username to SID
     #=====================================================================================================================================
-  
+
     elseif ($Response -eq 11) {
 
         $CertLookup = Read-Host 'What device is the certificate on? Example: DesktopComp13'
@@ -878,7 +878,7 @@ if ($Response -eq '1') {
 
             Get-ChildItem -Path Cert:\CurrentUser\My -Recurse | Where-Object -Property Thumbprint -like $cert | Select-Object -Property *
 
-        } # End Invoke-Command 
+        } # End Invoke-Command
 
     pause
 
@@ -887,9 +887,9 @@ if ($Response -eq '1') {
     } # End 11 Lookup up certificate by its thumbprint
     #=====================================================================================================================================
 
-    elseif ($Response -eq 12) { 
+    elseif ($Response -eq 12) {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             Import-Module ActiveDirectory
 
@@ -924,17 +924,17 @@ if ($Response -eq '1') {
             if (!$Statement) {
 
                 Set-MsolDirSyncFeature -Feature SynchronizeUpnForManagedUsers -Enable $true
-    
+
                 } # End if
 
             # Sync AD and Azure
 
             Write-Host "Syncing Azure AD with Active Directory changes"
 
-            Invoke-Command -HideComputerName $AzureAdServer -ScriptBlock { 
+            Invoke-Command -HideComputerName $AzureAdServer -ScriptBlock {
 
                 Start-AdSyncSyncCycle -PolicyType Initial
-    
+
                  } # End Invoke
 
         } # End ScriptBlock
@@ -946,9 +946,9 @@ if ($Response -eq '1') {
     } # End 12 Change an existing users first name
     #=====================================================================================================================================
 
-    elseif ($Response -eq 13) { 
+    elseif ($Response -eq 13) {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             Import-Module ActiveDirectory
 
@@ -981,19 +981,19 @@ if ($Response -eq '1') {
             $Statement = Get-MsolDirSyncFeatures -Feature SynchronizeUpnForManagedUsers
 
             if (!$Statement) {
-        
+
                 Set-MsolDirSyncFeature -Feature SynchronizeUpnForManagedUsers -Enable $true
-        
+
                 }# End If Not
 
             # Sync AD and Azure
 
             Write-Host "Syncing Azure AD with Active Directory changes"
 
-            Invoke-Command -HideComputerName $AzureAdServer -ScriptBlock { 
-        
-                Start-AdSyncSyncCycle -PolicyType Initial 
-        
+            Invoke-Command -HideComputerName $AzureAdServer -ScriptBlock {
+
+                Start-AdSyncSyncCycle -PolicyType Initial
+
             } # End Invoke
 
             # Change H Drive Folder name
@@ -1015,68 +1015,68 @@ if ($Response -eq '1') {
     } # End 13 Change an existing users last name
     #=====================================================================================================================================
 
-    elseif ($Response -eq 14) { 
+    elseif ($Response -eq 14) {
 
-        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock { 
+        Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             $GPcomputer = Read-Host "Enter Computer Hostname (Example: DesktopComp18) to gpupdate or type all to gpupdate everything."
 
             if ($GPcomputer -like 'all') {
 
-                $devices = Get-ADComputer -Filter * | Select-Object Name 
+                $devices = Get-ADComputer -Filter * | Select-Object Name
 
-                foreach ($Device in $Devices) { 
+                foreach ($Device in $Devices) {
 
                     try {
-        
+
                         Invoke-GpUpdate $device -Force
-            
+
                         } # End Try
 
-                    catch { 
-        
-                        Invoke-Command -HideComputerName $device -ScriptBlock { 
-            
-                            gpupdate /force 
-                
+                    catch {
+
+                        Invoke-Command -HideComputerName $device -ScriptBlock {
+
+                            gpupdate /force
+
                             } -InDisconnectedSession # End Invoke
-                
+
                         } # End Catch
 
                    } # End ForEach
 
             } # End If
 
-             else { 
-         
+             else {
+
                 try {
-            
-                    Invoke-Command -HideComputerName $GPcomputer -ScriptBlock { 
-                
-                        gpupdate /force 
-                    
+
+                    Invoke-Command -HideComputerName $GPcomputer -ScriptBlock {
+
+                        gpupdate /force
+
                         } # End Invoke
-                    
+
                     } # End try
 
                  catch {
-         
+
                     Invoke-GPUpdate $GPcomputer -Force
-            
+
                     } # End Catch
 
              } # End Else
 
              } # End Invoke
 
-    pause 
+    pause
 
     Clear-Host
 
      } # End 14 Group Policy Update
     #=====================================================================================================================================
 
-    elseif ($Response -eq 15) { 
+    elseif ($Response -eq 15) {
 
         <#
         .Synopsis
@@ -1097,37 +1097,37 @@ if ($Response -eq '1') {
         [CmdletBinding()]
 
         param([switch]$Elevated)
-            
+
             function Test-Admin {
             $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
             $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-           
+
             } # End Test-Admin Function
 
         if ((Test-Admin) -eq $false)  {
 
             if ($elevated) {
-            
+
                 # could not elevate, quit
 
             } # End if
- 
+
             else {
- 
+
                 Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
-        
+
             } # End else
-        
+
             exit
-        
+
         } # End if
 
             if ("$env:COMPUTERNAME" -like $AzureAdServer) {
 
                         try {
-            
+
                             Import-Module ADSync
-            
+
                             Start-ADSyncSyncCycle -PolicyType Initial
 
                         } # End try
@@ -1160,27 +1160,27 @@ if ($Response -eq '1') {
 
         Update-ADsync -Verbose
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 15 Sync AD and Azure
     #=====================================================================================================================================
 
-    elseif ($Response -eq 16) { 
+    elseif ($Response -eq 16) {
 
         <#
         .Synopsis
-            Find-File is a cmdlet created to help a user find a file they only remeber part of the name of. 
+            Find-File is a cmdlet created to help a user find a file they only remeber part of the name of.
             It can also be used to find the location of a file where the name is remember but the location is not.
             This cmdlet was designed for users. As such no switches need to be defined. Running the cmdlet will prompt the user for input.
 
         .DESCRIPTION
-            This cmdlet searches the C: Drive for a rough file name and returns its location. 
+            This cmdlet searches the C: Drive for a rough file name and returns its location.
             If more than one file are found, more than one location will be returned.
-            
+
         .AUTHOR
-            Written by Rob Osborne - rosborne@osbornepro.com 
+            Written by Rob Osborne - rosborne@osbornepro.com
             Alias: tobor
 
         .EXAMPLE
@@ -1202,42 +1202,42 @@ if ($Response -eq '1') {
         ) # End param
 
         Write-Verbose "Begining Search. Please Wait..."
-        
+
         $PathResults = Get-ChildItem -Path 'C:\' -Filter "$FileName" -Recurse -ErrorAction SilentlyContinue -Force
 
         if ($PathResults) {
-        
+
             foreach ($Result in $PathResults) {
-             
+
                 $properties = @{
-                        File = $Result 
+                        File = $Result
                         Directory = $Result.DirectoryName
                         FullPath = $Result.FullName
                         LastAccessed = $Result.LastAccessTime
                         LastEdited = $Result.LastWriteTime
-                        Created = $Result.CreationTime 
+                        Created = $Result.CreationTime
                 } # End Properties
-        
+
             $obj = New-Object -TypeName PSCustomObject -Property $properties
-        
-            Write-Output $obj 
-        
+
+            Write-Output $obj
+
             } # End ForEach
-        
+
         } # End if
-        
+
         else {
-           
+
             Write-Warning "No file found by that name on the C: Drive. `n If you feel you received this warning in error, `n 1.) Ensure you added a file extension `n 2.) Try to be less specific by using *. `n 3.) Only add one file name to search for"
-       
+
         } # End Else
 
-        
+
         } # End Function
 
     Find-File -Verbose
 
-    pause 
+    pause
 
     Clear-Host
 
@@ -1248,44 +1248,44 @@ if ($Response -eq '1') {
 
         $hibernator = Read-Host 'What device needs hibernating disabled? Exmaple: DesktopComp01'
 
-        Invoke-Command -HideComputerName $hibernator -ScriptBlock { 
-    
-            POWERCFG -H off 
-        
+        Invoke-Command -HideComputerName $hibernator -ScriptBlock {
+
+            POWERCFG -H off
+
             } # End Invoke
 
         Write-Host "Hibernation disabled on $hibernator"
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 17 Disable Hibernate
     #=====================================================================================================================================
 
-    elseif ($Response -eq 18) { 
+    elseif ($Response -eq 18) {
 
         $item = Read-Host 'What is the location of the file or folder you want to add permissions to? Example: \\networkshare\share$\Rob\thisone.xlsx'
 
         $person = Read-Host 'What is the SamAccountName of the person you want to add? Example: rob.osborne'
 
-        $Acl = Get-Acl -Path $item 
+        $Acl = Get-Acl -Path $item
 
         $AccessRights = New-Object  system.security.accesscontrol.filesystemaccessrule("$person","FullControl","Allow")
 
         $Acl.SetAccessRule($AccessRights)
 
-        Set-Acl -Path $item $Acl 
+        Set-Acl -Path $item $Acl
 
-    pause 
+    pause
 
     Clear-Host
 
     } # End 18 Add user to permissions on a file or folder
     #=====================================================================================================================================
 
-    elseif ($Response -eq 19) { 
- 
+    elseif ($Response -eq 19) {
+
         Invoke-Command -HideComputerName $PrimaryDC -ScriptBlock {
 
             Import-Module ActiveDirectory
@@ -1313,7 +1313,7 @@ if ($Response -eq '1') {
             } # End Try
 
             catch {
-    
+
                 Write-Warning 'There was an issue changing the title.'
 
                 $Error[0]
