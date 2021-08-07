@@ -1,5 +1,4 @@
 $ErrorActionPreference = "SilentlyContinue"
-$Random = Get-Random -Maximum 250 -Minimum 1
 $OldWallpaper = (Get-ItemProperty "HKCU:\Control Panel\Desktop\" -Name Wallpaper).Wallpaper
 
 Function Get-ScreenResolution {
@@ -68,7 +67,7 @@ If (!(Test-Path -Path $UserDesktop)) {
 }  # End If
 $Compare = Compare-Object -ReferenceObject $PublicIcons -DifferenceObject $UserIcons -Property FullName | Where-Object { $_.SideIndicator -eq "=>" }
 $CreateIconCount = $MaxIcons - $PublicIcons.Count - $UserIcons.Count
-
+$Random = Get-Random -Maximum $CreateIconCount -Minimum 1
 
 
 # Get Default browser
@@ -103,21 +102,25 @@ While ($Count -lt $CreateIconCount) {
 
     $Count++
 
-    # Set the correct icon image
-    $IconResourcePath = "$env:USERPROFILE\Pictures\icon.bmp"
-    Add-Type -AssemblyName System.Drawing
-    $Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($BrowserPath)
-    $Icon.ToBitmap().Save($IconResourcePath)
+    If ($Count -ne $Random) {
 
-    $ShortcutPath = ((Get-ChildItem -Path $UserDesktop -ErrorAction SilentlyContinue).FullName) + "\$Browser $Count.lnk"
-    $Shell = New-Object -ComObject ("WScript.Shell")
-    $Iconfile = "IconFile=" + $IconResourcePath
-    $Shortcut = $Shell.CreateShortcut("$ShortcutPath")
-    $Shortcut.TargetPath = $WebPage
-    $Shortcut.Save()
-    Add-Content $ShortcutPath "HotKey=0"
-    Add-Content $ShortcutPath "$Iconfile"
-    Add-Content $ShortcutPath "IconIndex=0"
+        # Set the correct icon image
+        $IconResourcePath = "$env:USERPROFILE\Pictures\icon.bmp"
+        Add-Type -AssemblyName System.Drawing
+        $Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($BrowserPath)
+        $Icon.ToBitmap().Save($IconResourcePath)
+
+        $ShortcutPath = ((Get-ChildItem -Path $UserDesktop -ErrorAction SilentlyContinue).FullName) + "\$Browser $Count.lnk"
+        $Shell = New-Object -ComObject ("WScript.Shell")
+        $Iconfile = "IconFile=" + $IconResourcePath
+        $Shortcut = $Shell.CreateShortcut("$ShortcutPath")
+        $Shortcut.TargetPath = $WebPage
+        $Shortcut.Save()
+        Add-Content $ShortcutPath "HotKey=0"
+        Add-Content $ShortcutPath "$Iconfile"
+        Add-Content $ShortcutPath "IconIndex=0"
+
+    }  # End If
 
 }  # End While
 
@@ -145,7 +148,7 @@ $Shell.MinimizeAll()
 
 # Open the instructions
 $InstructionsPath = (Get-ChildItem -Path $UserDesktop).FullName + "\Instructions-README.txt"
- $Instructions = "
+$Instructions = "
 ========================================================================
                       We1C0m3 2 SAwPapEr
 ========================================================================
@@ -153,6 +156,7 @@ $InstructionsPath = (Get-ChildItem -Path $UserDesktop).FullName + "\Instructions
 
  On your desktop are mutliple icons that open with your favorite browser,
         One of them is not crippling malware,
+
                 Begin
  "
  New-Item -Path $InstructionsPath -ItemType File -Value $Instructions -Force -ErrorAction SilentlyContinue | Out-Null
@@ -160,16 +164,12 @@ $InstructionsPath = (Get-ChildItem -Path $UserDesktop).FullName + "\Instructions
 
 
 
- # Offers the undo
- $Answer = Read-Host -Prompt "Would you like to undo what this script did? [y/N]"
- If ($Answer -like "*y*") {
-
-    Set-WallPaper -Image $OldWallpaper -Force
-    Move-Item -Path $BrowserPath.Replace(".lnk", " $Random.lnk") -Destination $BrowserPath -Force -ErrorAction SilentlyContinue | Out-Null
-    $RemoveFiles = @()
-    $RemoveFiles += $WebPage, $IconResourcePath, $WallpaperImage, $InstructionsPath
-    $RemoveFiles += Get-ChildItem -Path (Get-ChildItem -Path "$UserDesktop").FullName -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
-    $RemoveFiles += Get-ChildItem -Path "C:\Users\Public\Desktop" -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
-    Remove-Item -Path $RemoveFiles -Force
-
- }  # End If
+# Undo operation
+Read-Host -Prompt "Press ENTER to undo what the script did"
+Set-WallPaper -Image $OldWallpaper -Force
+Move-Item -Path $BrowserPath.Replace(".lnk", " $Random.lnk") -Destination $BrowserPath -Force -ErrorAction SilentlyContinue | Out-Null
+$RemoveFiles = @()
+$RemoveFiles += $WebPage, $IconResourcePath, $WallpaperImage, $InstructionsPath
+$RemoveFiles += Get-ChildItem -Path (Get-ChildItem -Path "$UserDesktop").FullName -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
+$RemoveFiles += Get-ChildItem -Path "C:\Users\Public\Desktop" -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
+Remove-Item -Path $RemoveFiles -Force
