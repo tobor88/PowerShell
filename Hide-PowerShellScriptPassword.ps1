@@ -53,7 +53,7 @@ Function Hide-PowerShellScriptPassword {
         $Result = ""
         1..$Length | Foreach {
 
-            $Result += $Chars[ $Bytes[$_] ForEach-Object $Chars.Length ]
+            $Result += $Chars[ $Bytes[$_] % $Chars.Length ]
 
         } # End Foreach
 
