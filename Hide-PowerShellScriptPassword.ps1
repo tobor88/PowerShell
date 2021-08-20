@@ -1,18 +1,20 @@
 <#
-.Synopsis
-    Hide-PowerShellScriptPassword is a cmdlet that is used to create a couple of keys that can be used to prevent storing a password
-    in clear text inside of a PowerShell script. It creates and AES encrypted file contents and key to unlock the secret and never
-    display the password in clear text. This should be run as an administrator.
+.SYNOPSIS
+Hide-PowerShellScriptPassword is a cmdlet that is used to create a couple of keys that can be used to prevent storing a password
+in clear text inside of a PowerShell script. It creates and AES encrypted file contents and key to unlock the secret and never
+display the password in clear text. This should be run as an administrator.
 
 .DESCRIPTION
-    Create multiple files that can be used to prevent the usage of clear text passwords stored in clear text.
-    This should be run as an administrator.
-    Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generating-a-20-character-hex-string-with-powershell/
+Create multiple files that can be used to prevent the usage of clear text passwords stored in clear text.
+This should be run as an administrator.
+Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generating-a-20-character-hex-string-with-powershell/
+
 
 .NOTES
 Author: Rob Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
+
 
 .LINK
 https://osbornepro.com
@@ -25,11 +27,12 @@ https://www.linkedin.com/in/roberthosborne/
 https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 
-.EXAMPLE
-   Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
 
 .EXAMPLE
-   Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName $GroupName -Verbose
+Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
+
+.EXAMPLE
+Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName $GroupName -Verbose
 #>
 
 Function Hide-PowerShellScriptPassword {
@@ -38,9 +41,8 @@ Function Hide-PowerShellScriptPassword {
 
     BEGIN {
 
-       $KeyFilePath = C:\Users\Public\Documents\Keys
-
-       $AESPasswordPath = C:\Users\Public\Documents\Password
+       $KeyFilePath = "C:\Users\Public\Documents\Keys"
+       $AESPasswordPath = "C:\Users\Public\Documents\Password"
 
         Function Get-RandomHexNumber{
             param(
