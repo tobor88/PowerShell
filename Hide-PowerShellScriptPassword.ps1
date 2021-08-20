@@ -10,10 +10,20 @@
     Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generating-a-20-character-hex-string-with-powershell/
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Rob Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 .EXAMPLE
    Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
