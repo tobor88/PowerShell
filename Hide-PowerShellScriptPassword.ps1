@@ -38,13 +38,9 @@ Function Hide-PowerShellScriptPassword {
                 [string] $chars = "0123456789ABCDEF") # End param
 
         $Bytes = New-object "System.Byte[]" $Length
-
         $Rnd = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
-
         $Rnd.GetBytes($Bytes)
-
         $Result = ""
-
         1..$Length | Foreach {
 
             $Result += $Chars[ $Bytes[$_] ForEach-Object $Chars.Length ]
@@ -59,16 +55,12 @@ Function Hide-PowerShellScriptPassword {
 
     PROCESS {
 
-        Write-Verbose "Creating a random 32-bit key and storing it to a file. (Maximum Key Size is 32)
+        Write-Verbose "Creating a random 32-bit key and storing it to a file. (Maximum Key Size is 32)"
 
         $Var = Get-RandomHexNumber -Length 20
-
         $KeyFile = New-Item -ItemType File -Name $Var -Path $KeyFilePath
-
         $Key = New-Object Byte[] 32
-
         [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($Key)
-
         $Key | Out-File $KeyFile
 
         Write-Verbose "Encryption key file has been created."
@@ -78,18 +70,14 @@ Function Hide-PowerShellScriptPassword {
     END {
 
         Write-Verbose "Invoking the stored key to create the encrypted password"
-
+        
         $Pass = Read-Host -Prompt "Enter the password you want to AES encrypt for a script"
-
         $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath
-
         $KeyFile = "$KeyFilePath\$Var"
-
-        $Key = Get-Content $KeyFile
-
+        $Key = Get-Content -Path $KeyFile
         $Password = "$Pass" | ConvertTo-SecureString -AsPlainText -Force
-
         $Password | ConvertFrom-SecureString -key $Key | Out-File $PasswordFile
+
 
         Write-Host "Use the below lines to insert your encrypted credentials into the script"
         Write-Host " "
