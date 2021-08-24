@@ -35,12 +35,12 @@ Contact: rosborne@osbornepro.com
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
-https://btps-secpack.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 
 
@@ -75,8 +75,7 @@ Function Set-GroupMembershipMirror {
 
         )  # End param
 
-BEGIN
-{
+BEGIN {
 
     $DomainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
     $PDC = $DomainObj.PdcRoleOwner.Name
@@ -85,8 +84,7 @@ BEGIN
     $GroupFound = Get-AdObject -Filter 'Name -like $Group' -Properties *
     $NewGroupFound = Get-AdObject -Filter 'Name -like $NewGroup' -Properties *
 
-    If ( ($GroupFound) -and ($NewGroupFound) )
-    {
+    If ( ($GroupFound) -and ($NewGroupFound) ) {
 
         Write-Verbose "[*] Both defined groups were successfully discovered in AD"
 
@@ -94,8 +92,7 @@ BEGIN
         $NewGroupDN = $NewGroupFound.DistinguishedName
 
     }  # End If
-    Else
-    {
+    Else {
 
         Throw "The group name you specified was not found in AD"
 
@@ -103,8 +100,7 @@ BEGIN
     }  # End Else
 
     $Port = 389
-    If ($UseLDAPS.IsPresent)
-    {
+    If ($UseLDAPS.IsPresent) {
 
         $Port = 636
 
@@ -115,8 +111,7 @@ PROCESS
 {
 
     Write-Verbose "[*] Getting member properties"
-    ForEach ($Member in $FindGroup.member)
-    {
+    ForEach ($Member in $FindGroup.member) {
 
         $GroupMembers += Get-ADObject -Filter 'DistinguishedName -like $Member'
 
@@ -124,8 +119,7 @@ PROCESS
 
 
     # Mirror the members to their new group
-    ForEach ($Member in $GroupMembers)
-    {
+    ForEach ($Member in $GroupMembers) {
 
         $DN = $Member.DistinguishedName
         $FullName = $Member.Name

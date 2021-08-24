@@ -18,6 +18,7 @@ Defines the path to a file you want to grab unique IP addresses out out
 ForEach ($Line in (Get-Content -Path C:\Temp\firewall.log)) { Get-ValidIPAddressFromString -String $Line }
 # This example parses the text file firewall.log and lists any IPv4 Addresses found on each line
 
+
 .EXAMPLE
 Get-ValidIpAddressFromString -Path C:\Windows\System32\LogFiles\Firewall\domainfw.log
 
@@ -31,11 +32,12 @@ Contact: rosborne@osbornepro.com
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 
 
@@ -69,22 +71,17 @@ Function Get-ValidIPAddressFromString {
     $Obj = @()
     $Regex=‘(?<Address>((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))’
 
-    Switch ($PsCmdlet.ParameterSetName)
-    {
+    Switch ($PsCmdlet.ParameterSetName) {
         'File' {
 
             $FileContents = Get-Content -Path $Path -Tail 5000
-            ForEach ($Line in $FileContents)
-            {
+            ForEach ($Line in $FileContents) {
 
-                If (($Line -Match $Regex) -and ($Obj -notcontains $Matches.Address))
-                {
+                If (($Line -Match $Regex) -and ($Obj -notcontains $Matches.Address)) {
 
                         $Obj += $Matches.Address
 
                 }  # End If
-
-
 
             }  # End ForEach
 
@@ -94,8 +91,7 @@ Function Get-ValidIPAddressFromString {
 
         'Line' {
 
-            If ($String -Match $Regex)
-            {
+            If ($String -Match $Regex) {
 
                 $Obj = $Matches.Address
 

@@ -1,23 +1,31 @@
 <#
-.Synopsis
-    Enable-Dhcp is a cmdlet that is used for enabling DHCP on a local computer's active network adapters.
+.SYNOPSIS
+Enable-Dhcp is a cmdlet that is used for enabling DHCP on a local computer's active network adapters.
 
 .DESCRIPTION
-    Enables DHCP for IPv4 Network adapters on a local computer.
+Enables DHCP for IPv4 Network adapters on a local computer.
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
 
 .EXAMPLE
-   Enable-Dhcp
-
-.EXAMPLE
-   Enable-Dhcp -Verbose
+Enable-Dhcp
 #>
-
 Function Enable-Dhcp {
     [CmdletBinding()]
         param() # End param
@@ -25,48 +33,39 @@ Function Enable-Dhcp {
     BEGIN {
 
         $IPType = "IPv4"
-
         Write-Verbose "Obtaining Active Network Adapters"
-
         $Adapter = Get-NetAdapter | Where-Object {$_.Status -eq "up"}
-
         $Interface = $adapter | Get-NetIPInterface -AddressFamily $IPType
 
     } # End BEGIN
-
     PROCESS {
 
-        if ($interface.Dhcp -eq "Disabled") {
+        If ($interface.Dhcp -eq "Disabled") {
 
             Write-Verbose "Remove existing gateway"
-
-            if (($Interface | Get-NetIPConfiguration).Ipv4DefaultGateway) {
+            If (($Interface | Get-NetIPConfiguration).Ipv4DefaultGateway) {
 
                 $Interface | Remove-NetRoute -Confirm:$false
 
             } # End If
 
-        Write-Verbose "Enabling DHCP"
-
+        Write-Output "[*] Enabling DHCP"
         $Interface | Set-NetIPInterface -DHCP Enabled
 
-        Write-Verbose "Configuring the DNS Servers automatically"
-
+        Write-Output "[*] Configuring the DNS Servers automatically"
         $Interface | Set-DnsClientServerAddress -ResetServerAddresses
 
         } # End If
 
         Else {
 
-        Write-Host "DHCP is already enabled"
+            Write-Output "[*] DHCP is already enabled"
 
         }
     } # End PROCESS
-
     END {
 
         ipconfig /renew
-
         Write-Verbose "$ComputerName now using DHCP to obtain and IPv4 address."
 
     } # End END

@@ -24,7 +24,7 @@ No output. This deletes old CA Certificates
 
 
 .NOTES
-Author: Rob Osborne
+Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
 
@@ -32,12 +32,13 @@ Contact: rosborne@osbornepro.com
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
-https://www.hackthebox.eu/profile/52286
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 .EXAMPLE
 Remove-OldCaCerts -ComputerName Desktop01 -CAIssuer <string[] Distinguished Name of CA Issuer> [-Verbose]
@@ -61,33 +62,25 @@ Function Remove-OldCaCerts {
             [ValidateNotNullorEmpty()]
         [string[]]$CAIssuer ) # End param
 
-    If ($null -eq $ComputerName)
-    {
+    If ($null -eq $ComputerName) {
 
         $ComputerName = "$env:COMPUTERNAME"
 
     } #End If
 
     Write-Verbose "Creating Certificate Store Objects for LocalMachine..."
-
     $CertStoreLocalMachine = New-Object 'System.Security.Cryptography.X509Certificates.X509Store'  -ArgumentList  "\\$($Computername)\My", "LocalMachine"
 
     Write-Verbose "Finding all certificates that have an Issuer of $CAIssuer..."
-
     $OldCACertificates = $CertStoreLocalMachine.Certificates | Select-Object -Property * | Where-Object { $_.Issuer -eq $CAIssuer }
-
     $Thumbprints = $OldCACertificates.Thumbprint
-
     $OldCACertificates | Select-Object -Property 'Issuer','Subject','Thumbprint','FriendlyName'
 
     Write-Verbose "The above certificates are about to be removed. Press Enter to continue or Ctrl+C to quit. "
-
     pause
 
     Write-Verbose "Removing certificates..."
-
-    ForEach ($Thumbprint in $OldCACertificates)
-    {
+    ForEach ($Thumbprint in $OldCACertificates) {
 
         Get-ChildItem "Cert:\LocalMachine\My\$Thumbprint" | Remove-Item -Force
 

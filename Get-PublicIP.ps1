@@ -1,36 +1,41 @@
 <#
 .SYNOPSIS
-    This cmdlet is used to get the public ip address of the local device.
+This cmdlet is used to get the public ip address of the local device.
 
 
 .DESCRIPTION
-    Get-PublicIp gets the public IP address of the local machine and displays other info as well such as Provider, City, etc.
-    This is done thanks to an API at https://ipinfo.io/json
+Get-PublicIp gets the public IP address of the local machine and displays other info as well such as Provider, City, etc.
+This is done thanks to an API at https://ipinfo.io/json
 
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
 
 
-.LINKS
-    https://osbornepro.com
-    https://writeups.osbornepro.com
-    https://github.com/tobor88
-    https://gitlab.com/tobor88
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 
 .EXAMPLE
-    ----------------- EXAMPLE 1 --------------------
-   PS> Get-PublicIP
+----------------- EXAMPLE 1 --------------------
+PS> Get-PublicIP
 
 .INPUTS
-    None
+None
 
 
 .OUTPUTS
-    PSCustomObject
+PSCustomObject
 
 #>
 
@@ -40,16 +45,14 @@ Function Get-PublicIp {
 
     $IpInfo = Invoke-RestMethod -Uri https://ipinfo.io/json
 
-    If ($Null -like $IpInfo)
-    {
+    If ($Null -like $IpInfo) {
 
       $IpInfo = Invoke-RestMethod http://ipinfo.io/json
 
     }  # End If
-    Else
-    {
+    Else {
 
-      Throw "Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."
+      Throw " [x] Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."
 
     }  # End Else
 

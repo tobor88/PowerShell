@@ -1,27 +1,35 @@
 ﻿<#
-.Synopsis
-    Find-File is a cmdlet created to help a user find a file they only remeber part of the name of.
-    It can also be used to find the location of a file where the name is remember but the location is not.
-    This cmdlet was designed for users. As such no switches need to be defined. Running the cmdlet will prompt the user for input.
+.SYNOPSIS
+Find-File is a cmdlet created to help a user find a file they only remeber part of the name of.
+It can also be used to find the location of a file where the name is remember but the location is not.
+This cmdlet was designed for users. As such no switches need to be defined. Running the cmdlet will prompt the user for input.
+
 
 .DESCRIPTION
-    This cmdlet searches the C: Drive for a rough file name and returns its location.
-    If more than one file are found, more than one location will be returned.
+This cmdlet searches the C: Drive for a rough file name and returns its location.
+If more than one file are found, more than one location will be returned.
+
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 .EXAMPLE
-   Find-File
-
-.EXAMPLE
-   Find-File -Verbose
-
+Find-File
 #>
-
 Function Find-File {
     [CmdletBinding()]
         param(
@@ -34,16 +42,14 @@ Function Find-File {
     BEGIN {
 
         Write-Verbose "Begining Search. Please Wait..."
-
         $PathResults = Get-ChildItem -Path 'C:\' -Filter "$FileName" -Recurse -ErrorAction SilentlyContinue -Force
 
     } # End BEGIN
-
     PROCESS {
 
-        if ($PathResults) {
+        If ($PathResults) {
 
-            foreach ($Result in $PathResults) {
+            ForEach ($Result in $PathResults) {
 
                 $Properties = @{
                     File = $Result
@@ -54,22 +60,20 @@ Function Find-File {
                     Created = $Result.CreationTime
                 } # End Properties
 
-                $obj = New-Object -TypeName PSCustomObject -Property $Properties
+                $Obj = New-Object -TypeName PSCustomObject -Property $Properties
 
-                Write-Output $obj
+                Write-Output $Obj
 
             } # End ForEach
 
         } # End if
-
-        else {
+        Else {
 
             Write-Warning "No file found by that name on the C: Drive. `n If you feel you received this warning in error, `n 1.) Ensure you added a file extension `n 2.) Try to be less specific by using *. `n 3.) Only add one file name to search for"
 
         } # End Else
 
     } # End PROCESS
-
     END {
 
         Write-Verbose "Search Completed"
@@ -77,7 +81,3 @@ Function Find-File {
     } # End END
 
 } # End Function
-
-Find-File -Verbose
-
-Pause

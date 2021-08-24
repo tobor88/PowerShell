@@ -11,9 +11,6 @@ Function Remove-DirectAccessProfile {
         )  # End param
 
     $RegPath = ‘HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig’
-
-
     Remove-Item -Path "$RegPath\*" -Recurse
-    
 
 }  # End Function Remove-DirectAccessProfile

@@ -20,7 +20,18 @@ Specifies the path to an item. Get-Content gets the content of the item. Wildcar
 Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
+
+
+.LINK
 https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 
 .EXAMPLE
@@ -38,22 +49,8 @@ System.String[], System.String[]
 
 .OUTPUTS
 None
-
-
-.LINK
-https://roberthsoborne.com
-https://osbornepro.com
-https://github.com/tobor88
-https://gitlab.com/tobor88
-https://www.powershellgallery.com/profiles/tobor
-https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
-https://www.hackthebox.eu/profile/52286
-
 #>
-
-Function Set-LockScreenImage
-{
+Function Set-LockScreenImage {
 	[CmdletBinding()]
 	param(
 		[Parameter(Mandatory = $false,
@@ -67,21 +64,16 @@ Function Set-LockScreenImage
 		[String[]]$Path) # End param
 
 
-	If ($Null -ne $ComputerName)
-	{
+	If ($Null -ne $ComputerName) {
 
 		$TestConnection = Test-Connection -ComputerName $ComputerName -Count 1
-
-		If (!($TestConnection))
-		{
+		If (!($TestConnection)) {
 
 			Write-Warning "Could not ping remote host"
-
 			Read-Host "Press Ctrl+C to cancel script or press Enter to continue anyway."
 
 		} # End If
-		Else
-		{
+		Else {
 
 			$Cred = Get-Credential -Message "Enter admin credentials to make changes on the remote machine."
 
@@ -94,7 +86,6 @@ Function Set-LockScreenImage
 		Invoke-Command -Session $Session -ScriptBlock {
 
 			Write-Verbose "Setting lock screen image for $ComputerName"
-
 			Write-Verbose "Creating copy location..."
 
 			$LocalImageLocation = 'C:\Users\Public\Pictures\LockScreenImage.png'
@@ -104,17 +95,14 @@ Function Set-LockScreenImage
 			Write-Verbose "Copying image to local location..."
 			Copy-Item -Path "Q:\LockScreenImage.png" -Destination $LocalImageLocation -Force | Out-Null
 
-			If (!(Test-Path -Path $RegistryPath))
-			{
+			If (!(Test-Path -Path $RegistryPath)) {
 
 				Write-Verbose "Registry path $RegistryPath does not exist. Creating entry..."
-
 				New-Item -Path $RegistryPath -Name LockScreenImage -Force | Out-Null
 
 			} # End If
 
-			If (!((Get-ItemProperty -Path $RegistryPath).$PropertyName))
-			{
+			If (!((Get-ItemProperty -Path $RegistryPath).$PropertyName)) {
 
 				Write-Verbose "Creating Item Property"
 				New-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
@@ -131,14 +119,12 @@ Function Set-LockScreenImage
 			$Command = @'
 C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, UpdatePerUserSystemParameters
 '@
-			Try
-			{
+			Try {
 
 				Invoke-Expression -Command:$Command
 
 			} #  End Try
-			Catch
-			{
+			Catch {
 
 				Start-Process -FilePath "C:\Windows\System32\cmd.exe" -ArgumentList '/c  user32.dll, UpdatePerUserSystemParameters'
 
@@ -151,13 +137,11 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 		Remove-PSSession $Session
 
 	} # End If
-	Else
-	{
+	Else {
 
 		$ComputerName = $env:COMPUTERNAME
 
 		Write-Verbose "Setting lock screen image for $ComputerName"
-
 		Write-Verbose "Creating copy location..."
 
 		New-PSDrive -Name Q -Root $Path -PSProvider FileSystem -Scope Global -Persist -Description "Temp mapping for lock screen image file." | Out-Null
@@ -169,16 +153,14 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 		Write-Verbose "Copying image to local location..."
 		Copy-Item -Path "Q:\LockScreenImage.png" -Destination $LocalImageLocation -Force | Out-Null
 
-		If (!(Test-Path -Path $RegistryPath))
-		{
+		If (!(Test-Path -Path $RegistryPath)) {
 
 			Write-Verbose "Registry path $RegistryPath does not exist. Creating entry..."
 			New-Item -Path $RegistryPath -Name LockScreenImage -Force | Out-Null
 
 		} # End If
 
-		If (!((Get-ItemProperty -Path $RegistryPath).$PropertyName))
-		{
+		If (!((Get-ItemProperty -Path $RegistryPath).$PropertyName)) {
 
 			Write-Verbose "Creating Item Property"
 			New-ItemProperty -Path $RegistryPath -Name $PropertyName -Value $LocalImageLocation | Out-Null
@@ -194,14 +176,12 @@ C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, Upda
 		$Command = @'
 C:\Windows\System32\cmd.exe /C C:\Windows\System32\rundll32.exe user32.dll, UpdatePerUserSystemParameters
 '@
-		Try
-		{
+		Try {
 
 			Invoke-Expression -Command:$Command
 
 		} #  End Try
-		Catch
-		{
+		Catch {
 
 			Start-Process -FilePath "C:\Windows\System32\cmd.exe" -ArgumentList '/c  user32.dll, UpdatePerUserSystemParameters'
 

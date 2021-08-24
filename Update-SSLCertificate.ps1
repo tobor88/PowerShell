@@ -43,12 +43,12 @@ Contact: rosborne@osbornepro.com
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
-https://btps-secpack.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 #>
 Function Update-SSLCertificate {
@@ -184,8 +184,7 @@ BEGIN {
     Write-Output "`tDOWNLOAD: Certify Community Edition from https://certifytheweb.com/"
 
     $Bool = $False
-    If ($UseSSL.IsPresent)
-    {
+    If ($UseSSL.IsPresent) {
 
         $Bool = $True
 
@@ -198,15 +197,13 @@ BEGIN {
     $Compare = $CertPath.Replace("\$Cert","")
     $SecurePassword = ConvertTo-SecureString -String $KeyPassword -Force –AsPlainText
 
-    If ($Root -ne $Compare)
-    {
+    If ($Root -ne $Compare) {
 
         Throw "[x] Cretificate file and Key file required to be saved in same location"
 
     }  # End If
 
-    If ($Null -eq $PfxCertificate)
-    {
+    If ($Null -eq $PfxCertificate) {
 
         Write-Output "[*] Obtaining latest wildcard certificate file from the default Certify Community Edition's save location"
         $CertifySavePath = Get-ChildItem -Path "C:\ProgramData\Certify\assets\_.*.*\" | Select-Object -ExpandProperty "FullName"
@@ -231,22 +228,18 @@ BEGIN {
 }  # End BEGIN
 PROCESS {
 
-    Switch ($PsCmdlet.ParameterSetName)
-    {
+    Switch ($PsCmdlet.ParameterSetName) {
 
         'IIS' {
 
-            ForEach ($Cn in $ComputerName)
-            {
+            ForEach ($Cn in $ComputerName) {
 
-                If (!(Test-WSMan -ComputerName $Cn -UseSSL:$Bool))
-                {
+                If (!(Test-WSMan -ComputerName $Cn -UseSSL:$Bool)) {
 
                     Write-Output "[x] Unable to reach $Cn using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
                 }  # End If
-                Else
-                {
+                Else {
 
                     Invoke-Command -HideComputerName $Cn -UseSSL:$Bool -ArgumentList $SiteName,$PfxCertificate,$SecurePassword,$Credential,$Source -ScriptBlock {
 
@@ -271,8 +264,7 @@ PROCESS {
                         Write-Output "[*] Obtaining thumbprint of certificate with the subject name CN=*.$($($env:USERDNSDOMAIN.ToLower())) that was created today"
                         $Thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { ($_.Subject -eq "CN=*.$($($env:USERDNSDOMAIN.ToLower()))") -and ($_.NotBefore -like "$($(Get-Date -Format MM/dd/yyyy))*") } | Select-Object -ExpandProperty Thumbprint
 
-                        ForEach ($S in $SiteName)
-                        {
+                        ForEach ($S in $SiteName) {
 
                             Write-Output "[*] Defining new wildcard certificate on $env:COMPUTERNAME for the site $Site"
                             $Binding = Get-WebBinding -Name $Site -Protocol "https"
@@ -293,14 +285,12 @@ PROCESS {
 
         'File' {
 
-            If (!(Test-WSMan -ComputerName $ComputerName -UseSSL:$Bool))
-            {
+            If (!(Test-WSMan -ComputerName $ComputerName -UseSSL:$Bool)) {
 
                 Write-Output "[x] Unable to reach $ComputerName using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
             }  # End If
-            Else
-            {
+            Else {
 
                 $PfxContents = [Convert]::ToBase64String((Get-Content -Path $PfxCertificate -Encoding Byte))
                 $CertContents = Get-Content -Path $CertPath | Out-String
@@ -352,8 +342,7 @@ PROCESS {
                     Import-PfxCertificate -FilePath $PfxNet -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
                     Remove-Item -Path "C:\Users\Public\Documents\deletethiscert.pfx" -Force -ErrorAction SilentlyContinue | Out-Null
 
-                    If ($CAPath.Length -gt 1)
-                    {
+                    If ($CAPath.Length -gt 1) {
 
                         $CA = $CAPath.Split("\")[-1]
                         $CASourcePath = $CAPath.Replace("\$CA","")
@@ -364,8 +353,7 @@ PROCESS {
 
                     }  # End If
 
-                    If (($Null -ne $Service) -and (Get-Service -Name $Service -ErrorAction SilentlyContinue) -ne $Null)
-                    {
+                    If (($Null -ne $Service) -and (Get-Service -Name $Service -ErrorAction SilentlyContinue) -ne $Null) {
 
                         Write-Verbose "Restarting the service $Service"
                         Restart-Service -Name $Service -Force

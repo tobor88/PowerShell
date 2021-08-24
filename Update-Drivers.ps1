@@ -36,10 +36,22 @@ Update-Drivers -ExcludeFirmware
 
 
 .NOTES
-Authors: Roger Zaner, Rob Osborne
+Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
-Reference: https://rzander.azurewebsites.net/script-to-install-or-update-drivers-directly-from-microsoft-catalog/
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+https://rzander.azurewebsites.net/script-to-install-or-update-drivers-directly-from-microsoft-catalog/
 
 
 .INPUTS
@@ -48,19 +60,7 @@ None
 
 .OUTPUTS
 None, Microsoft.PowerShell.Commands.Internal.Format
-    By default, this cmdlet does not return an object. If you use the -ListAll switch parameter a Microsoft.PowerShell.Commands.Internal.Format object will be returned
-
-
-.LINK
-https://rzander.azurewebsites.net/script-to-install-or-update-drivers-directly-from-microsoft-catalog/ 
-https://osbornepro.com
-https://writeups.osbornepro.com
-https://github.com/tobor88
-https://gitlab.com/tobor88
-https://www.powershellgallery.com/profiles/tobor
-https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
-https://www.hackthebox.eu/profile/52286
+By default, this cmdlet does not return an object. If you use the -ListAll switch parameter a Microsoft.PowerShell.Commands.Internal.Format object will be returned
 #>
 Function Update-Drivers {
     [CmdletBinding(DefaultParameterSetName="UpdateAll")]
@@ -90,20 +90,17 @@ Function Update-Drivers {
             [Switch][Bool]$SkipFirmware
         )  # End param
 
-BEGIN
-{
+BEGIN {
 
     Write-Verbose "Verifying permissions"
     $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
-    If ($IsAdmin)
-    {
+    If ($IsAdmin) {
 
         Write-Verbose "Permissions verified, continuing execution"
 
     }  # End If
-    Else
-    {
+    Else {
 
         Throw "Insufficient permissions detected. Run this cmdlet in an adminsitrative prompt."
 
@@ -128,36 +125,30 @@ BEGIN
     $Criteria = "IsInstalled=0 and Type='Driver'"
 
 }  # End BEGIN
-PROCESS
-{
+PROCESS {
 
     Write-Output "[*] Searching Driver-Updates..."
     $SearchResult = $Searcher.Search($Criteria)
     $Updates = $SearchResult.Updates
 
-    If ($Updates.Count -eq 0)
-    {
+    If ($Updates.Count -eq 0) {
 
         Write-Output "[*] All drivers are up to date"
 
     }  # End If
-    ElseIf (($Updates.Count -gt 0) -and ($SearchResult.Updates.Where({$_.Filter -like $Name})))
-    {
+    ElseIf (($Updates.Count -gt 0) -and ($SearchResult.Updates.Where({$_.Filter -like $Name}))) {
 
         Write-Verbose "Searching for $Name in available updates"
 
     }  # End Else
-    ElseIf ($Updates.Count -gt 0)
-    {
+    ElseIf ($Updates.Count -gt 0) {
 
         $UpdateDriverList = Select-Object -InputObject $Updates -Property "Title","DriverModel","DriverVerDate","Driverclass","DriverManufacturer" | Format-Table -AutoSize -Wrap
 
     }  # End If
-    Else
-    {
+    Else {
 
         Write-Output "[*] All drivers are up to date"
-
         Write-Output "[*] Returning Microsoft Update registered sources to their original states"
         $ReferenceObj = $UpdateSvc.Services | Where-Object { $_.IsDefaultAUService -eq $False -and $_.ServiceID -eq "7971f918-a847-4430-9279-4a52d1efe18d" }
         $ReferenceObj | ForEach-Object -Process { $UpdateSvc.RemoveService($_.ServiceID) }
@@ -166,27 +157,21 @@ PROCESS
 
     }  # End Else
 
-    If ($ListAll.IsPresent)
-    {
+    If ($ListAll.IsPresent) {
 
         Write-Output "[*] The below table lists available driver updates"
         $UpdateDriverList
 
     }  # End If
-    Else
-    {
+    Else {
 
-        If ($PSCmdlet.ParameterSetName -eq "Install")
-        {
+        If ($PSCmdlet.ParameterSetName -eq "Install") {
 
             Write-Verbose "[*] Downloading $Name"
-
-
             Write-Verbose "[*] Installing $Name"
 
         }  # End If
-        Else
-        {
+        Else {
 
             Write-Output "[*] Downloading Drivers..."
             $UpdatesToDownload = New-Object -ComObject Microsoft.Update.UpdateColl
@@ -209,15 +194,11 @@ PROCESS
             $InstallationResult = $Installer.Install()
 
 
-            If ($InstallationResult.RebootRequired)
-            {
+            If ($InstallationResult.RebootRequired) {
 
                 Write-Output "[*] Reboot required to finish updating"
-
                 $Selection = Read-Host -Prompt "[!] Would you like to restart the computer now? [y|N]"
-
-                If (($Selection -like "y") -or ($Selection -like "yes"))
-                {
+                If (($Selection -like "y") -or ($Selection -like "yes")) {
 
                     Write-Output "[*] Returning Microsoft Update registered sources to their original states"
 
@@ -228,16 +209,14 @@ PROCESS
                     Restart-Computer -Force
 
                 }  # End If
-                Else
-                {
+                Else {
 
                     Write-Output "[*] To finish installing updates you still need to restart the device"
 
                 }   # End Else
 
             }  # End If
-            Else
-            {
+            Else {
 
                 Write-Output "[*] All drivers are now up to date"
 
@@ -248,8 +227,7 @@ PROCESS
     }  # End Else
 
 }  # End PROCESS
-END
-{
+END {
 
     Write-Output "[*] Returning Microsoft Update registered sources to their original states"
     $ReferenceObj = $UpdateSvc.Services | Where-Object { $_.IsDefaultAUService -eq $False -and $_.ServiceID -eq "7971f918-a847-4430-9279-4a52d1efe18d" }

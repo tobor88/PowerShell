@@ -1,47 +1,48 @@
 <#
 .SYNOPSIS
-    This cmdlet was created for Task Scheduler to find expiring accounts and alert the appropriate people.
-    I suggest having it run once every 2 or 3 days to receive at least 2 alerts before an account expires to prevent it
-    from happening if not desired.
+This cmdlet was created for Task Scheduler to find expiring accounts and alert the appropriate people.
+I suggest having it run once every 2 or 3 days to receive at least 2 alerts before an account expires to prevent it
+from happening if not desired.
 
 
 .DESCRIPTION
-    This cmdlet finds accounts that are expiring in the next 10 days. It then sends an email alert in a nice table.
+This cmdlet finds accounts that are expiring in the next 10 days. It then sends an email alert in a nice table.
 
 
 .NOTES
-    Author: Robert H. Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
 
 
-.LINKS
-    https://osbornepro.com
-    https://writeupsosbornepro.com
-    https://github.com/tobor88
-    https://gitlab.com/tobor88
-    https://www.powershellgallery.com/profiles/tobor
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 
 .EXAMPLE
-    --------------- EXAMPLE 1 ------------------
-    PS> Find-ExpiringAccounts -Verbose
+--------------- EXAMPLE 1 ------------------
+PS> Find-ExpiringAccounts -Verbose
 
 .INPUTS
-    None
+None
 
 
 .OUTPUTS
-    None
-
+None
 #>
-
 Function Find-File {
     [CmdletBinding()]
         param() # End param
 
-  BEGIN
-  {
+  BEGIN {
 
     $SmtpServer = mail.smtp2go.com
     $To = "hremailaddress@osbornepro.com","itemailaddress@osbornepro.com"
@@ -49,11 +50,9 @@ Function Find-File {
     $Accounts = Search-ADAccount -AccountExpiring -TimeSpan "10.00:00:00" | Select-Object -Property AccountExpirationDate, Name, @{ Label = "Manager"; E = { (Get-Aduser(Get-AdUser $_ -Property Manager).Manager).Name } }
 
   } # End BEGIN
-  PROCESS
-  {
+  PROCESS {
 
-    If (!($Accounts -eq $Null))
-    {
+    If (!($Accounts -eq $Null)) {
 
 $Css = @"
 <style>
@@ -90,15 +89,13 @@ td {
 
   } # End PROCESS
 
-  END
-  {
+  END {
 
-    ForEach ($ToEmail in $To)
-    {
+    ForEach ($ToEmail in $To) {
 
-      Send-MailMessage -From $FromEmail -To $ToEmail -Subject "AD Event: Accounts Expiring" -BodyAsHtml -Body $Body -SmtpServer $SmtpServer
+        Send-MailMessage -From $FromEmail -To $ToEmail -Subject "AD Event: Accounts Expiring" -BodyAsHtml -Body $Body -SmtpServer $SmtpServer
 
-    } # End Foreach loop
+    } # End ForEach
 
   } # End END
 

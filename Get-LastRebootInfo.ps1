@@ -36,13 +36,14 @@ System.Array
 
 .LINK
 https://osbornepro.com
+https://btpssecpack.osbornepro.com
 https://writeups.osbornepro.com
-https://github.com/tobor88
+https://github.com/OsbornePro
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.hackthebox.eu/profile/52286
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 #>
 Function Get-LastRebootInfo {
     [CmdletBinding()]
@@ -59,9 +60,7 @@ Function Get-LastRebootInfo {
 
 
     $Results = [System.Collections.ArrayList]::New()
-
-    ForEach ($C in $ComputerName)
-    {
+    ForEach ($C in $ComputerName) {
 
         $Results += Invoke-Command -HideComputerName "$C.$env:USERDNSDOMAIN" -UseSSL -ScriptBlock {Get-WinEvent -FilterHashtable @{logname='System'; id=1074} | `
         ForEach-Object {

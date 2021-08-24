@@ -1,40 +1,45 @@
 ﻿<#
 .SYNOPSIS
-    Get-HelpDesk is a cmdlet created for system administrators. It is a combination of script options to simpliy common help desk tasks.
+Get-HelpDesk is a cmdlet created for system administrators. It is a combination of script options to simpliy common help desk tasks.
+
 
 .DESCRIPTION
-    Get-HelpDesk is compromised of multiple script options and does not use any parameters.
+Get-HelpDesk is compromised of multiple script options and does not use any parameters.
+
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 .EXAMPLES
-    Get-HelpDesk
+Get-HelpDesk
 #>
-
 Function Get-HelpDesk {
     param([switch]$Elevated)
 
     Function Test-Admin {
 
-        $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-
-        $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+        $CurrentUser = New-Object -TypeName Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+        $CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 
     } # End Test-Admin
 
-    if ((Test-Admin) -eq $false)  {
+    If ((Test-Admin) -eq $False) {
 
-        if ($elevated) {
-
-            # could not elevate, quit
-
-        } # End if
-
-        else {
+        If (!($Elevated)) {
 
             Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
 
@@ -44,21 +49,16 @@ Function Get-HelpDesk {
 
     } # End If
 
-    $timeout = new-timespan -Minutes 480 # Time out of script after 8 hours
+    $Timeout = new-timespan -Minutes 480 # Time out of script after 8 hours
 
-    do { # This do is for preventing the script for running longer than 8 hours
+    Do { # This do is for preventing the script for running longer than 8 hours
 
         $Domain = "<Domain.com>"
-
         $PrimaryDC = "<PDC Hostname>"
-
         $SecondaryDC = "SDC Hostname"
-
         $PrintServers = "<Print Server hostname>"
-
         $AzureAdServer = "<Azure Sync Hostname>"
-
-        $sw = [diagnostics.stopwatch]::StartNew()
+        $Sw = [diagnostics.stopwatch]::StartNew()
 
     Function MenuMaker{
         param(
@@ -66,13 +66,13 @@ Function Get-HelpDesk {
             [switch]$IncludeExit,
             [string]$Title = $null)
 
-        $Width = if ($Title) {
+        $Width = If ($Title) {
 
                         $Length = $Title.Length; $Length2 = $Selections | ForEach-Object {$_.length} | Sort-Object -Descending | Select-Object -First 1;$Length2,$Length | Sort-Object -Descending | Select-Object -First 1
 
                     } # End if
 
-                    else {
+                    Else {
 
                         $Selections | ForEach-Object {$_.length} | Sort-Object -Descending | Select-Object -First 1
 

@@ -47,12 +47,12 @@ None
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
-https://btps-secpack.com
-https://github.com/tobor88
+https://btpssecpack.osbornepro.com
+https://github.com/OsbornePro
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 
 #>
@@ -81,22 +81,19 @@ Function Get-BatteryReport {
 
         )  # End param
 
-    Switch ($PsCmdlet.ParameterSetName)
-    {
+    Switch ($PsCmdlet.ParameterSetName) {
 
         'Remote' {
 
             $Bool = $False
-            If ($UseSSL.IsPresent)
-            {
+            If ($UseSSL.IsPresent) {
 
                 Write-Verbose "WinRM over HTTPS communication will be used to execute command"
                 $Bool = $True
 
             }  # End If
 
-            ForEach ($C in $ComputerName)
-            {
+            ForEach ($C in $ComputerName) {
 
                 Write-Verbose "Obtaining battery report from $C and saving it to $Path"
                 Invoke-Command -HideComputerName $C -ArgumentList $Path -UseSSL:$Bool -ScriptBlock {

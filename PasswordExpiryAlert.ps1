@@ -3,17 +3,22 @@
   PURPOSE    : Alerts IT admins and the users who have expiring or expired passwords
   REQUIREMENT: This needs to be run on a Domain Controller and works best when set up as a task
 
-.NOTES
-  Author : Robert H. Osborne
-  Alias  : tobor
+  .NOTES
+  Author: Robert H. Osborne
+  Alias: tobor
   Contact: rosborne@osbornepro.com
 
-.LINKS
+
+  .LINK
   https://osbornepro.com
   https://writeups.osbornepro.com
+  https://btpssecpack.osbornepro.com
   https://github.com/tobor88
   https://gitlab.com/tobor88
   https://www.powershellgallery.com/profiles/tobor
+  https://www.linkedin.com/in/roberthosborne/
+  https://www.credly.com/users/roberthosborne/badges
+  https://www.hackthebox.eu/profile/52286
 
 #>
 
@@ -88,18 +93,15 @@ ForEach ($Users in $UserDetails)
         {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REQUIRED: Your $EnvDomain Password Has Expired" -BodyAsHtml -Body $MailBody1 -SmtpServer $SmtpServer -Priority High
-
             Send-MailMessage -From $From -To $ToAdmin -Subject "Forward This Email Alert to $From1. Auto Send Failed" -BodyAsHtml -Body $MailBody1 -SmtpServer $SmtpServer
 
         } # End Catch
 
     } # End if
 
-    If (($TodaysDate -ge $ExpirationDate.AddDays(-15)) -and ($TodaysDate -le $ExpirationDate))
-    {
+    If (($TodaysDate -ge $ExpirationDate.AddDays(-15)) -and ($TodaysDate -le $ExpirationDate)) {
 
         $ExpiringSoon += $Users
-
         $ToWho = $Users.DisplayName
 
         $PreContent = "<Title>Password Expiring in 15 days or less</Title>"
@@ -109,26 +111,21 @@ ForEach ($Users in $UserDetails)
 
         $From = $Users.Mail | Out-String
 
-        Try
-        {
+        Try {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REQUIRED: Your $EnvDomain Password is Expiring Soon" -BodyAsHtml -Body $MailBody -SmtpServer $SmptServer -Priority Normal
 
         } # End Try
 
-        Catch
-        {
+        Catch {
 
             Send-MailMessage -From $From -To $From1 -Subject "ACTION REUQIRED: Your $EnvDomain Password is Expiring Soon" -BodyAsHtml -Body $MailBody -SmtpServer $SmptServer -Priority Normal
-
             Send-MailMessage -From $From -To $ToAdmin -Subject "Forward This email to $From1. Auto Send Failed" -BodyAsHtml -Body $MailBody -SmtpServer $SmptServer
 
         } # End Catch
 
     } # End Elseif
-
-    Else
-    {
+    Else {
 
         Write-Output "[*] No passwords expiring in the next 14 days or less."
 
@@ -137,21 +134,17 @@ ForEach ($Users in $UserDetails)
 } # End Foreach
 
 
-If ($ExpiredPasswords)
-{
+If ($ExpiredPasswords) {
 
     $MBody1 = $ExpiredPasswords | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password has expired notification.<br><br><hr><br>" | Out-String
-
     Send-MailMessage -From $From -To $ToAdmin -Subject "Users Whos Passwords Have Expired" -BodyAsHtml -Body $MBody1 -SmtpServer $SmtpServer
 
 } # End if
 
 
-If ($ExpiringSoon)
-{
+If ($ExpiringSoon) {
 
     $MBody = $ExpiringSoon | ConvertTo-Html -Head $Css -PostContent $PostContent -PreContent $PreContent -Body "FYI, <br><br>The below table contains info on the users who have received a password exipring notification.<br><br><hr><br>" | Out-String
-
     Send-MailMessage -From $From -To $ToAdmin -Subject "Users Who Received Password Expiring Notifications" -BodyAsHtml -Body $MBody -SmtpServer $SmptServer
 
 } # End If

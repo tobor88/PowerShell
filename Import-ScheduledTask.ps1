@@ -32,12 +32,6 @@ Import-ScheduledTask -Path C:\Windows\Temp\TaskImportName.xml -TaskName "My Task
 # This example imports a scheduled task xml file and creates a task on DC01.domain.com and 10.0.1.1
 
 
-.NOTES
-Author: Robert H. Osborne
-Alias: tobor
-Contact: rosborne@osbornepro.com
-
-
 .INPUTS
 System.String System.Array
 
@@ -46,15 +40,22 @@ System.String System.Array
 Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask
 
 
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
-https://www.hackthebox.eu/profile/52286
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 #>
 Function Import-ScheduledTask {
     [CmdletBinding()]
@@ -97,11 +98,9 @@ Function Import-ScheduledTask {
 
     $Xml = Get-Content -Path $Path | Out-String
 
-    ForEach ($C in $ComputerName)
-    {
+    ForEach ($C in $ComputerName) {
 
         Write-Verbose "Creating task $TaskName on $C in the task location $TaskPath"
-
         Register-ScheduledTask -Xml $Xml -TaskName $TaskName -TaskPath $TaskPath -User $User –Force
 
     }  # End ForEach

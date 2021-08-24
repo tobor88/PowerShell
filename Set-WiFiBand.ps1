@@ -28,12 +28,12 @@ Contact: rosborne@osbornepro.com
 .LINK
 https://osbornepro.com
 https://writeups.osbornepro.com
-https://btps-secpack.com
+https://btpssecpack.osbornepro.com
 https://github.com/tobor88
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
 https://www.linkedin.com/in/roberthosborne/
-https://www.youracclaim.com/users/roberthosborne/badges
+https://www.credly.com/users/roberthosborne/badges
 https://www.hackthebox.eu/profile/52286
 
 
@@ -62,17 +62,14 @@ Function Set-WiFiBand {
         )  # End param
 
 
-    If (!($AdapterName))
-    {
+    If (!($AdapterName)) {
 
         $Adapter = Get-NetAdapter -Name "W*Fi*" | Select-Object -First 1
 
     }  # End If
 
     $802Values = Get-NetAdapterAdvancedProperty -Name $Adapter.Name | Where-Object -Property DisplayName -like "*802.11*" | Select-Object -Property "DisplayName","DisplayValue","RegistryValue","ValidDisplayValues","ValidRegistryValues"
-
-    Switch ($Standard)
-    {
+    Switch ($Standard) {
 
         'Disabled' { $Standard = 'Disabled'}
         '802.11a' { $Standard = '1. 5GHz  802.11a'}
@@ -86,18 +83,15 @@ Function Set-WiFiBand {
 
     }  # End Switch
 
-    ForEach ($V in $802Values)
-    {
+    ForEach ($V in $802Values) {
 
-        If ($V.ValidDisplayValues.Count -ne 3)
-        {
+        If ($V.ValidDisplayValues.Count -ne 3) {
 
             $DisplayValue24 = $V.DisplayValue
             $Valid24Values = $V.ValidDisplayValues
             Write-Output "[*] Your current 2.4GHz band is set to use $DisplayValue24"
 
-            If ($Valid24Values -Contains $Standard)
-            {
+            If ($Valid24Values -Contains $Standard) {
 
                 Set-NetAdapterAdvancedProperty -Name $Adapter.Name -DisplayName "Wireless Mode" -DisplayValue $Standard
                 Write-Output "[*] Modifying $DisplayValue51 to $Standard"
@@ -105,15 +99,13 @@ Function Set-WiFiBand {
             }  # End If
 
         }  # End If
-        Else
-        {
+        Else {
 
             $DisplayValue51 = $V.DisplayValue
             $Valid5Values = $V.ValidDisplayValues
             Write-Output "[*] Your current 5GHz band is set to use $DisplayValue51"
 
-            If ($Valid5Values -Contains $Standard)
-            {
+            If ($Valid5Values -Contains $Standard) {
 
                 Set-NetAdapterAdvancedProperty -Name $Adapter.Name -DisplayName "Wireless Mode" -DisplayValue $Standard
                 Write-Output "[*] Modifying $DisplayValue51 to $Standard"

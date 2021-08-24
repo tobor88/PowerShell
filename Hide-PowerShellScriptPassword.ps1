@@ -11,7 +11,7 @@ Get-RandomHexNumber was taken from https://powershell.org/forums/topic/generatin
 
 
 .NOTES
-Author: Rob Osborne
+Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
 
@@ -82,7 +82,7 @@ Function Hide-PowerShellScriptPassword {
     END {
 
         Write-Verbose "Invoking the stored key to create the encrypted password"
-        
+
         $Pass = Read-Host -Prompt "Enter the password you want to AES encrypt for a script"
         $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath
         $KeyFile = "$KeyFilePath\$Var"

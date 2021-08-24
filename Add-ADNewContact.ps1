@@ -1,27 +1,40 @@
 <#
-.Synopsis
-    Add-ADNewContact is a cmdlet that is used adding a new contact into Active Directory and adding them into a distribution group.
-    In order for this to work you will need to add the Contact OU location in Active Directory. This can be found on the Domain Controllers ADSI Edit MMC.
-    You will also need to define the location of the admin account you use to access Active Directory. This is done at line 77
+.SYNOPSIS
+Add-ADNewContact is a cmdlet that is used adding a new contact into Active Directory and adding them into a distribution group.
+In order for this to work you will need to add the Contact OU location in Active Directory. This can be found on the Domain Controllers ADSI Edit MMC.
+You will also need to define the location of the admin account you use to access Active Directory. This is done at line 77
 
 .DESCRIPTION
-    Create a new Active Directory Contact and adds them to a distribution group(s).
-    In order for this to work you will need to add the Contact OU location in Active Directory. This can be found on the Domain Controllers ADSI Edit MMC.
-    You will also need to define the location of the admin account you use to access Active Directory. This is done at line 77
+Create a new Active Directory Contact and adds them to a distribution group(s).
+In order for this to work you will need to add the Contact OU location in Active Directory. This can be found on the Domain Controllers ADSI Edit MMC.
+You will also need to define the location of the admin account you use to access Active Directory. This is done at line 77
 
-    CONFIGURE LINE 77 ManagementUserAccount Variable
+CONFIGURE LINE 77 ManagementUserAccount Variable
+
 
 .NOTES
-    Author: Rob Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
 
 .EXAMPLE
-   Add-ADNewContact -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
+Add-ADNewContact -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
 
 .EXAMPLE
-   Add-ADNewContact -ContactName $ContactName -ContactEmail $ContactEmail -GroupName $GroupName -Verbose
+Add-ADNewContact -ContactName $ContactName -ContactEmail $ContactEmail -GroupName $GroupName -Verbose
 #>
 
 Function Add-ADNewContact {
@@ -33,7 +46,7 @@ Function Add-ADNewContact {
                 ValueFromPipelineByPropertyName=$True,
                 HelpMessage="New Contacts Name. `n Example: Dixie Normus `n`n If you see this message, you will need to enter the new contacts name.")] # End Parameter
             [ValidateNotNullorEmpty()]
-        [string[]]$ContactName, #
+        [string[]]$ContactName,
 
         [Parameter(Mandatory=$True,
                 Position=1,
@@ -60,14 +73,12 @@ Function Add-ADNewContact {
     PROCESS {
 
             $Username = $env:USERNAME
-
             $Path = "ou=CONTACTS,dc=OSBORNEPRO,dc=COM"
 
             Write-Verbose "New contact will be added to the below OU`n$Path`n"
 
             $NameCount = $ContactName.Split(' ').Count
-
-            if ($NameCount -eq 2) {
+            If ($NameCount -eq 2) {
 
                 $FirstName,$LastName = $ContactName.Split(' ')
 
@@ -76,38 +87,31 @@ Function Add-ADNewContact {
                 ForEach ($GName in $GroupName) {
 
                     $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM"
-
                     $NewContact = "LDAP://usav-dcp:389/cn=$Gname,$Path"
-
                     $ManagementUserAccount.Add($NewContact)
 
                 } # End ForEach
 
             } # End If
 
-            elseif ($NameCount -eq 3) {
+            ElseIf ($NameCount -eq 3) {
 
                 $FirstName,$MiddleName,$LastName = $ContactName.Split(' ')
-
                 New-ADObject -Type Contact -Name $ContactName -Path $Path -OtherAttributes @{'GivenName'="$FirstName";'SN'="$LastName";'Mail'=$ContactEmail;'ProxyAddresses'="SMTP:"+$ContactEmail;'targetAddress'="SMTP:"+$ContactEmail}
 
                 ForEach ($GName in $GroupName) {
 
                     $ManagementUserAccount = [adsi] "LDAP://usav-dcp:389/cn=$Username,cn=Users,dc=OSBORNEPRO,dc=COM"
-
                     $NewContact = "LDAP://usav-dcp:389/cn=$Gname,$Path"
-
                     $ManagementUserAccount.Add($NewContact)
 
                 } # End ForEach
 
             } # End Elseif
 
-            elseif ($NameCount -ge 4 ) {
+            ElseIf ($NameCount -ge 4 ) {
 
-                Write-Warning "Too many names for this cmdlet to handle."
-
-                break
+                Throw "[x] Too many names for this cmdlet to handle."
 
             } # End ElseIf
 

@@ -1,5 +1,4 @@
-Function Remove-CorruptUserProfile
-{
+Function Remove-CorruptUserProfile {
         [CmdletBinding()]
         param(
             [Parameter(Mandatory =$True,
@@ -14,8 +13,7 @@ Function Remove-CorruptUserProfile
 $Domain = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()).Name
 
 # PART ONE
-    Function Copy-BackupProfile
-    {
+    Function Copy-BackupProfile {
         [CmdletBinding()]
         param(
             [Parameter(
@@ -27,35 +25,31 @@ $Domain = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
             )] # End Parameter
         [String[]]$SamAccountName) # End param
 
-BEGIN
-{
+BEGIN {
 
-        If (Test-Path "C:\Users\$SamAccountName")
-        {
+    If (Test-Path "C:\Users\$SamAccountName") {
 
-            Write-Verbose "$SamAccountName folder has been found. Renaming profile folder to $SamAccountName.old..."
-            Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force -ErrorAction "SilentlyContinue" | Out-Null
+        Write-Verbose "$SamAccountName folder has been found. Renaming profile folder to $SamAccountName.old..."
+        Rename-Item -Path "C:\Users\$SamAccountName" -NewName "$SamAccountName.old" -Force -ErrorAction "SilentlyContinue" | Out-Null
 
-            Write-Verbose "Renaming AppData folder to prevent any corruptions from being moved to the new profile."
-            Rename-Item -Path "C:\Users\$SamAccountName.old\AppData" -Destination "C:\Users\$SamAccountName.old\OLDAppData" -Force -ErrorAction "SilentlyContinue" | Out-Null
+        Write-Verbose "Renaming AppData folder to prevent any corruptions from being moved to the new profile."
+        Rename-Item -Path "C:\Users\$SamAccountName.old\AppData" -Destination "C:\Users\$SamAccountName.old\OLDAppData" -Force -ErrorAction "SilentlyContinue" | Out-Null
 
-            Write-Output "[*] If the user uses sticky notes they are located here: `n`tC:\Users\$SamAccountName\AppData\Roaming\Microsoft\Sticky Notes "
+        Write-Output "[*] If the user uses sticky notes they are located here: `n`tC:\Users\$SamAccountName\AppData\Roaming\Microsoft\Sticky Notes "
 
-        } # End If
-        Else
-        {
+    } # End If
+    Else {
 
-            Throw "[!] No user directory found at C:\Users\$SamAccountName Ending script."
+        Throw "[!] No user directory found at C:\Users\$SamAccountName Ending script."
 
-        } # End Else
+    } # End Else
 
-    }  # End Function Copy-BackupProfile
+}  # End Function Copy-BackupProfile
 
     Copy-BackupProfile -SamAccountName $SamAccountName -Verbose
 
 }  # End BEGIN
-PROCESS
-{
+PROCESS {
 
 # PART TWO
     Function Get-UserSid {
@@ -72,14 +66,12 @@ PROCESS
         $ObjUser = New-Object System.Security.Principal.NTAccount($SamAccountName)
         $ObjSID = $ObjUser.Translate([System.Security.Principal.SecurityIdentifier])
 
-        If (!($null -eq $ObjSID))
-        {
+        If (!($null -eq $ObjSID)) {
 
             $ObjSID.Value
 
         } # End If
-        Else
-        {
+        Else {
 
             Write-Warning "SID Lookup failed."
 
@@ -91,8 +83,7 @@ PROCESS
 
 
 # PART THREE
-    Function Remove-CorruptUserProfileRegistryItem
-    {
+    Function Remove-CorruptUserProfileRegistryItem {
         [CmdletBinding()]
         param(
             [Parameter(Mandatory = $True,
@@ -105,35 +96,28 @@ PROCESS
         $ProfileListPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$SID"
         $ProfileGuidPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileGUID"
 
-        If (Test-Path -Path $ProfileListPath)
-        {
+        If (Test-Path -Path $ProfileListPath) {
 
             $CorruptedUser = (Get-ItemProperty -Path $ProfileListPath -Name "ProfileImagePath" | Select-Object -ExpandProperty "ProfileImagePath").Replace('C:\Users\','')
-
             Read-Host "Is $CorruptedUser the user with a corrupted profile? Press Ctrl+C to cancel and Enter to continue deleting the profile."
-
             Remove-Item -Path $ProfileListPath -Recurse -Force
 
         } # End If
-        Else
-        {
+        Else {
 
             Write-Output "[!] $ProfileListPath location not found."
 
         } # End Else
 
-        If (Test-Path $ProfileGuidPath)
-        {
+        If (Test-Path $ProfileGuidPath) {
 
             $GUIDs = Get-ChildItem $ProfileGuidPath | Select-Object -ExpandProperty "PsChildName"
 
-            ForEach ($GUID in $GUIDs)
-            {
+            ForEach ($GUID in $GUIDs) {
 
                 $SidGuid = Get-ItemProperty -Path "$ProfileGUIDPath\$GUID" | Select-Object -ExpandProperty "SidString"
 
-                If ($SidGuid -eq $SID)
-                {
+                If ($SidGuid -eq $SID) {
 
                     Remove-Item -Path "$ProfileGuidPath\$GUID" -Recurse -Force
 
@@ -142,8 +126,7 @@ PROCESS
             } # End ForEach
 
         } # End If
-        Else
-        {
+        Else {
 
             Write-Output "[!] $ProfileGuidPath location not found."
 
@@ -152,17 +135,13 @@ PROCESS
     } # End Function Remove-CorruptUserProfile
 
 }  # End PROCESS
-END
-{
+END {
 
     Remove-CorruptUserProfileRegistryItem -SID $SID -Verbose
-
-    Write-Output "[*] Press Enter to Restart Computer now or press Ctrl+C to complete the rest of this task later."
-
-    Pause
+    Read-Host -Prompt "[*] Press Enter to Restart Computer now or press Ctrl+C to complete the rest of this task later."
 
     Restart-Computer -Force
-   
+
  }  # End END
 
 } # End Function Remove-CorruptedUserProfile

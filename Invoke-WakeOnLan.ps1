@@ -1,59 +1,54 @@
 <#
-.NAME
-    Invoke-WakeOnLan
-
-
 .SYNOPSIS
-    Starts a list of physical machines by using Wake On LAN.
-    WOL Packet Resource: https://wiki.wireshark.org/WakeOnLAN
+Starts a list of physical machines by using Wake On LAN.
+WOL Packet Resource: https://wiki.wireshark.org/WakeOnLAN
 
 
 .DESCRIPTION
-    Invoke-WakeOnLan sends a Wake On LAN packet to a machine's MAC address(s) that you specify.
+Invoke-WakeOnLan sends a Wake On LAN packet to a machine's MAC address(s) that you specify.
 
 
-.PARAMETER
-    -LinkLayerAddress [<String[]>]
-        Specifies an array of link-layer addresses. The WOL packet gets sent to the link-layer addresses you specify.
+.PARAMETER LinkLayerAddress
+Specifies an array of link-layer addresses. The WOL packet gets sent to the link-layer addresses you specify.
 
-        The link-layer address is also called the media access control (MAC) address. A link-layer address that uses IPv4 address syntax is a tunnel technology that encapsulates packets over an IPv4 tunnel, such as Intra-Site Automatic Tunnel Addressing Protocol
-        (ISATAP) or Teredo. A link-layer address of all zeroes indicates that the neighbor is unreachable and the neighbor cache entry does not have a link-layer address entry. An empty link-layer address indicates that the link layer does not use link-layer addresses,
-        such as on a loopback interface.
-
-        Required?                    false
-        Position?                    0
-        Default value                FFFFFFFFFFFF
-        Accept pipeline input?       false
-        Accept wildcard characters?  false
-
-
-.SYNTAX
-    Invoke-WakeOnLan [[-Mac] <string>] [<CommonParameters>]
+The link-layer address is also called the media access control (MAC) address. A link-layer address that uses IPv4 address syntax is a tunnel technology that encapsulates packets over an IPv4 tunnel, such as Intra-Site Automatic Tunnel Addressing Protocol
+(ISATAP) or Teredo. A link-layer address of all zeroes indicates that the neighbor is unreachable and the neighbor cache entry does not have a link-layer address entry. An empty link-layer address indicates that the link layer does not use link-layer addresses,
+such as on a loopback interface.
 
 
 .EXAMPLE
-    -------------------------- EXAMPLE 1 --------------------------
-    Invoke-WakeOnLan -LinkLayerAddress 6045cb236d16
-    This example sends a wake on lan packet to a computer with the MAC Address 6045cb236d16
+Invoke-WakeOnLan -LinkLayerAddress 6045cb236d16
+This example sends a wake on lan packet to a computer with the MAC Address 6045cb236d16
 
-    -------------------------- EXAMPLE 2 --------------------------
-    Invoke-WakeOnLan
-    This example sends a wake on lan packet in to the broadcast MAC address FFFFFFFFFF
+.EXAMPLE
+Invoke-WakeOnLan
+This example sends a wake on lan packet in to the broadcast MAC address FFFFFFFFFF
 
 
 .INPUTS
-    None
+None
 
 
 .OUTPUTS
-    None
+None
 
 
 .NOTES
-    Author: Robert H. Osborne
-    Alias: tobor
-    Contact: rosborne@osbornepro.com
-    https://osbornepro.com
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
 
 #>
 Function Invoke-WakeOnLan {
@@ -69,9 +64,7 @@ Function Invoke-WakeOnLan {
 
 
     Set-StrictMode -Version Latest
-
-    Try
-    {
+    Try {
 
         $Broadcast = ([System.Net.IPAddress]::Broadcast)
 
@@ -90,8 +83,7 @@ Function Invoke-WakeOnLan {
         $UdpClient.Close()
 
     }  # End Try
-    Catch
-    {
+    Catch {
 
         $UdpClient.Dispose()
         $Error[0]
