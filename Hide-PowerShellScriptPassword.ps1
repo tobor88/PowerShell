@@ -29,10 +29,7 @@ https://www.hackthebox.eu/profile/52286
 
 
 .EXAMPLE
-Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName "Group1", "Group2"
-
-.EXAMPLE
-Hide-PowerShellScriptPassword -ContactName $ContactName -ContactEmail $ContactEmail -GroupName $GroupName -Verbose
+Hide-PowerShellScriptPassword
 #>
 
 Function Hide-PowerShellScriptPassword {
@@ -70,7 +67,7 @@ Function Hide-PowerShellScriptPassword {
         Write-Verbose "Creating a random 32-bit key and storing it to a file. (Maximum Key Size is 32)"
 
         $Var = Get-RandomHexNumber -Length 20
-        $KeyFile = New-Item -ItemType File -Name $Var -Path $KeyFilePath
+        $KeyFile = New-Item -ItemType File -Name $Var -Path $KeyFilePath -Force
         $Key = New-Object Byte[] 32
         [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($Key)
         $Key | Out-File $KeyFile
@@ -84,7 +81,7 @@ Function Hide-PowerShellScriptPassword {
         Write-Verbose "Invoking the stored key to create the encrypted password"
 
         $Pass = Read-Host -Prompt "Enter the password you want to AES encrypt for a script"
-        $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath
+        $PasswordFile = New-Item -ItemType File -Name "$Var.txt" -Path $AESPasswordPath -Force
         $KeyFile = "$KeyFilePath\$Var"
         $Key = Get-Content -Path $KeyFile
         $Password = "$Pass" | ConvertTo-SecureString -AsPlainText -Force
