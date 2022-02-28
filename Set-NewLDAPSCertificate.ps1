@@ -14,7 +14,6 @@ $ServiceNames = "NTDS",((Get-CimInstance -ClassName Win32_Service -Filter 'Name 
 Write-Output "[*] Obtaining LDAP over SSL certificate by Template Name from the local machine certificate store"
 $LDAPSCert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
 $ExpiringCert = Get-ChildItem -Path Cert:\LocalMachine\My -ExpiringInDays 30 | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
-$Path = "HKLM:\SOFTWARE\Microsoft\SystemCertificates\MY\Certificates\$($LDAPSCert.Thumbprint)"
 
 If (($LDAPSCert -Contains $ExpiringCert) -and ($Null -ne $LDAPSCert[1])) {
 
@@ -45,6 +44,7 @@ ElseIf ($LDAPSCert -eq $ExpiringCert) {
 #Write-Output "[*] Importing new PFX LDAPS Certificate into store"
 #Import-PfxCertificate -FilePath $CertPath -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
 
+$Path = "HKLM:\SOFTWARE\Microsoft\SystemCertificates\MY\Certificates\$($LDAPSCert.Thumbprint)"
 
 Write-Output "[*] Telling LDAPS services to use the new LDAPS Certificate"
 ForEach ($ServiceName in $ServiceNames) {
@@ -54,7 +54,7 @@ ForEach ($ServiceName in $ServiceNames) {
         If (Test-Path -Path $Path) {
         
             Write-Output "[*] Moving PFX certificate into the NTDS\Personal Certificate Store"
-            Move-Item -Path $Path -Destination "HKLM:\SOFTWARE\Microsoft\Cryptography\Services\$ServiceName\SystemCertificates\MY\Certificates\"
+            Copy-Item -Path $Path -Destination "HKLM:\SOFTWARE\Microsoft\Cryptography\Services\$ServiceName\SystemCertificates\MY\Certificates\"
 
             Write-Output "[*] Restarting the $ServiceName service"
             Restart-Service -Name $ServiceName -Force
@@ -69,4 +69,3 @@ ForEach ($ServiceName in $ServiceNames) {
     }  # End If
 
 }  # End ForEach
-
