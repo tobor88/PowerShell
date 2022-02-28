@@ -35,6 +35,11 @@ ElseIf ($LDAPSCert -eq $ExpiringCert) {
     }  # End If
 
 }  # End ElseIf
+ElseIf ($LDAPSCert -ne $ExpiringCert) {
+
+        Throw "LDAPS Certificate is not ready to be renewed"
+
+}  # End Else
 
 # The commented area below is just in case we need to export or import a PFX certificate into the localmachine store
 #
