@@ -68,4 +68,4 @@ Write-Output "[*] Attempting to create profile $Name"
 New-Item -Name $Name -Path $Path -Force -Verbose
 
 Write-Output "Launcing Outlook with newly created profile" -ForegroundColor Green
-Start-Process -Name Outlook -ErrorAction SilentlyContinue
+Start-Process -FilePath Outlook -ArgumentList "/profile `"$Name`"" -ErrorAction SilentlyContinue
