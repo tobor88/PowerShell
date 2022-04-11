@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
 This cmdlet has the following requirements
- - OpenSSL : This cmdlet requires openssl to be saved in one of the $env:PATH locations. OpenSSL is used to extract certificates from the PFX file. PFX file needs to be password protected
- - PFX File : This cmdlet requires a PFX file to be saved somewhere locally on the machine this cmdlet is being run from
- - WinRM : WinRM needs to be enabled in the environment in order to execute the needed commands on remote computers
- - LetsEncrypt : IMPORTANT: I assume this is being used with a wildcard LetsEncrypt certificate. If you are using a different 3rd party provider you will need to modify the Select-Object -Skip <Value> to fix your requirements which is used to convert OpenSSL extracted certificates into useful certificates
+ - PFX file needs to be password protected
+ - PFX file needs to be saved somewhere locally on the machine this cmdlet is being run from
+ - WinRM needs to be enabled in the environment in order to execute the needed commands on remote computers (Test-WsMan -ComputerName $ComputerName)
 This cmdlet works by extracting the public certificate, private key certificate, and CA chain certificates from a PFX file using the password you provide and PFX file you define
 This will also restart the service(s) if you define the -Service parameter.
 This will use WinRM over HTTPS to connect with remote computers if you use the -UseSSL parameter
@@ -15,22 +14,47 @@ Replace the SSL certificate on a remote IIS server hosting a website or another 
 
 
 .PARAMETER CertPath
+Enter a path to save your public certificate file too
+
 .PARAMETER CertDestination
+Enter the destination path to save your certificates public cert on a remote device
+
 .PARAMETER KeyPath
+Enter a path to save your certificate key file
+
 .PARAMETER KeyDestination
+Enter the destination path to save your certificate key file for a remote service
+
 .PARAMETER CAPath
+Enter the path to the Root CA file that will get trusted on a remote computer
+
 .PARAMETER CADestination
+Enter the destination path to save a Root CA file on a remote computer in accordance with that services documentation
+
 .PARAMETER PfxCertificate
+Define the location of the PFX certificate file
+
 .PARAMETER KeyPassword
-.PARAMETER Service
+Enter the password to unlock the PFX file
+
+.PARAMETER RemoteService
+Enter the name of the service running on a remote machine that needs to be restarted after updating the SSL certificate for it 
+
 .PARAMETER SiteName
+Enter the name of an IIS site to update the SSL certificate on
+
 .PARAMETER Computer
+Define a remote computer to update the certificate on
+
 .PARAMETER UseSSL
+Use WinRM over SSL for remote connections
+
 .PARAMETER Credential
+Enter your admin credentials which are used to map network locations and execute commands on remote machines
 
 
 .EXAMPLE
-Update-SSLCertificate -CertPath $CertificateFile -KeyPath $PrivateKeyFile -CertDestination "C:\Program Files (x86)\PRTG Network Monitor\cert\prtg.crt" -KeyDestination "C:\Program Files (x86)\PRTG Network Monitor\cert\prtg.key" -CAPath $CAChainFile -CADestination "C:\Program Files (x86)\PRTG Network Monitor\cert\root.pem" -PfxCertificate "C:\ProgramData\Certify\assets\_.domain.com\20211234certificate.pfx" -KeyPassword 'Str0ngK3yP@ssw0rd!' -Service "PRTGCoreService","PRTGProbeService" -ComputerName "prtg.domain.com" -UseSSL -Credential (Get-Credential)
+Update-SSLCertificate -CertPath C:\Temp\cert.pem -KeyPath C:\Temp\key.pem -CertDestination "C:\Program Files (x86)\PRTG Network Monitor\cert\prtg.crt" -KeyDestination "C:\Program Files (x86)\PRTG Network Monitor\cert\prtg.key" -CAPath $CAChainFile -CADestination "C:\Program Files (x86)\PRTG Network Monitor\cert\root.pem" -PfxCertificate "C:\Temp\ssl-cert.pfx" -KeyPassword (ConvertTo-SecureString -AsPlainTest -Force -String 'Str0ngK3yP@ssw0rd!') -Service "PRTGCoreService","PRTGProbeService" -ComputerName "prtg.domain.com" -UseSSL -Credential (Get-Credential)
 # This example replaces the public certiticate, private key certificate, and CA chain certificate files on a PRTG server. It restarts the two PRTG services and saves a copy of the replaced certificates as .old files
 
 
@@ -41,15 +65,7 @@ Contact: rosborne@osbornepro.com
 
 
 .LINK
-https://osbornepro.com
-https://writeups.osbornepro.com
-https://btpssecpack.osbornepro.com
-https://github.com/tobor88
-https://gitlab.com/tobor88
-https://www.powershellgallery.com/profiles/tobor
-https://www.linkedin.com/in/roberthosborne/
-https://www.credly.com/users/roberthosborne/badges
-https://www.hackthebox.eu/profile/52286
+https://www.vinebrooktechnology.com/
 #>
 Function Update-SSLCertificate {
     [CmdletBinding(DefaultParameterSetName="File")]
@@ -57,17 +73,17 @@ Function Update-SSLCertificate {
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True,
-                HelpMessage="[H] Set the network share path of the directory containing your certificate `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\cert.pem")] # End Parameter
+                HelpMessage="[H] Set an absolute path to save the extracted public certificate `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\cert.pem")] # End Parameter
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$True,
-                HelpMessage="[H] Set an absolute path to save the extracted PFX certificate `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\cert.pem")] # End Parameter
+                HelpMessage="[H] Set an absolute path to save the extracted public certificate `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\cert.pem")] # End Parameter
             [String]$CertPath,
 
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True,
-                HelpMessage="[H] Set the absolute path of the directory containing your certificates key `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\key.pem")] # End Parameter
+                HelpMessage="[H] Set an absolute path to save your extracted certificates key `n[E] EXAMPLE: \\filesserver.domain.com\Certificates\key.pem")] # End Parameter
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$True,
@@ -77,46 +93,50 @@ Function Update-SSLCertificate {
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True,
-                HelpMessage="[H] Set the aboslute path to save your certificate file `n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\servercert.pem")]  # End Parameter
+                HelpMessage="[H] Set the aboslute path to save your certificate file on the remote machine running a service with HTTPS`n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\servercert.pem")]  # End Parameter
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$True,
-                HelpMessage="[H] Set the aboslute path to save your certificate file `n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\servercert.pem")]  # End Parameter
+                HelpMessage="[H] Set the aboslute path to save your certificate file on the remote machine running a service with HTTPS`n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\servercert.pem")]  # End Parameter
             [String]$CertDestination,
 
             [Parameter(
                 ParameterSetName="IIS",
                 Mandatory=$True,
-                HelpMessage="[H] Set the aboslute path to save your certificates Key file `n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
+                HelpMessage="[H] Set the aboslute path to save your certificates Key file on the remote machine running a service with HTTPS `n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$True,
-                HelpMessage="[H] Set the aboslute path to save your certificates Key file `n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
+                HelpMessage="[H] Set the aboslute path to save your certificates Key file on the remote machine running a service with HTTPS`n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
             [String]$KeyDestination,
 
             [Parameter(
                 ParameterSetName="IIS",
-                Mandatory=$False)]  # End Parameter
+                Mandatory=$False,
+                HelpMessage="[H] Set the aboslute path for the Root CA certificate file`n[E] EXAMPLE: C:\Temp\digicertCA.pem")]  # End Parameter
             [Parameter(
                 ParameterSetName="File",
-                Mandatory=$False)]  # End Parameter
+                Mandatory=$False,
+                HelpMessage="[H] Set the aboslute path for the Root CA certificate file`n[E] EXAMPLE: C:\Temp\digicertCA.pem")]  # End Parameter
             [String]$CAPath,
 
             [Parameter(
                 ParameterSetName="IIS",
-                Mandatory=$False)]  # End Parameter
+                Mandatory=$False,
+                HelpMessage="[H] Set the aboslute path to save your certificates Root CA file on the remote machine running a service with HTTPS`n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
             [Parameter(
                 ParameterSetName="File",
-                Mandatory=$False)]  # End Parameter
+                Mandatory=$False,
+                HelpMessage="[H] Set the aboslute path to save your certificates Root CA file on the remote machine running a service with HTTPS`n[E] EXAMPLE: C:\ProgramData\Tenable\Nessus\nessus\CA\serverkey.pem")]  # End Parameter
             [String]$CADestination,
 
             [Parameter(
                 ParameterSetName="IIS",
-                Mandatory=$False,
+                Mandatory=$True,
                 HelpMessage="[H] `n[E] EXAMPLE: C:\ProgramData\Certify\assets\_.yourdomain.com\wildcard.pfx")]  # End Parameter
             [Parameter(
                 ParameterSetName="File",
-                Mandatory=$False,
+                Mandatory=$True,
                 HelpMessage="[H] `n[E] EXAMPLE: C:\ProgramData\Certify\assets\_.yourdomain.com\wildcard.pfx")]  # End Parameter
             [ValidateScript({((Test-Path -Path $_) -and ($_ -like "*.pfx"))})]
             [String]$PfxCertificate,
@@ -129,7 +149,7 @@ Function Update-SSLCertificate {
                 ParameterSetName="File",
                 Mandatory=$True,
                 HelpMessage="[H] Enter the password being used to protect the PFX file's private key `n[E] EXAMPLE: Str0ngk#3yP@ssw0rd!")]  # End Parameter
-            [String]$KeyPassword,
+            [SecureString]$KeyPassword,
 
             [Parameter(
                 ParameterSetName="IIS",
@@ -137,7 +157,7 @@ Function Update-SSLCertificate {
             [Parameter(
                 ParameterSetName="File",
                 Mandatory=$False)]  # End Parameter
-            [String[]]$Service,
+            [String[]]$RemoteService,
 
             [Parameter(
                 ParameterSetName="IIS",
@@ -173,15 +193,10 @@ Function Update-SSLCertificate {
             [Parameter(
                 ParameterSetNAme="File",
                 Mandatory=$True)]  # End Parameter
-            [System.Management.Automation.CredentialAttribute()]$Credential
-
+            [System.Management.Automation.CredentialAttribute()][SecureString]$Credential
         )  # End param
 
 BEGIN {
-
-    Write-Warning "OPENSSL REQUIRED : This script requires openssl.exe to be placed into one of the `$env:PATH directories to work"
-    Write-Output "`tDOWNLOAD: OpenSSL does not host official binaries however one can obtained from https://sourceforge.net/projects/openssl-for-windows/files/latest/download"
-    Write-Output "`tDOWNLOAD: Certify Community Edition from https://certifytheweb.com/"
 
     $Bool = $False
     If ($UseSSL.IsPresent) {
@@ -191,38 +206,25 @@ BEGIN {
     }  # End If
 
     $Source = "$env:COMPUTERNAME.$env:USERDNSDOMAIN".ToLower()
-    $Cert = $CertPath.Split("\")[-1]
-    $Key = $KeyPath.Split("\")[-1]
-    $Root = $KeyPath.Replace("\$Key","")
-    $Compare = $CertPath.Replace("\$Cert","")
-    $SecurePassword = ConvertTo-SecureString -String $KeyPassword -Force –AsPlainText
+    $CertFileName = $CertPath.Split("\")[-1]
+    $KeyFileName = $KeyPath.Split("\")[-1]
+    $Root = $KeyPath.Replace("\$KeyFileName","")
+    $Compare = $CertPath.Replace("\$CertFileName","")
 
     If ($Root -ne $Compare) {
 
-        Throw "[x] Cretificate file and Key file required to be saved in same location"
+        Throw "[x] Certificate file and Key file are required to exist in same location"
 
     }  # End If
 
-    If ($Null -eq $PfxCertificate) {
-
-        Write-Output "[*] Obtaining latest wildcard certificate file from the default Certify Community Edition's save location"
-        $CertifySavePath = Get-ChildItem -Path "C:\ProgramData\Certify\assets\_.*.*\" | Select-Object -ExpandProperty "FullName"
-        $PfxCertificate = Get-ChildItem -Path $CertifySavePath -Filter "*.pfx" | Where-Object -Property "CreationTime" -like "$($(Get-Date -Format MM/dd/yyyy))*" | Select-Object -First 1 -ExpandProperty "FullName"
-        $FileName = $PfxCertificate.Split("\")[-1]
-
-    }  # End If
-
-    Write-Output "[*] Extracting Private Key using openssl"
-    openssl pkcs12 -in $PfxCertificate -nocerts -nodes -out "$CertifySavePath\key.txt" -passin pass:"$KeyPassword"
-    Get-Content -Path "$CertifySavePath\key.txt" | Select-Object -Skip 4 | Out-File -FilePath "$KeyPath" -Encoding utf8
-
-    Write-Output "[*] Extracting Public Cert using openssl"
-    openssl pkcs12 -in $LocalWildcardFile.FullName -clcerts -nokeys -out "$CertifySavePath\cert.txt" -passin pass:"$KeyPassword"
-    Get-Content -Path "$CertifySavePath\cert.txt" | Select-Object -Skip 5 | Out-File -FilePath "$CertPath" -Encoding utf8
-
-    Write-Output "[*] Extracting CA Chain Certificates using openssl"
-    openssl pkcs12 -in $LocalWildcardFile.FullName -cacerts -nokeys -chain -out "$CertifySavePath\ca.txt" -passin pass:"$KeyPassword"
-    Get-Content -Path "$CertifySavePath\ca.txt" | Select-Object -Skip 3 | Out-File -FilePath "$CAPath" -Encoding utf8
+    Write-Output "[*] Extracting Certificate and Key into single file"
+    Convert-PfxToPem -InputFile $PfxCertificate -Outputfile ("$WildcardPath" + "key.pem") -Password $SecurePassword
+    
+    Write-Output "[*] Separating certificate and key into separate files"
+    $FileContents = Get-Content -Path ("$WildcardPath" + "key.pem") -Raw
+    $FileContents -Match "(?ms)(\s*((?<privatekey>-----BEGIN PRIVATE KEY-----.*?-----END PRIVATE KEY-----)|(?<certificate>-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----))\s*){2}"
+    $Matches["privatekey"] | Out-File -FilePath "$KeyPath" -Force
+    $Matches["certificate"] | Out-File -FilePath "$CertPath" -Force
 
 
 }  # End BEGIN
@@ -238,31 +240,30 @@ PROCESS {
 
                     Write-Output "[x] Unable to reach $Cn using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
-                }  # End If
-                Else {
+                }  Else {
 
-                    Invoke-Command -HideComputerName $Cn -UseSSL:$Bool -ArgumentList $SiteName,$PfxCertificate,$SecurePassword,$Credential,$Source -ScriptBlock {
+                    Invoke-Command -HideComputerName $Cn -UseSSL:$Bool -ArgumentList $SiteName,$PfxCertificate,$KeyPassword,$Credential,$Source -ScriptBlock {
 
                         Import-Module -Name WebAdministration -Global
 
                         $SiteName = $Args[0]
                         $PfxCertificate = $Args[1]
-                        $SecurePassword = $Args[2]
+                        $KeyPassword = $Args[2]
                         $Credential = $Args[3]
                         $Source = $Args[4]
 
                         $PfxFile = $PfxCertificate.Split("\")[-1]
                         $PfxDir = $PfxCertificate.Replace("\$PfxFile", "")
-                        $PfxNet = $$PfxDir.Replace("C:\","$Source\C$\")
+                        $PfxNet = $PfxDir.Replace("C:\","$Source\C$\")
 
                         Write-Output "[*] Mapping a temporary drive using the letter T"
                         New-PsDrive -Name T -PSProvider FileSystem -Root $PfxNet -Scope Global -Credential $Credential
 
                         Write-Output "[*] Importing PFX certificate into local machine store"
-                        Import-PfxCertificate -FilePath "T:\$PfxFile" -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
+                        Import-PfxCertificate -FilePath "T:\$PfxFile" -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $KeyPassword -Exportable
 
-                        Write-Output "[*] Obtaining thumbprint of certificate with the subject name CN=*.$($($env:USERDNSDOMAIN.ToLower())) that was created today"
-                        $Thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { ($_.Subject -eq "CN=*.$($($env:USERDNSDOMAIN.ToLower()))") -and ($_.NotBefore -like "$($(Get-Date -Format MM/dd/yyyy))*") } | Select-Object -ExpandProperty Thumbprint
+                        Write-Output "[*] Obtaining thumbprint of certificate"
+                        $Thumbprint = (Get-PfxCertificate -Filepath "T:\$PfxFile").Thumbprint
 
                         ForEach ($S in $SiteName) {
 
@@ -272,60 +273,52 @@ PROCESS {
 
                         }  # End ForEach
 
-                        Write-Output "[*] Restarting the IIS service"
-                        iisreset /RESTART
-
+                        $Answer = Read-Host -Prompt "Would you like to restart the IIS site to apply the new certificate? [y/N]"
+                        If ($Answer -like "y*") {
+                        
+                            Write-Output "[*] Restarting the IIS service"
+                            iisreset /RESTART
+                        
+                        }  # End If
+                    
                     }  # End Invoke-Command
 
                 }  # End Else
 
             }  # End ForEach
-
+        
         }  # End IIS
-
         'File' {
 
             If (!(Test-WSMan -ComputerName $ComputerName -UseSSL:$Bool)) {
 
                 Write-Output "[x] Unable to reach $ComputerName using WinRM. Ensure you used a FQDN and that the server is reachable on the network with WinRM enabled"
 
-            }  # End If
-            Else {
+            } Else {
 
                 $PfxContents = [Convert]::ToBase64String((Get-Content -Path $PfxCertificate -Encoding Byte))
                 $CertContents = Get-Content -Path $CertPath | Out-String
                 $KeyContents = Get-Content -Path $KeyPath | Out-String
                 $CAContents = Get-Content -Path $CAPath | Out-String
 
-                Invoke-Command -HideComputerName $ComputerName -UseSSL:$Bool -Authentication Default -ArgumentList $KeyPath,$CertPath,$KeyDestination,$CertDestination,$Service,$CAPath,$CADestination,$CertContents,$KeyContents,$CAContents,$PfxContents,$PfxCertificate,$KeyPassword,$Source -ScriptBlock {
+                Invoke-Command -HideComputerName $ComputerName -UseSSL:$Bool -Authentication Default -ArgumentList $KeyDestination,$CertDestination,$RemoteService,$CAPath,$CADestination,$CertContents,$KeyContents,$CAContents,$PfxContents,$PfxCertificate,$KeyPassword,$Source -ScriptBlock {
 
-                    $KeyPath = $Args[0]
-                    $CertPath = $Args[1]
-                    $KeyDestination = $Args[2]
-                    $CertDestination = $Args[3]
-                    $Service = $Args[4]
-                    $CAPath = $Args[5]
-                    $CADestination = $Args[6]
-                    $CertContents = $Args[7]
-                    $KeyContents = $Args[8]
-                    $CAContents = $Args[9]
-                    $PfxContents = $Args[10]
-                    $PfxCertificate = $Args[11]
-                    $KeyPassword = $Args[12]
-                    $Source = $Args[13]
+                    $KeyDestination = $Args[0]
+                    $CertDestination = $Args[1]
+                    $RemoteService = $Args[2]
+                    $CAPath = $Args[3]
+                    $CADestination = $Args[4]
+                    $CertContents = $Args[5]
+                    $KeyContents = $Args[6]
+                    $CAContents = $Args[7]
+                    $PfxContents = $Args[8]
+                    $PfxCertificate = $Args[9]
+                    $KeyPassword = $Args[10]
+                    $Source = $Args[11]
 
                     $PfxFile = $PfxCertificate.Split("\")[-1]
                     $PfxDir = $PfxCertificate.Replace("\$PfxFile", "")
-                    $PfxNet = $$PfxDir.Replace("C:\","$Source\C$\")
-
-                    $Cert = $CertPath.Split("\")[-1]
-                    $Key = $KeyPath.Split("\")[-1]
-
-                    $KeyDestPath = $KeyDestination.Replace("\$(($KeyDestination.Split("\")[-1]))","")
-                    $CertDestPath = $CertDestination.Replace("\$(($CertDestination.Split("\")[-1]))","")
-
-                    $KeySourcePath = $KeyPath.Replace("\$Key","")
-                    $CertSourcePath = $CertPath.Replace("\$Cert","")
+                    $PfxNet = $PfxDir.Replace("C:\","$Source\C$\")
 
                     Write-Output "[*] Renaming current PEM files to OLD files"
                     Rename-Item -Path $KeyDestination -NewName "$KeyDestination.old" -Force
@@ -336,38 +329,39 @@ PROCESS {
                     New-Item -Path $KeyDestination.Replace("C:\","\\$env:COMPUTERNAME\C$\") -ItemType File -Value $KeyContents -Force
 
                     Write-Output "[*] Importing the PFX certificate"
-                    $SecurePassword = ConvertTo-SecureString -String $KeyPassword -Force –AsPlainText
-                    $Bytes = [Convert]::FromBase64String($PfxContents))
+
+                    $Bytes = [Convert]::FromBase64String($PfxContents)
                     [System.IO.File]::WriteAllBytes("C:\Users\Public\Documents\deletethiscert.pfx", $Bytes)
-                    Import-PfxCertificate -FilePath $PfxNet -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
+                    Import-PfxCertificate -FilePath $PfxNet -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $KeyPassword -Exportable
                     Remove-Item -Path "C:\Users\Public\Documents\deletethiscert.pfx" -Force -ErrorAction SilentlyContinue | Out-Null
 
                     If ($CAPath.Length -gt 1) {
-
-                        $CA = $CAPath.Split("\")[-1]
-                        $CASourcePath = $CAPath.Replace("\$CA","")
-                        $CADestPath = $CADestination.Replace("\$(($CADestination.Split("\")[-1]))","")
 
                         Rename-Item -Path $CADestination -NewName "$CADestination.old" -Force
                         New-Item -Path $CADestination.Replace("C:\","\\$env:COMPUTERNAME\C$\") -ItemType File -Value $CAContents -Force
 
                     }  # End If
 
-                    If (($Null -ne $Service) -and (Get-Service -Name $Service -ErrorAction SilentlyContinue) -ne $Null) {
+                    If (($Null -ne $RemoteService) -and ($Null -ne (Get-Service -Name $RemoteService -ErrorAction SilentlyContinue))) {
 
-                        Write-Verbose "Restarting the service $Service"
-                        Restart-Service -Name $Service -Force
+                        Write-Verbose "Restarting the service $RemoteService"
+                        Restart-Service -Name $RemoteService -Force
 
                     }  # End If
 
                 }  # End Invoke-Command
 
-            }  # End Else
+            }  # End If Else
 
-        }  # End Remote
+        }  # End File
 
     }  # End Switch
 
 }  # End PROCESS
+END {
+
+    Write-Output "[*] Completed execution"
+
+}  # End END
 
 }  # End Update-SSLCertificate
