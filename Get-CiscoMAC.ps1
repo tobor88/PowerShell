@@ -34,11 +34,11 @@ Alias: tobor
 Contact: rosborne@osbornepro.com
 
 
-.INPUT
+.INPUTS
 System.String
 
 
-OUTPUT
+.OUTPUTS
 System.String
 
 
