@@ -41,11 +41,11 @@ https://www.linkedin.com/in/roberthosborne/
 https://www.credly.com/users/roberthosborne/badges
 
 
-.INPUT
+.INPUTS
 System.String System.Array
 
 
-.OUTPUT
+.OUTPUTS
 System.Management.Automation.PSCustomObject
     `Import-RegistryItem` returns a custom object that contains the new property(s).
 #>
