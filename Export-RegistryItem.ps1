@@ -48,11 +48,11 @@ https://www.linkedin.com/in/roberthosborne/
 https://www.credly.com/users/roberthosborne/badges
 
 
-.INPUT
+.INPUTS
 System.String System.Array
 
 
-.OUTPUT
+.OUTPUTS
 System.String
 #>
 Function Export-RegistryItem {
