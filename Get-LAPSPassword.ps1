@@ -4,7 +4,7 @@ Function Get-LAPSPassword {
             [Parameter(
                 Position=0,
                 Mandatory=$True,
-                ValueFromPipeline=$False
+                ValueFromPipeline=$False,
                 HelpMessage="Define the domain controller to query for the LAPS password `nEXAMPLE: dc01.osbornepro.com"
             )]  # End Parameter
             [String]$Server,
@@ -12,7 +12,7 @@ Function Get-LAPSPassword {
             [Parameter(
                 Position=1,
                 Mandatory=$True,
-                ValueFromPipeline=$False
+                ValueFromPipeline=$False,
                 HelpMessage="Define the machine name to obtain the LAPS password of `nEXAMPLE: desktop01.osbornepro.com"
             )]  # End Parameter
             [String]$ComputerName,
@@ -35,9 +35,9 @@ Function Get-LAPSPassword {
         
     }  # End If
 
-    If (Test-NetTcpConnection -ComputerName $PrimaryDC -Port 389 -Quiet -ErrorAction Continue) {
+    If (Test-NetTcpConnection -ComputerName $Server -Port 389 -Quiet -ErrorAction Continue) {
       
-        Write-Error "[x] Could not reach LDAP port 389 on $PrimaryDC. Trying to obtain password anyway"
+        Write-Error "[x] Could not reach LDAP port 389 on $Server. Trying to obtain password anyway"
     
     }  # End If
 
