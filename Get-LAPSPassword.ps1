@@ -1,3 +1,53 @@
+<#
+.SYNOPSIS
+This cmdlet can be used to retrieve the LAPS password using an LDAP query from a domain joined device. This will always return the LAPS username as Administrator
+
+
+.DESCRIPTION
+Retrieve the LAPS password of a computer on a remote domain joined device. The username will always be returned as Administrator
+
+
+.PARAMETER Server
+Define the Active Directory server to perform your query against for the LAPS password
+
+.PARAMETER ComputerName
+Define the name of the computer you want to retrieve the LAPS password for
+
+.EXAMPLE
+Get-LAPSPassword -Server DC01.osbornepro.com -ComputerName Desktop02
+# The example performs an LDAP query against DC01.osbornepro.com for the Desktop02 LAPS password
+
+.EXAMPLE
+Get-LAPSPassword -Server DC01.osbornepro.com -ComputerName Desktop02 -Group "OSBORNEPRO\LAPS-Admin"
+# The example performs an LDAP query against DC01.osbornepro.com for the Desktop02 LAPS password and verifies you have permissions to grab the password
+
+
+.INPUTS
+None
+
+
+.OUTPUTS
+None
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://github.com/tobor88
+https://github.com/osbornepro
+https://www.powershellgallery.com/profiles/tobor
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://www.powershellgallery.com/profiles/tobor
+https://www.hackthebox.eu/profile/52286
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+#>
 Function Get-LAPSPassword {
     [CmdletBinding()]
         param(
@@ -13,7 +63,7 @@ Function Get-LAPSPassword {
                 Position=1,
                 Mandatory=$True,
                 ValueFromPipeline=$False,
-                HelpMessage="Define the machine name to obtain the LAPS password of `nEXAMPLE: desktop01.osbornepro.com"
+                HelpMessage="Define the machine hostname to obtain the LAPS password of. (Not FQDN) `nEXAMPLE: desktop01"
             )]  # End Parameter
             [String]$ComputerName,
             
