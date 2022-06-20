@@ -85,7 +85,7 @@ Function Get-LAPSPassword {
         
     }  # End If
 
-    If (Test-NetTcpConnection -ComputerName $Server -Port 389 -Quiet -ErrorAction Continue) {
+    If (Test-NetTcpConnection -ComputerName $Server -Port 389 -ErrorAction Continue) {
       
         Write-Error "[x] Could not reach LDAP port 389 on $Server. Trying to obtain password anyway"
     
