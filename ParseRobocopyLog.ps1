@@ -6,33 +6,34 @@ $ErrorFileResults = @()
 
 ForEach ($File in $Files.FullName) {
 
+    Write-Output "[*] Parsing $File"
     $Started = ((Select-String -Path $File -Pattern " Started : " -Context 14,7 | Out-String).Trim()).Split(">")
     For ($i = 0; $i -le $Started.Count; $i++) {
 
         $Instance = ((Select-String -Path $File -Pattern " Started : " -Context 14,7 | Out-String).Trim()).Split(">")[$i]
-        If ($Instance -like "*Total    Copied   Skipped  Mismatch    FAILED    Extras*") {
+        If (($Instance | Out-String) -like "*Total *Copied * Skipped * Mismatch * FAILED * Extras*") { 
 
             $Evens = 0
 
             [array]$Start = (Select-String -Path $File -Pattern " Started : " | Out-String).Trim().Split([Environment]::NewLine)
             For ($n = 0; $n -le $(($Start.Count + 1) / 2); $n++) {
 
-                $Begin = ((Select-String -Path $File -Pattern " Started : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(" ")
-                $S = Get-Date -Date "$($Begin[-6]) $($Begin[-5]) $($Begin[-4]) $($Begin[-3]) $($Begin[-2]) $($Begin[-1])" -Format 'MM/dd/yyyy hh:mm:ss'
-                $Source = ((Select-String -Path $File -Pattern "Source : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(":")[-1].Trim()
-                $Dest = ((Select-String -Path $File -Pattern "Dest : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(":")[-1].Trim()
-                $FileCounts = (Select-String -Path $File -Pattern "Files : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]
-                $Total = ($FileCounts.Replace("      ","|").Split("|")[1]).Trim()
-                $Copied = ($FileCounts.Replace("      ","|").Split("|")[2]).Trim()
-                $Skipped = ($FileCounts.Replace("      ","|").Split("|")[3]).Trim()
-                $Mismatch = ($FileCounts.Replace("      ","|").Split("|")[4]).Trim()
-                $Failed = ($FileCounts.Replace("      ","|").Split("|")[5]).Trim()
-                $Extras = ($FileCounts.Replace("      ","|").Split("|")[6]).Trim()
+                Try { $Begin = ((Select-String -Path $File -Pattern " Started : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(" ") } Catch { Break }
+                Try { $S = Get-Date -Date "$($Begin[-6]) $($Begin[-5]) $($Begin[-4]) $($Begin[-3]) $($Begin[-2]) $($Begin[-1])" -Format 'MM/dd/yyyy hh:mm:ss' } Catch { $S = "NA" }
+                Try { $Source = ((Select-String -Path $File -Pattern "Source : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(":")[-1].Trim() } Catch { $Source = "NA" }
+                Try { $Dest = ((Select-String -Path $File -Pattern "Dest : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]).Split(":")[-1].Trim() } Catch { $Dest = "NA" }
+                Try { $FileCounts = (Select-String -Path $File -Pattern "Files : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens] } Catch { $FileCounts = 0 }
+                Try { $Total = ($FileCounts.Replace("      ","|").Split("|")[1]).Trim() } Catch { $Total = 0 }
+                Try { $Copied = ($FileCounts.Replace("      ","|").Split("|")[2]).Trim() } Catch { $Copied = 0} 
+                Try { $Skipped = ($FileCounts.Replace("      ","|").Split("|")[3]).Trim() } Catch { $Skipped = 0}
+                Try { $Mismatch = ($FileCounts.Replace("      ","|").Split("|")[4]).Trim() } Catch { $Mismatch = 0}
+                Try { $Failed = ($FileCounts.Replace("      ","|").Split("|")[5]).Trim() } Catch { $Failed = 0}
+                Try { $Extras = ($FileCounts.Replace("      ","|").Split("|")[6]).Trim() } Catch { $Extras = 0}
                 $DestinationCount = [Int]$Copied + [Int]$Skipped
                 $ByteInfo = (Select-String -Path $File -Pattern "Bytes : " | Out-String).Trim().Split([Environment]::NewLine)[$Evens]
-                $TotalBytes = $ByteInfo.Replace("   ","|").Split("|")[2].Trim()
-                $CopiedBytes = $ByteInfo.Replace("   ","|").Split("|")[3].Trim()
-                $SkippedBytes = $ByteInfo.Replace("   ","|").Split("|")[4].Trim()
+                Try { $TotalBytes = $ByteInfo.Replace("   ","|").Split("|")[2].Trim() } Catch { $TotalBytes = 0}
+                Try { $CopiedBytes = $ByteInfo.Replace("   ","|").Split("|")[3].Trim() } Catch { $CopiedBytes = 0}
+                Try { $SkippedBytes = $ByteInfo.Replace("   ","|").Split("|")[4].Trim() } Catch { $SkippedBytes = 0}
                 $DestBytes = [Int]$CopiedBytes + [Int]$SkippedBytes
 
                 $Results += New-Object -TypeName PSCustomObject -Property @{
@@ -42,10 +43,10 @@ ForEach ($File in $Files.FullName) {
                     TotalSourceFiles=$Total;
                     Destination=$($Dest);
                     TotalDestFiles=$($DestinationCount);
-                    TotalBytes=$TotalBytes;
-                    TotalDestBytes=$DestBytes;
-                    CopiedBytes=$CopiedBytes;
-                    SkippedBytes=$SkippedBytes;
+                    TotalBytes=$($TotalBytes);
+                    TotalDestBytes=$($DestBytes);
+                    CopiedBytes=$($CopiedBytes);
+                    SkippedBytes=$($SkippedBytes);
                     LogFile=$($File);
 
                 }  # End New-Object -Property
@@ -63,7 +64,7 @@ ForEach ($File in $Files.FullName) {
     $Errors = (Select-String -Pattern "ERROR (\d)[0,2]" -Path $File | Out-String).Trim().Split([Environment]::NewLine) # \((0x8(.*){5,20})\)" -Path $File
     ForEach ($Err in $Errors) {
 
-        If ($Err -like "*ERROR*") {
+        If ($Err -match '(0x0(.*){5,20})') {
 
             $ErrorCode = $Err.Split("(").Split(")")[1]
             $FilePath = $Err.Split(")")[-1].Substring(13).Trim()
@@ -96,6 +97,6 @@ ForEach ($File in $Files.FullName) {
 
     }  # End ForEach
 
-    $ErrorFileResults
+    $ErrorFileResults | Sort -Unique -Property ErrorCode
 
 }  # End ForEach
