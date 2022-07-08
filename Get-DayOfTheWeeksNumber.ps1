@@ -13,6 +13,12 @@ Define which day of the week you are looking to discover
 .PARAMETER WhichWeek
 Define which week of the month to use in discovering the month day number a day name occurs in
 
+.PARAMETER Month
+Specify any month of any year you want to return this info on
+
+.PARAMETER Year
+Specify any year you want to return this info on
+
 
 .EXAMPLE
 Get-DayOfTheWeeksNumber -DayOfWeek "Tuesday" -WhichWeek 2
@@ -21,6 +27,10 @@ Get-DayOfTheWeeksNumber -DayOfWeek "Tuesday" -WhichWeek 2
 .EXAMPLE
 Get-DayOfTheWeeksNumber "Wednesday" 3
 # Get the third Wednesday of the months date
+
+.EXAMPLE
+Get-DayOfTheWeeksNumber -DayOfWeek "Tuesday" -WhichWeek 2 -Month January -Year 200
+# Get the second Tuesday of the month in January year 2000
 
 
 .NOTES
@@ -52,7 +62,7 @@ Function Get-DayOfTheWeeksNumber {
     [CmdletBinding()]
         param(
             [Parameter(
-                Position=1,
+                Position=0,
                 Mandatory=$True,
                 ValueFromPipeline=$False,
                 HelpMessage="Define the day of the week you want: `nEXAMPLE: Tuesday")]  # End Parameter
@@ -64,11 +74,27 @@ Function Get-DayOfTheWeeksNumber {
                 Mandatory=$True,
                 ValueFromPipeline=$False,
                 HelpMessage="Identify  which week of the month you want: `nEXAMPLE: 2")]  # End Parameter
-            [ValidateRange(1,5)]
-            [Int32]$WhichWeek
+            [ValidateRange(1,6)]
+            [Int32]$WhichWeek,
+
+            [Parameter(
+                Position=2,
+                Mandatory=$False,
+                ValueFromPipeline=$False,
+                HelpMessage="Identify  which week of the month you want: `nEXAMPLE: 2")]  # End Parameter
+            [ValidateSet('January','February','March','April','May','June','July','August','September','October','November','December')]
+            [String]$Month = $((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month)),
+
+            [Parameter(
+                Position=3,
+                Mandatory=$False,
+                ValueFromPipeline=$False,
+                HelpMessage="Identify  which week of the month you want: `nEXAMPLE: 2")]  # End Parameter
+            [ValidateScript({$_ -match '(\d\d\d\d)'})]
+            [Int32]$Year = (Get-Date).Year
         )  # End param
 
-    $Today = Get-Date
+    $Today = Get-Date -Date "$Month $Year"
     $Subtract = $Today.Day - 1
     [datetime]$MonthStart = $Today.AddDays(-$Subtract)
     While ($MonthStart.DayOfWeek -ne $DayOfWeek) {
@@ -79,4 +105,4 @@ Function Get-DayOfTheWeeksNumber {
 
     Return $MonthStart.AddDays(7*($WhichWeek - 1))
 
-}  # End If
+}  # End Get-DayOfTheWeeksNumber
