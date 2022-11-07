@@ -66,7 +66,7 @@ Function Get-CiscoMAC {
 
     $Translate = $MAC.Replace(":","").Replace(".","").Replace("-","")
     
-    $Translate -Split '(....)' -ne '' -join ':'
+    ($Translate -Split '(....)' -ne '' -join '.').ToLower()
     Return
 
 }  # End Function Get-CiscoMAC
