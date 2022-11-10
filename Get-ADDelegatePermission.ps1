@@ -101,15 +101,20 @@ BEGIN {
     If ($PSBoundParameters.ContainsKey("Group")) {
 
         $Groups = @()
-        $NetBiosDomain = (Get-CimInstance -ClassName Win32_NTDomain).DomainName
+        $NetBiosDomain = (Get-CimInstance -ClassName Win32_NTDomain -Verbose:$False).DomainName
         $Group | ForEach-Object { 
         
             If ($_ -notlike "*\*") {
 
-                Write-Verbose -Message "Adding $NetBiosDomain as the domain for $_"
                 $Groups += "$($NetBiosDomain)\$($_)"
+                Write-Verbose -Message "Adding $NetBiosDomain as the domain for $_ : $($NetBiosDomain)\$($_)"
         
-            }  # End If
+            } Else {
+            
+                $Groups += $_
+                Write-Verbose -Message "Using $_ in groups filter"
+
+            }  # End If Else
         
         }  # End ForEach-Object
         
@@ -181,7 +186,8 @@ BEGIN {
     Set-Location -Path $OriginalDirectory
     If ($PSBoundParameters.ContainsKey("Group")) {
 
-        $Results = $Results | Where-Object -Property Identity -in $Group
+        Write-Verbose -Message "Filtering the results for the below groups `n$Groups"
+        $Results = $Results | Where-Object -Property Identity -in $Groups
 
     }  # End If
 
@@ -189,6 +195,10 @@ BEGIN {
 
         Return $Results
 
+    } Else {
+    
+        Write-Output -InputObject "[i] No results returned using your query"
+    
     }  # End If ElseIf
 
 }  # End BPE
