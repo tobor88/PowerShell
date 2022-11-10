@@ -14,6 +14,9 @@ Define a group or groups you want to view the delegate permissions for on an Act
 .PARAMETER OU
 Define an OU or CN in Active Directory you wish to view the delegate permissions for
 
+.PARAMETER IsInherited
+When defined this will return directly applied permissions and inherited permissions for an Active Directory container 
+
 
 .EXAMPLE
 Get-ADDelegatePermissions
@@ -69,12 +72,16 @@ https://www.credly.com/users/roberthosborne/badges
                 ValueFromPipelineByPropertyName=$False
             )]  # End Parameter
             [Alias("OUPath","OrganizationlUnit")]
-            [String[]]$OU = (Get-ADOrganizationalUnit -Filter *).DistinguishedName
+            [String[]]$OU = (Get-ADOrganizationalUnit -Filter *).DistinguishedName,
+            
+            [Parameter(
+                Mandatory=$False
+            )]  # End Parameter
+            [Switch][Bool]$IsInherited
         )  # End param
 
 BEGIN {
 
-    $Results = @()
     $DomainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
     $PrimaryDC = ($DomainObj.PdcRoleOwner).Name
 
@@ -83,35 +90,87 @@ BEGIN {
         Throw "[x] You can only execute this script on $PrimaryDC"
 
     }  # End If
+    
+    $Inherited = $False
+    If ($IsInherited.IsPresent) {
+    
+        $Inherited = $True
+    
+    }  # End If
+
+    If ($PSBoundParameters.ContainsKey("Group")) {
+
+        $Groups = @()
+        $NetBiosDomain = (Get-CimInstance -ClassName Win32_NTDomain).DomainName
+        $Group | ForEach-Object { 
+        
+            If ($_ -notlike "*\*") {
+
+                Write-Verbose -Message "Adding $NetBiosDomain as the domain for $_"
+                $Groups += "$($NetBiosDomain)\$($_)"
+        
+            }  # End If
+        
+        }  # End ForEach-Object
+        
+    }  # End If
 
     Import-Module -Name ActiveDirectory -Verbose:$False
+    $Results = @()
     $OriginalDirectory = $PWD
     Set-Location -Path "AD:\"
 
 } PROCESS {
 
-    ForEach($O In $OU) {
+    ForEach ($O In $OU) {
 
         $ADO = Get-ADOrganizationalUnit -Filter "DistinguishedName -like '$O'"
         If ($Null -eq $ADO) {
 
+            Write-Verbose -Message "Returngin AD Object because OU does not exist"
             $ADO = Get-ADObject -Filter "DistinguishedName -like '$O'"
+
+            If ($Null -eq $ADO) {
+
+                Write-Error -Message "[x] No results container could be found in Active Directory for $OU"
+                Return
+
+            }  # End If
 
         }  # End If
 
         $ACLs = (Get-Acl -Path "AD:\$($ADO.DistinguishedName)").Access
-        ForEach($ACL in $ACLs) {
+        ForEach ($ACL in $ACLs) {
 
-            If ($ACL.IsInherited -eq $False) {
+            If ($Inherited -eq $False) {
 
+                If ($ACL.IsInherited -eq $False) {
+
+                    $Results += New-Object -TypeName PSCustomObject -Property @{
+                        Identity = $ACL.IdentityReference;
+                        ADRights = $ACL.ActiveDirectoryRights;
+                        AccessControlType = $ACL.AccessControlType;
+                        IsInherited = $ACL.IsInherited;
+                        OU = $ADO.DistinguishedName;
+                    }  # End New-Object -Property
+
+                }  # End If
+
+            } ElseIf ($Inherited -eq $True) {
+            
                 $Results += New-Object -TypeName PSCustomObject -Property @{
-                    Identity = $ACL.IdentityReference
-                    ADRights = $ACL.ActiveDirectoryRights
-                    AccessControlType = $ACL.AccessControlType
-                    OU  = $ADO.DistinguishedName
+                    Identity = $ACL.IdentityReference;
+                    ADRights = $ACL.ActiveDirectoryRights;
+                    AccessControlType = $ACL.AccessControlType;
+                    IsInherited = $ACL.IsInherited;
+                    OU = $ADO.DistinguishedName;
                 }  # End New-Object -Property
-
-            }  # End If
+            
+            } Else {
+            
+                Write-Error -Message "[x] There was an issue with the `$Inherited variable and $($ADO.DistinguishedName)"
+            
+            }  # End If ElseIf Else
 
         }  # End ForEach
 
@@ -126,7 +185,11 @@ BEGIN {
 
     }  # End If
 
-    Return $Results
+    If ($Results) {
+
+        Return $Results
+
+    }  # End If ElseIf
 
 }  # End BPE
 
