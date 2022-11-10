@@ -76,6 +76,7 @@ https://www.credly.com/users/roberthosborne/badges
     If ($ExtendedRights.IsPresent) {
 
         Write-Verbose -Message "Mapping Extended Rights permissions to GUIDs"
+        $PermissionType = "Extended"
         Get-ADObject -SearchBase $RootDSE.ConfigurationNamingContext -LDAPFilter "(&(objectclass=controlAccessRight)(rightsguid=*))" -Properties @("displayName", "rightsGuid") | ForEach-Object { 
     
             $GuidMap[$_.DisplayName] = [System.GUID]$_.RightsGuid
@@ -85,6 +86,7 @@ https://www.credly.com/users/roberthosborne/badges
     } Else {
 
         Write-Verbose -Message "Mapping Special Permissions to GUIDs"
+        $PermissionType = "Special"
         Get-ADObject -SearchBase $RootDSE.SchemaNamingContext -LDAPFilter "(schemaidguid=*)" -Properties @("LdapDisplayName", "SchemaIdGUID") | ForEach-Object { 
     
             $GuidMap[$_.LdapDisplayName] = [System.GUID]$_.SchemaIdGUID
@@ -93,6 +95,17 @@ https://www.credly.com/users/roberthosborne/badges
 
     }  # End If Else
 
-    Return $GuidMap
+    $Names = ($GuidMap.Keys | Out-String).Split("$([System.Environment]::NewLine)")
+    $Names = $Names  | Where-Object -FilterScript { $_ -ne ""}
+    $Guids = $GuidMap.Values.Guid
+    For ($i = 0; $i -lt $Names.Count; $i++) {
+     
+        New-Object -TypeName PSCustomObject -Property @{
+            Permission=$Names[$i];
+            Guid=$Guids[$i];
+            Type=$PermissionType;
+        }  # End New-Object -Property
     
+    }  # End For
+
 }  # End Function New-ADDelegatePermissionGuid
