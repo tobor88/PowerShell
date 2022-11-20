@@ -55,6 +55,7 @@ This is a collection of PowerShell functions I made. Feel free to use and make a
 - Restart-PrintSpooler.ps1 (*Restart the print spooler automatically when errors occur*)
 - Search-ForCompromise.ps1 (*Search a device for common indicators of compromise*)
 - SearchUserLoginByTimeRange.ps1 (*Search user logon by time range*)
+- Send-SendGridEmail (*Use your SendGrid API key to send an email via PowerShell for your verified sender*)
 - Set-GroupMembershipMirror.ps1 (*Add members of one group to another group in Active Directory*)
 - Set-LockScreenImage.psm1 (*Set the lock screen image of a device*)
 - Set-NTPServerUp.ps1 (*Setup an NTP server*)
