@@ -56,6 +56,7 @@ None
 
 .LINK
 https://osbornepro.com
+https://encrypit.osbornepro.com
 https://btpssecpack.osbornepro.com
 https://writeups.osbornepro.com
 https://github.com/OsbornePro
