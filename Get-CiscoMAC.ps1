@@ -1,3 +1,4 @@
+Function Get-CiscoMAC {
 <#
 .SYNOPSIS
 This cmdlet is used to translate a MAC address into a grepable/include Cisco formatted MAC address
@@ -53,7 +54,6 @@ https://www.hackthebox.eu/profile/52286
 https://www.linkedin.com/in/roberthosborne/
 https://www.credly.com/users/roberthosborne/badges
 #>
-Function Get-CiscoMAC {
     [CmdletBinding()]
         param(
             [Parameter(
