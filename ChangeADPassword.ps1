@@ -1,6 +1,6 @@
 ##############################################################################################
 #                                                                                            #
-# Last Modified" 10/19/2022                                                                  #
+# Last Modified" 1/27/2023                                                                   #
 #                                                                                            #
 # Description: This script allows you to change the password of a user in Active Directory   #
 #              without needing to be logged into a domain joined computer.                   #
@@ -9,7 +9,7 @@
 #                                                                                            #
 ##############################################################################################
 
-$DC = Read-Host -Prompt "[?] Enter the name or IP Address of the domain controller EXAMPLE: rosborne "
+$DC = Read-Host -Prompt "[?] Enter the name or IP Address of the domain controller EXAMPLE: server.domain.com "
 $Credential = Get-Credential -Message "Enter your credentials for the specified domain"
 $DomainEntry = New-Object -TypeName System.DirectoryServices.DirectoryEntry "LDAP://$($DC)" ,$Credential.UserName,$($Credential.GetNetworkCredential().Password)
 $Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
@@ -21,7 +21,7 @@ $UserObject = New-Object -TypeName System.DirectoryServices.DirectoryEntry $User
 If ($UserObject) {
 
     Write-Output -InputObject "[*] Changing password for user: $($User.Path)"
-    $UserObject.ChangePassword($Credential.GetNetworkCredential().Password, [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($NewPassword)))
+    $UserObject.ChangePassword($Credential.GetNetworkCredential().Password, [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR((Read-Host -Prompt "Enter your new password" -AsSecureString))))
 
 } Else {
 
