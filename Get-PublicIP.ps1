@@ -1,3 +1,4 @@
+Function Get-PublicIp {
 <#
 .SYNOPSIS
 This cmdlet is used to get the public ip address of the local device.
@@ -38,19 +39,13 @@ None
 PSCustomObject
 
 #>
-
-Function Get-PublicIp {
     [CmdletBinding()]
         param()
 
-    $IpInfo = Invoke-RestMethod -Uri https://ipinfo.io/json
+    $UserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
+    $IpInfo = Invoke-RestMethod -Uri https://ipinfo.io/json -UseBasicParsing -Method GET -UserAgent $UserAgent
 
     If ($Null -like $IpInfo) {
-
-      $IpInfo = Invoke-RestMethod http://ipinfo.io/json
-
-    }  # End If
-    Else {
 
       Throw " [x] Could not connect to API at http://ipinfo.io/json. Check internet connection and site availability."
 
