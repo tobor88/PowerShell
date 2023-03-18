@@ -147,7 +147,7 @@ $Shell.MinimizeAll()
 
 
 # Open the instructions
-$InstructionsPath = (Get-ChildItem -Path $UserDesktop).FullName + "\Instructions-README.txt"
+$InstructionsPath = "$UserDesktop\Instructions-README.txt"
 $Instructions = "
 ========================================================================
                       We1C0m3 2 SAwPapEr
