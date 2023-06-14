@@ -38,6 +38,8 @@ This is a collection of PowerShell functions I made. Feel free to use and make a
 - Import-ScheduledTask.ps1 (*Import a schedueld task into task scheduler*)
 - Invoke-DCReplication.ps1 (*Force a DC Replication*)
 - Invoke-WakeOnLan.ps1 (*Enable Wake On LAN for a device*)
+- Invoke-WinSCPDownload.ps1 (*Download files from a WinSCP FTP server*)
+- Invoke-WinSCPUpload.ps1 (*Upload files from a WinSCP FTP Server*)
 - MissingDrives.ps1 (*Map network shares based on group membership*)
 - PasswordExpiryAlert.ps1 (*Get alerts for expiring passwords*)
 - QueryFormsiteData.ps1 (*Query data from formsite.com form submissions*)
