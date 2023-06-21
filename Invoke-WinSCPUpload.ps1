@@ -118,13 +118,13 @@ System.String[]
 
             [Parameter(
                 Mandatory=$True,
-                HelpMessage="[H] Enter the FQDN, IP address, or hostname of the WinSCP server`n  [-] EXAMPLE: sftp.domain.com "
+                HelpMessage="[H] Enter the FQDN, IP address, or hostname of the WinSCP server`n  [-] EXAMPLE: ftp.domain.com "
             )]  # End Parameter
             [String]$Server,
 
             [Parameter(
                 Mandatory=$False,
-                HelpMessage="[H] Enter the destination port for the WinSCP server`n  [-] EXAMPLE: sftp.domain.com "
+                HelpMessage="[H] Enter the destination port for the WinSCP server`n  [-] EXAMPLE: ftp.domain.com "
             )]  # End Parameter
             [ValidateRange(0, 65535)]
             [Int]$Port = 0,
@@ -160,7 +160,7 @@ System.String[]
             [Parameter(
                 ParameterSetName="Credentials",
                 Mandatory=$True,
-                HelpMessage="[H] Enter the username to authenticate to the WinSCP server with`n  [-] EXAMPLE: sftpadmin "
+                HelpMessage="[H] Enter the username to authenticate to the WinSCP server with`n  [-] EXAMPLE: ftpadmin "
             )]  # End Parameter
             [String]$Username,
 
@@ -174,7 +174,7 @@ System.String[]
             [Parameter(
                 ParameterSetName="Key",
                 Mandatory=$True,
-                HelpMessage="[H] Enter the username to authenticate to the WinSCP server with`n  [-] EXAMPLE: sftpadmin "
+                HelpMessage="[H] Enter the username to authenticate to the WinSCP server with`n  [-] EXAMPLE: ftpadmin "
             )]  # End Parameter
             [String]$KeyUsername,
 
@@ -188,7 +188,7 @@ System.String[]
 
             [Parameter(
                 ParameterSetName="Key",
-                Mandatory=$True,
+                Mandatory=$False,
                 HelpMessage="[H] Enter the SSH private key password to authenticate to the WinSCP server with `n  [-] EXAMPLE: (ConvertTo-SecureString -String 'Password123!' -AsPlainText -Force) `n  [-] EXAMPLE: (Read-Host -Prompt 'Enter password' -AsSecureString) "
             )]  # End Parameter
             [SecureString]$SshPrivateKeyPassPhrase,
@@ -221,6 +221,11 @@ System.String[]
             )]  # End Parameter
             [Int]$Timeout = 15, # Seconds
 
+            [Parameter(
+                Mandatory=$False
+            )]  # End Parameter
+            [String]$LogPath = "$env:TEMP\Logs\sftp-session-logs.txt",
+
             [ValidateNotNullOrEmpty()]
             [Parameter(
                 Mandatory=$False
@@ -232,7 +237,9 @@ System.String[]
 BEGIN {
 
     Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Loading the WinSCP assembly from $WinScpDllPath"
-    Add-Type -Path $WinScpDllPath -Verbose:$False
+    Try { Add-Type -Path $WinScpDllPath -Verbose:$False -ErrorAction SilentlyContinue } Catch { Write-Verbose "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') $WinScpDllPath already a loaded assembly"}
+
+    New-Item -Path $LogPath -ItemType File -Force -ErrorAction SilentlyContinue -Verbose:$False | Out-Null
 
 } PROCESS {
 
@@ -259,7 +266,7 @@ BEGIN {
                 HostName = $Server;
                 UserName = $KeyUsername;
                 SshPrivateKeyPath = $SshPrivateKeyPath;
-                PrivateKeyPassphrase = $SshPrivateKeyPassPhrase;
+                SecurePrivateKeyPassphrase = $SshPrivateKeyPassPhrase;
                 FtpMode = [WinSCP.FtpMode]::$FTPMode;
                 Timeout = $Timeout;
             }  # End $SessionOptions
@@ -318,13 +325,29 @@ BEGIN {
 
     }  # End Switch
 
-    $Session = New-Object -TypeName WinSCP.Session
+    $BackDir = $WinScpDllPath.DirectoryName.Split('\')[-1]
+    If ($BackDir -notlike "net*") {
+
+        $WinSCPExec = Get-ChildItem -Path $WinScpDllPath.DirectoryName -Filter "WinSCP.exe" -File -Recurse -Force -Verbose:$False
+
+    } Else {
+
+        $WinSCPExec = Get-ChildItem -Path $WinScpDllPath.DirectoryName.Replace("$BackDir","") -Filter "WinSCP.exe" -File -Recurse -Force -Verbose:$False
+
+    }  # End If Else
+    
+    $Session = New-Object -TypeName WinSCP.Session -Property @{
+        ExecutablePath=$($WinSCPExec.FullName);
+        DebugLogLevel=1;
+        SessionLogPath=$LogPath;
+    }  # End $Session
+
     Try {
     
         Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Establishing $Protocol session"
         $Session.Open($SessionOptions)
  
-        Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Transferring $($Path.Count) files over SFTP connection to $Destination on $Server port $WritePort"
+        Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Transferring $($Path.Count) files over $Protocol connection to $Destination on $Server port $WritePort"
         ForEach ($File in $Path) {
 
             $Session.PutFiles($File, $Destination).Check()
@@ -349,7 +372,7 @@ BEGIN {
 
         }  # End If
 
-        Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Closing the $Protocol session"
+        Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Closing the $Protocol session with $Server"
         $Session.Dispose()
 
     }  # End Try Finally
