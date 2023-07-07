@@ -1,3 +1,4 @@
+#Requires -Version 3.0
 Function Send-SendGridEmail {
 <#
 .SYNOPSIS
@@ -10,10 +11,10 @@ If you have more than one TO email address you will need to send a second email.
 
 
 .PARAMETER ToAddress
-Enter the TO address the email will be delivered
+Enter the TO addresses the email will be delivered
 
 .PARAMETER ToName
-Enter the TO name where the email will be delivered
+Enter the TO names where the email will be delivered
 
 .PARAMETER FromAddress
 Enter the FROM address the email will be set from 
@@ -31,35 +32,27 @@ Contents of the email message using Text formatting
 Contents of the email message written in HTML format
 
 .PARAMETER Attachment
-Define a text or html based file to attach to the email
+Define a text or html based file(s) to attach to the email
 
 .PARAMETER APIKey
 API token used to authenticate to the SendGrid API
 
 
 .EXAMPLE
-Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "advisor360@vinebrookmsp.com" -FromName "Test Email from Advisor360" -Subject "Test Email" -Body "Hey this is a test email thank you!" -APIKey $APIKey
-# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name from advisor360@vinebrookmsp.com|Test Email from Advisor360 using a Text formatted email body
+Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "sender@osbornepro.com" -FromName "Rob Osborne" -Subject "Test Email" -Body "Hey this is a test email thank you!" -APIKey $APIKey
+# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name using a Text formatted email body
 
 .EXAMPLE
-Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "advisor360@vinebrookmsp.com" -FromName "Test Email from Advisor360" -Subject "Test Email" -HTMLBody "<br>Hey,<br> <br>This is a test email. <br><br>Thank you!" -Attachment C:\Temp\File.txt -APIKey $APIKey
-# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name from advisor360@vinebrookmsp.com|Test Email from Advisor360 using an HTML formatted email body
+Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "sender@osbornepro.com" -FromName "Rob Osborne" -Subject "Test Email" -HTMLBody "<br>Hey,<br> <br>This is a test email. <br><br>Thank you!" -Attachment C:\Temp\File.txt -APIKey $APIKey
+# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name using an HTML formatted email body
 
 .EXAMPLE
-Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "advisor360@vinebrookmsp.com" -FromName "Test Email from Advisor360" -Subject "Test Email" -Body "Hey this is a test email thank you!" -Attachment "C:\Temp\File1.txt","C:\Temp\File2.txt" -APIKey $APIKey
-# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name from advisor360@vinebrookmsp.com|Test Email from Advisor360 using a Text formatted email body and incldues the 2 file attachments
+Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "sender@osbornepro.com" -FromName "Rob Osborne" -Subject "Test Email" -Body "Hey this is a test email thank you!" -Attachment "C:\Temp\File1.txt","C:\Temp\File2.txt" -APIKey $APIKey
+# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name using a Text formatted email body and incldues the 2 file attachments
 
 .EXAMPLE
-Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "advisor360@vinebrookmsp.com" -FromName "Test Email from Advisor360" -Subject "Test Email" -HTMLBody "<br>Hey,<br> <br>This is a test email. <br><br>Thank you!" -APIKey $APIKey -Attachment "C:\Temp\File1.txt","C:\Temp\File2.txt"
-# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name from advisor360@vinebrookmsp.com|Test Email from Advisor360 using an HTML formatted email body and incldues the 2 file attachments
-
-
-.INPUTS 
-None
-
-
-.OUTPUTS
-None
+Send-SendGridEmail -To "recipient1@domain.com","recipient2@domain.com" -ToName "Recipient1 Name","Recipient 2 Name" -FromAddress "sender@osbornepro.com" -FromName "Rob Osborne" -Subject "Test Email" -HTMLBody "<br>Hey,<br> <br>This is a test email. <br><br>Thank you!" -APIKey $APIKey -Attachment "C:\Temp\File1.txt","C:\Temp\File2.txt"
+# This example sends an email to recipient1@domain.com|Recipient 1 Name and recipient2@domain.com|Recipient 2 Name using an HTML formatted email body and incldues the 2 file attachments
 
 
 .LINK
@@ -67,6 +60,7 @@ https://osbornepro.com
 https://encrypit.osbornepro.com
 https://btpssecpack.osbornepro.com
 https://writeups.osbornepro.com
+https://github.com/tobor88
 https://github.com/OsbornePro
 https://gitlab.com/tobor88
 https://www.powershellgallery.com/profiles/tobor
@@ -79,14 +73,22 @@ https://www.credly.com/users/roberthosborne/badges
 Author: Robert H. Osborne
 Alias: tobor
 Contact: rosborne@osbornepro.com
+
+
+.INPUTS 
+None
+
+
+.OUTPUTS
+None
 #>
 param (
     [CmdletBinding(DefaultParameterSetName="Text")]
         [Parameter(
             Position = 0,
             Mandatory=$True,
-            ValueFromPipeline=$False,
-            HelpMessage="Enter the TO address the email will be delivered `nEXAMPLE: jsmith@domain.com ")]  # End Parameter
+            HelpMessage="Enter the TO address the email will be delivered `nEXAMPLE: jsmith@domain.com "
+        )]  # End Parameter
         [Alias("To")]
         [ValidateNotNullOrEmpty()]
         [String[]]$ToAddress,
@@ -94,30 +96,27 @@ param (
         [Parameter(
             Position = 1,
             Mandatory=$False,
-            ValueFromPipeline=$False,
-            HelpMessage="Enter the TO name where the email will be delivered `nEXAMPLE: John Smith ")]  # End Parameter
+            HelpMessage="Enter the TO name where the email will be delivered `nEXAMPLE: John Smith "
+        )]  # End Parameter
         [String[]]$ToName,
     
         [Parameter(
             Position = 2,
             Mandatory=$True,
-            ValueFromPipeline=$False,
             HelpMessage="REQUIRES A VERIFIED SENDER: `nEnter the FROM address the email will be set from `nEXAMPLE: general@vinebrooktech.com ")]  # End Parameter
         [Alias("From")]
-        [ValidateScript($_ -like "*@*")]
+        [ValidateSet("2seventy-helpdesk@vinebrookmsp.com","bluebirdbio-helpdesk@vinebrookmsp.com","kiniksa-helpdesk@vinebrookmsp.com","transmedics-alerts@vinebrookmsp.com","advisor360@vinebrookmsp.com")]
         [String]$FromAddress,
     
         [Parameter(
             Position = 3,
             Mandatory=$False,
-            ValueFromPipeline=$False,
             HelpMessage="Enter the FROM name the email will be sent from `nEXAMPLE: Vinebrook Technology ")]  # End Parameter
         [String]$FromName,
     
         [Parameter(
             Position = 4,
             Mandatory=$True,
-            ValueFromPipeline=$False,
             HelpMessage="Enter a Subject for your email message `nEXAMPLE: Meeting Thursday ")]  # End Parameter
         [ValidateNotNullOrEmpty()]
         [String]$Subject,
@@ -126,7 +125,6 @@ param (
             ParameterSetName="Text",
             Position = 5,
             Mandatory=$True,
-            ValueFromPipeline=$False,
             HelpMessage="Enter a message to place in the body of your email `nEXAMPLE: Hi John, I look forward to our meeting ")]  # End Parameter
         [String]$Body,
     
@@ -134,41 +132,36 @@ param (
             ParameterSetName="HTML",
             Position = 5,
             Mandatory=$True,
-            ValueFromPipeline=$False,
             HelpMessage="Enter an HTML written message to place in the body of your email `nEXAMPLE: <br>Hi John,<br><br> I look forward to our meeting<br><br>    Thanks ")]  # End Parameter
         [String]$HTMLBody,
     
         [Parameter(
             Position = 6,
             Mandatory=$False,
-            ValueFromPipeline=$False,
             HelpMessage="Enter the absolute path to a file you to attach to your email send. `nEXAMPLE: C:\temp\file.txt")]  # End Parameter
         [ValidateScript({Test-Path -Path $_})]
         [String[]]$Attachment,
     
         [Parameter(
             Position = 7,
-            Mandatory=$True,
-            ValueFromPipeline=$False,
+            Mandatory=$False,
             HelpMessage="Enter your SendGrid API key `nEXAMPLE: SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ")]  # End Parameter
         [ValidateScript({$_.Length -eq 69 -and $_ -like "SG.*"})]
         [String]$APIKey
     )  # End param
+
+    $Count = 0
+    $AllTo = @()
+    $MailBodyType = 'text/plain'
+    $MailBodyValue = $Body
 
     If ($PSBoundParameters.ContainsKey("HTMLBody")) {
     
         $MailbodyType = 'text/HTML'
         $MailbodyValue = $HTMLBody
     
-    } Else {
-    
-        $MailBodyType = 'text/plain'
-        $MailBodyValue = $Body
-    
     }  # End If Else
 
-    $Count = 0
-    $AllTo = @()
     ForEach ($T in $ToAddress) {
 
         $AllRecipients = @{}
@@ -232,6 +225,7 @@ param (
         "Authorization" = "Bearer $APIKey"
     }  # End $Header
 
-    Invoke-RestMethod -Method POST -Uri https://api.sendgrid.com/v3/mail/send -Headers $Header -Body $BodyJson -ContentType "application/json"
+    Write-Verbose -Message "[v] $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Sending email through SendGrid SMTP server"
+    Invoke-RestMethod -Method POST -Uri "https://api.sendgrid.com/v3/mail/send" -Headers $Header -Body $BodyJson -ContentType "application/json"
 
 }  # End Send-SendGridEmail
