@@ -29,8 +29,10 @@ Function Get-ScreenResolution {
 }  # Get-ScreemResolution
 
 Function Set-WallPaper($Image) {
- 
-Add-Type -TypeDefinition @" 
+
+    Try {
+
+        Add-Type -ErrorAction SilentlyContinue -TypeDefinition @" 
 using System; 
 using System.Runtime.InteropServices;
   
@@ -44,6 +46,13 @@ public class Params
 }
 "@ 
   
+    
+    } Catch {
+
+        # Already added
+
+    }  # End Try Catch
+
     $SPI_SETDESKWALLPAPER = 0x0014
     $UpdateIniFile = 0x01
     $SendChangeEvent = 0x02
@@ -64,7 +73,9 @@ Function Save-ShortcutIcon {
             [String]$Destination
         )  # End param
 
-    $Code = @"
+    Try {
+
+        Add-Type -ErrorAction Stop -TypeDefinition @"
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -89,12 +100,21 @@ namespace System
     }
 }
 "@
+    
+    } Catch {
 
-    Add-Type -TypeDefinition $code
+        # Already added
+
+    }  # End Try Catch
+
     $FileinfoStruct = New-Object -TypeName System.SHFILEINFO
-    [System.SHGETFILEINFO]::SHGetFileInfo($Path,0, [Ref]$FileinfoStruct,$Size,0x000000100) | Out-Null
-    $Icon = [System.Drawing.Icon]::FromHandle($FileinfoStruct.hIcon)
-    $Icon.ToBitmap().Save($Destination)
+    [System.SHGETFILEINFO]::SHGetFileInfo($Path, 0, [Ref]$FileinfoStruct, $Size, 0x000000100) | Out-Null
+    If (!(Test-Path -Path $Destination)) {
+
+        $Icon = [System.Drawing.Icon]::FromHandle($FileinfoStruct.hIcon)
+        $Icon.ToBitmap().Save($Destination)
+
+    }  # End If Else
 
 }  # End Function Save-ShortcutIcon
 
@@ -108,7 +128,7 @@ $UserDesktop =  [System.Environment]::GetFolderPath("Desktop")
 $OneDriveDesktop = "$env:OneDrive\Desktop"
 $UserDesktopIcons += Get-ChildItem -Path $UserDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
 $UserOneDriveIcons += Get-ChildItem -Path $OneDriveDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
-$UserIcons = $UserDesktopIcons + $UserOneDriveIcons
+$UserIcons = $UserDesktopIcons + $UserOneDriveIcons | Select-Object -Unique
 New-Item -Path $env:TEMP -Name "DesktopLinks" -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 New-Item -Path $env:TEMP -Name "DesktopOneDriveLinks" -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
 $UserDesktopIcons | ForEach-Object { Copy-Item -Path $_ -Destination "$env:TEMP\DesktopLinks" -Force }
@@ -116,7 +136,6 @@ $UserOneDriveIcons | ForEach-Object { Copy-Item -Path $_ -Destination "$env:TEMP
 $Compare = Compare-Object -ReferenceObject $PublicIcons -DifferenceObject $UserIcons | Where-Object { $_.SideIndicator -eq "=>" }
 $CreateIconCount = ($MaxIcons - $PublicIcons.Count - $UserIcons.Count) # + ($MaxIcons * ($ScreenCount - 1))
 $Random = Get-Random -Maximum $CreateIconCount -Minimum 1
-
 
 # Get Default browser
 $Browser = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice" -Name "Progid").ProgId
@@ -242,7 +261,7 @@ If ($Null -eq $BrowserPath) {
 }  # End If
 
 Copy-Item -Path $BrowserPath -Destination "$env:TEMP\$($BrowserPath.Split('\')[-1])"
-Stop-Process -Name $BrowserProcess -Force
+Stop-Process -Name $BrowserProcess -Force -ErrorAction SilentlyContinue
 Move-Item -Path $BrowserPath -Destination $BrowserPath.Replace(".lnk", " $Random.lnk") -Force -ErrorAction SilentlyContinue | Out-Null
 
 # Create the game icons
@@ -325,13 +344,11 @@ Start-Process -FilePath "C:\Windows\System32\notepad.exe" -ArgumentList @($Instr
 # Undo operation
 Read-Host -Prompt "[i] Press ENTER to undo what the script did"
 Set-WallPaper -Image $OldWallpaper -Force
-Stop-Process -Name $BrowserProcess -Force -ErrorAction SilentlyContinue
+Stop-Process -Name $BrowserProcess -Force -ErrorAction SilentlyContinue | Out-Null
 $RemoveFiles = @()
 $RemoveFiles += $WebPage, $IconResourcePath, $WallpaperImage, $InstructionsPath
-$RemoveFiles += Get-ChildItem -Path (Get-ChildItem -Path $UserDesktop).FullName -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
+$RemoveFiles += Get-ChildItem -Path $UserDesktop -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
 $RemoveFiles += Get-ChildItem -Path "C:\Users\Public\Desktop" -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
-Remove-Item -Path $RemoveFiles -Force
+Remove-Item -Path $RemoveFiles -Force -ErrorAction SilentlyContinue | Out-Null
 Move-Item -Path "$env:TEMP\$($BrowserPath.Split('\')[-1])" -Destination $BrowserPath -Force -ErrorAction SilentlyContinue | Out-Null
-Get-ChildItem -Path "$env:TEMP\DesktopLinks" -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item -Path $_ -Destination "$UserDesktop\" -Force }
-Get-ChildItem -Path "$env:TEMP\DesktopOneDriveLinks" -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item -Path $_ -Destination "$OneDriveDesktop\" -Force }
-Remove-Item -Path "$env:TEMP\DesktopLinks","$env:TEMP\DesktopOneDriveLinks" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:TEMP\DesktopLinks","$env:TEMP\DesktopOneDriveLinks" -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
