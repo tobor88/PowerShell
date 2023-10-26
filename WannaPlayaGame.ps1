@@ -5,8 +5,8 @@ Function Get-ScreenResolution {
         param()
 
     $Obj = @()
-    [void] [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-    [void] [Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+    [Void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+    [Void][Reflection.Assembly]::LoadWithPartialName("System.Drawing")
     $Screens = [System.Windows.Forms.Screen]::AllScreens
 
     ForEach ($Screen in $Screens) {
@@ -106,10 +106,15 @@ $PublicDesktop = [System.Environment]::GetFolderPath("CommonDesktopDirectory")
 $PublicIcons = Get-ChildItem -Path $PublicDesktop | Select-Object -ExpandProperty FullName
 $UserDesktop =  [System.Environment]::GetFolderPath("Desktop")
 $OneDriveDesktop = "$env:OneDrive\Desktop"
-$UserIcons += Get-ChildItem -Path $UserDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
-$UserIcons += Get-ChildItem -Path $OneDriveDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+$UserDesktopIcons += Get-ChildItem -Path $UserDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+$UserOneDriveIcons += Get-ChildItem -Path $OneDriveDesktop -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+$UserIcons = $UserDesktopIcons + $UserOneDriveIcons
+New-Item -Path $env:TEMP -Name "DesktopLinks" -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+New-Item -Path $env:TEMP -Name "DesktopOneDriveLinks" -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
+$UserDesktopIcons | ForEach-Object { Copy-Item -Path $_ -Destination "$env:TEMP\DesktopLinks" -Force }
+$UserOneDriveIcons | ForEach-Object { Copy-Item -Path $_ -Destination "$env:TEMP\DesktopOneDriveLinks" -Force }
 $Compare = Compare-Object -ReferenceObject $PublicIcons -DifferenceObject $UserIcons | Where-Object { $_.SideIndicator -eq "=>" }
-$CreateIconCount = ($MaxIcons - $PublicIcons.Count - $UserIcons.Count) # + ($MaxIcons * ($ScreenCount - 1)) # Need to figure out how to create shortcuts on other monitors
+$CreateIconCount = ($MaxIcons - $PublicIcons.Count - $UserIcons.Count) # + ($MaxIcons * ($ScreenCount - 1))
 $Random = Get-Random -Maximum $CreateIconCount -Minimum 1
 
 
@@ -118,6 +123,8 @@ $Browser = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Assoc
 If ($Browser -like "*Firefox*") {
 
     $Browser = "Firefox"
+    $BrowserProcess = "firefox"
+    $BrowserProcess 
     $BrowserPath = (Get-ChildItem -Path "$UserDesktop\Firefox*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -133,6 +140,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*Chromium*") {
 
     $Browser = "Chromium"
+    $BrowserProcess = "chrome"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -148,6 +156,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*Chrome*") {
 
     $Browser = "Google Chrome"
+    $BrowserProcess = "chrome"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -163,6 +172,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*Brave*") {
 
     $Browser = "Brave"
+    $BrowserProcess = "brave"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -178,6 +188,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*Edge*") {
 
     $Browser = "Microsoft Edge"
+    $BrowserProcess = "msedge"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -193,6 +204,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*Explorer*") {
 
     $Browser = "Internet Explorer"
+    $BrowserProcess = "iexplore"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -208,6 +220,7 @@ If ($Browser -like "*Firefox*") {
 } ElseIf ($Browser -like "*IE*") {
 
     $Browser = "Internet Explorer"
+    $BrowserProcess = "iexplore"
     $BrowserPath = (Get-ChildItem -Path "C:\Users\Public\Desktop\*$Browser*").FullName
     If ($Null -eq $BrowserPath) {
 
@@ -229,6 +242,7 @@ If ($Null -eq $BrowserPath) {
 }  # End If
 
 Copy-Item -Path $BrowserPath -Destination "$env:TEMP\$($BrowserPath.Split('\')[-1])"
+Stop-Process -Name $BrowserProcess -Force
 Move-Item -Path $BrowserPath -Destination $BrowserPath.Replace(".lnk", " $Random.lnk") -Force -ErrorAction SilentlyContinue | Out-Null
 
 # Create the game icons
@@ -311,9 +325,13 @@ Start-Process -FilePath "C:\Windows\System32\notepad.exe" -ArgumentList @($Instr
 # Undo operation
 Read-Host -Prompt "[i] Press ENTER to undo what the script did"
 Set-WallPaper -Image $OldWallpaper -Force
+Stop-Process -Name $BrowserProcess -Force -ErrorAction SilentlyContinue
 $RemoveFiles = @()
 $RemoveFiles += $WebPage, $IconResourcePath, $WallpaperImage, $InstructionsPath
 $RemoveFiles += Get-ChildItem -Path (Get-ChildItem -Path $UserDesktop).FullName -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
 $RemoveFiles += Get-ChildItem -Path "C:\Users\Public\Desktop" -Filter "$Browser *.lnk" -ErrorAction SilentlyContinue -Force | Select-Object -ExpandProperty FullName
 Remove-Item -Path $RemoveFiles -Force
 Move-Item -Path "$env:TEMP\$($BrowserPath.Split('\')[-1])" -Destination $BrowserPath -Force -ErrorAction SilentlyContinue | Out-Null
+Get-ChildItem -Path "$env:TEMP\DesktopLinks" -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item -Path $_ -Destination "$UserDesktop\" -Force }
+Get-ChildItem -Path "$env:TEMP\DesktopOneDriveLinks" -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item -Path $_ -Destination "$OneDriveDesktop\" -Force }
+Remove-Item -Path "$env:TEMP\DesktopLinks","$env:TEMP\DesktopOneDriveLinks" -Recurse -Force -ErrorAction SilentlyContinue
