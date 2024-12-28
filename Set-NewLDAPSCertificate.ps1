@@ -1,76 +1,125 @@
-# This script is used to install an LDAPS certificate in the NTDS Personal and AD LDS service name stores to update the LDAPS certificate 
-
-# https://github.com/tobor88/PowerShell/blob/master/Hide-PowerShellScriptPassword.ps1
-$KeyPassword = "LDAPS-S3cr3t-Pa55w0rd" # I have a script at the above link you can use to encrypt this value so it does not show in clear text
-$SecurePassword = ConvertTo-SecureString -String $KeyPassword -Force –AsPlainText
-#$CertPath = "$env:USERPROFILE\Downloads\LDAPS.pfx"
-$LDAPSTemplateName = "LDAP over SSL"
-$ServiceNames = "NTDS",((Get-CimInstance -ClassName Win32_Service -Filter 'Name LIKE "%ADAM%"').Name)
-# NTDS is the default LDAP service. 
-# AD LDS if installed will have a custom service name you set 
-# I try to discover that automatically for you using a search for a process with ADAM in the name
+#Requires -Version 3.0
+#Requires -PSEdition Desktop
+#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+This script is used to install the LDAP over SSL certificate template you have on your Domain Controller
 
 
-Write-Output "[*] Obtaining LDAP over SSL certificate by Template Name from the local machine certificate store"
-$LDAPSCert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
-$ExpiringCert = Get-ChildItem -Path Cert:\LocalMachine\My -ExpiringInDays 30 | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
+.DESCRIPTION
+Retrieve the current certificates from the Local Machine certificate store using the template name you define
+Retrieve any expiring soon or expired certificates that use that template name in the local computer certificate store
+If expiring certificate is found it gets renewed with the same key and obtains the certificate info after renewal
+If a new certificate is issued, the old one is removed and the new one is assigned to the NTDS service
+A registry path is added using the current certificate thumbprint which assigns it to the NTDS service
+The NTDS service is restarted to apply changes
 
-If (($LDAPSCert -Contains $ExpiringCert) -and ($Null -ne $LDAPSCert[1])) {
 
-    $LDAPSCert = $LDAPSCert | Where-Object -Property Thumbprint -ne $ExpiringCert.Thumbprint
+.PARAMETER LdapServiceName
+Define the name of the LDAP service if it is not the default NTDS
 
-}  # End If
-ElseIf ($LDAPSCert -eq $ExpiringCert) {
+.PARAMETER CertificateTemplateName
+Define the name of your LDAPS certificate template. NO SPACES ARE IN THIS NAME
 
-    Write-Output "[*] Renewing LDAPS certificate with the same keys"
-    Start-Process -WorkingDirectory "C:\Windows\System32" -FilePath certreq.exe -ArgumentList @('-Enroll', '-machine', '-q', '-cert', $LDAPSCert.SerialNumber, 'Renew', 'ReuseKeys') -Wait
+.PARAMETER ExpiringInDays
+Define how many days until an LDAPS certificate is expiring that you renew it
 
-    $LDAPSCert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
-    $ExpiringCert = Get-ChildItem -Path Cert:\LocalMachine\My -ExpiringInDays 90 | Where-Object -FilterScript { $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $LDAPSTemplateName) }}
-    If (($LDAPSCert -ne $ExpiringCert) -and ($Null -ne $ExpiringCert)) {
 
-        Write-Output "[*] Deleting the old certificate from the LocalMachine Certificate store. New certificate has a different thumbprint"
-        Get-ChildItem -Path "Cert:\LocalMachine\My\$($ExpiringCert.Thubprint)" | Remove-Item -Force
+.EXAMPLE
+PS> .\Set-CurrentCertificate -LdapServiceName NTDS -CertificateTemplateName LDAPoverSSL -ExpiringInDays 30
+# This example uses the certificate template LDAPoverSSL that has previously been issued to your domain controller and assigns it to the NTDS service.
+# This assignment to the NTDS service is also completed if the current LDAPS certificate is expiring in less than 30 days
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+
+
+.INPUTS
+System.String
+System.SecureString
+
+
+.OUTPUTS
+System.String
+#>
+[OutputType([System.String])]
+[CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory=$False
+        )]  # End Parameter
+        [String]$LdapServiceName = "NTDS",
+
+        [Parameter(
+            Mandatory=$True,
+            HelpMessage="[?] What is the name of your LDAPS certificate template on your Windows Certificate Authority? This is the name without any spaces`n[EXAMPLE] LDAPS`n[INPUT] "
+        )]  # End Parameter
+        [String]$CertificateTemplateName,
+
+        [Parameter(
+            Mandatory=$False
+        )]  # End Parameter
+        [Int32]$ExpiringInDays = 30
+    )  # End param
+
+    $CurrentDate = Get-Date
+
+    Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Obtaining LDAP over SSL certificate using Template Name $CertificateTemplateName in your local Computer Certificate store (certlm.msc)"
+    $CurrentCerts = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript {
+        $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $CertificateTemplateName) }
+    }  # End Where-Object
+
+    Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Obtaining any expiring or expired LDAP over SSL certificate using Template Name $CertificateTemplateName in your local Computer Certificate store (certlm.msc)"
+    $ExpiringCerts = $CurrentCerts | Where-Object -FilterScript {
+        $_.NotAfter -le $currentDate.AddDays($ExpiringInDays)
+    }  # End Where-Object
+
+    If ($ExpiringCerts) {
+
+        Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') There is a current LDAPS certificate that is expiring"
+        Start-Process -WorkingDirectory "C:\Windows\System32" -FilePath certreq.exe -ArgumentList @('-Enroll', '-machine', '-q', '-cert', $ExpiringCerts.SerialNumber, 'Renew', 'ReuseKeys') -Wait
+
+        Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Pulling the newly issued certificate's information"
+        $CurrentCerts = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript {
+            $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $CertificateTemplateName) }
+        }  # End Where-Object
+
+        $NewCert = $CurrentCerts | Where-Object -FilterScript { $_.Thumbprint -ne $ExpiringCerts.Thumbprint }
+        If ($NewCert) {
+
+            Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Deleting the old certificate from the LocalMachine Certificate store"
+            $ExpiringCerts | ForEach-Object -Process { 
+                Remove-Item -Path "Cert:\LocalMachine\My\$($_.Thumbprint)" -Force
+            }  # End ForEach-Object
+
+        } Else {
+
+            Write-Output -InputObject "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') LDAPS Certificate does not need to be renewed"
+
+        }  # End If Else
 
     }  # End If
 
-}  # End ElseIf
-ElseIf ($LDAPSCert -ne $ExpiringCert) {
+    $RegPath = "HKLM:\SOFTWARE\Microsoft\SystemCertificates\MY\Certificates\$($CurrentCerts.Thumbprint)"
+    If (Test-Path -Path $RegPath) {
 
-        Throw "LDAPS Certificate is not ready to be renewed"
+        Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Moving PFX certificate into the NTDS\Personal Certificate Store"
+        Copy-Item -Path $RegPath -Destination "HKLM:\SOFTWARE\Microsoft\Cryptography\Services\$($LdapServiceName)\SystemCertificates\MY\Certificates\" | Out-Null
 
-}  # End Else
+        Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Restarting the $($LdapServiceName) service"
+        Restart-Service -Name $LdapServiceName -Force | Out-Null
 
-# The commented area below is just in case we need to export or import a PFX certificate into the localmachine store
-#
-#Write-Output "[*] Exporting LDAPS certificate from LocalMachine store"
-#Export-PfxCertificate -FilePath $CertPath -Password $SecurePassword
+    } Else {
 
-#Write-Output "[*] Importing new PFX LDAPS Certificate into store"
-#Import-PfxCertificate -FilePath $CertPath -CertStoreLocation "Cert:\LocalMachine\My" -Confirm:$False -Password $SecurePassword -Exportable
+        Throw "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Expected registry path defining LDAPS certificate does not exist: $($RegPath)"
 
-$Path = "HKLM:\SOFTWARE\Microsoft\SystemCertificates\MY\Certificates\$($LDAPSCert.Thumbprint)"
+    }  # End If Else
 
-Write-Output "[*] Telling LDAPS services to use the new LDAPS Certificate"
-ForEach ($ServiceName in $ServiceNames) {
-
-    If ($ServiceName.Length -gt 0) {
-
-        If (Test-Path -Path $Path) {
-        
-            Write-Output "[*] Moving PFX certificate into the NTDS\Personal Certificate Store"
-            Copy-Item -Path $Path -Destination "HKLM:\SOFTWARE\Microsoft\Cryptography\Services\$ServiceName\SystemCertificates\MY\Certificates\"
-
-            Write-Output "[*] Restarting the $ServiceName service"
-            Restart-Service -Name $ServiceName -Force
-
-        }  # End If
-        Else {
-
-            Write-Warning "Expected registry path defining LDAPS certificate does not exist"
-
-        }  # End Else
-
-    }  # End If
-
-}  # End ForEach
+    Return "Successfully assigned the LDAPS certificate to $($LdapServiceName)"
