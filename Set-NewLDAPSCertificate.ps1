@@ -8,7 +8,7 @@ This script is used to install the LDAP over SSL certificate template you have o
 
 .DESCRIPTION
 Retrieve the current certificates from the Local Machine certificate store using the template name you define
-Retrieve any expiring soon or expired certificates that use that template name in the local computer certificate store
+Retrieve any expiring soon or expired certificates that use that template name in the local computer certificate store (certlm.msc)
 If expiring certificate is found it gets renewed with the same key and obtains the certificate info after renewal
 If a new certificate is issued, the old one is removed and the new one is assigned to the NTDS service
 A registry path is added using the current certificate thumbprint which assigns it to the NTDS service
