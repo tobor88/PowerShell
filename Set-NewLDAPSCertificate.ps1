@@ -50,7 +50,10 @@ System.SecureString
 System.String
 #>
 [OutputType([System.String])]
-[CmdletBinding()]
+[CmdletBinding(
+    SupportsShouldProcess=$True,
+    ConfirmImpact="Medium"
+)]  # End CmdletBinding
     param(
         [Parameter(
             Mandatory=$False
@@ -96,7 +99,7 @@ System.String
 
             Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Deleting the old certificate from the LocalMachine Certificate store"
             $ExpiringCerts | ForEach-Object -Process { 
-                Remove-Item -Path "Cert:\LocalMachine\My\$($_.Thumbprint)" -Force
+                Remove-Item -Path "Cert:\LocalMachine\My\$($_.Thumbprint)"
             }  # End ForEach-Object
 
         } Else {
