@@ -26,10 +26,10 @@ Define how many days until an LDAPS certificate is expiring that you renew it
 
 
 .EXAMPLE
-PS> .\Set-CurrentCertificate -LdapServiceName NTDS -CertificateTemplateName LDAPoverSSL -ExpiringInDays 30
+PS> .\Set-CurrentCertificate -LdapServiceName NTDS -CertificateTemplateName LDAPoverSSL -ExpiringInDays 30 -Verbose
 # This example uses the certificate template LDAPoverSSL that has previously been issued to your domain controller and assigns it to the NTDS service.
 # This assignment to the NTDS service is also completed if the current LDAPS certificate is expiring in less than 30 days
-
+# I suggest using the -Verbose parameter if you are running this on your own to see what is happening.
 
 .NOTES
 Author: Robert H. Osborne
@@ -125,4 +125,4 @@ System.String
 
     }  # End If Else
 
-    Return "Successfully assigned the LDAPS certificate to $($LdapServiceName)"
+    Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
