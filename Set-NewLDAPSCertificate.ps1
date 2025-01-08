@@ -72,8 +72,15 @@ System.String
         [Int32]$ExpiringInDays = 30
     )  # End param
 
-    $CurrentDate = Get-Date
+Try {
 
+    $VerbosePreference = 'Continue'
+    $CurrentDate = Get-Date
+    $LogDir = "C:\Windows\Logs\Tasks"
+    $LogFile = "$($LogDir)\PS_RenewLdapCertificateTask.log"
+    New-Item -Path $LogDir -ItemType Directory -Force -WhatIf:$False -Verbose:$False -ErrorAction SilentlyContinue | Out-Null
+    Start-Transcript -Path $LogFile -Append -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -WhatIf:$False | Out-Null
+    
     Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Obtaining LDAP over SSL certificate using Template Name $CertificateTemplateName in your local Computer Certificate store (certlm.msc)"
     $CurrentCerts = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object -FilterScript {
         $_.Extensions | Where-Object -FilterScript { ($_.Oid.FriendlyName -eq "Certificate Template Information") -and ($_.Format(0) -Match $CertificateTemplateName) }
@@ -81,7 +88,7 @@ System.String
 
     Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Obtaining any expiring or expired LDAP over SSL certificate using Template Name $CertificateTemplateName in your local Computer Certificate store (certlm.msc)"
     $ExpiringCerts = $CurrentCerts | Where-Object -FilterScript {
-        $_.NotAfter -le $currentDate.AddDays($ExpiringInDays)
+        $_.NotAfter -le $CurrentDate.AddDays($ExpiringInDays)
     }  # End Where-Object
 
     If ($ExpiringCerts) {
@@ -111,7 +118,7 @@ System.String
     }  # End If
 
     $RegPath = "HKLM:\SOFTWARE\Microsoft\SystemCertificates\MY\Certificates\$($CurrentCerts.Thumbprint)"
-    If (Test-Path -Path $RegPath) {
+    If (($ExpiringCerts) -and (Test-Path -Path $RegPath)) {
 
         Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Moving PFX certificate into the NTDS\Personal Certificate Store"
         Copy-Item -Path $RegPath -Destination "HKLM:\SOFTWARE\Microsoft\Cryptography\Services\$($LdapServiceName)\SystemCertificates\MY\Certificates\" | Out-Null
@@ -119,10 +126,23 @@ System.String
         Write-Verbose -Message "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Restarting the $($LdapServiceName) service"
         Restart-Service -Name $LdapServiceName -Force | Out-Null
 
+    } ElseIf ($Null -eq $ExpiringCerts) {
+    
+        Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') LDAPS Certificate does not need to be renewed"
+
     } Else {
 
         Throw "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Expected registry path defining LDAPS certificate does not exist: $($RegPath)"
 
     }  # End If Else
+
+    Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
+
+} Finally {
+
+    $VerbosePreference = 'SilentlyContinue'
+    Stop-Transcript -Verbose:$False -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Out-Null
+
+}  # End Try Finally
 
     Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
