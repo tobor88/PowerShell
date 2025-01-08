@@ -128,7 +128,7 @@ Try {
 
     } ElseIf ($Null -eq $ExpiringCerts) {
     
-        Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') LDAPS Certificate does not need to be renewed"
+        Return "RESULT: $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') LDAPS Certificate does not need to be renewed"
 
     } Else {
 
@@ -136,7 +136,7 @@ Try {
 
     }  # End If Else
 
-    Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
+    Return "RESULT: $(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
 
 } Finally {
 
@@ -144,5 +144,3 @@ Try {
     Stop-Transcript -Verbose:$False -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Out-Null
 
 }  # End Try Finally
-
-    Return "$(Get-Date -Format 'MM-dd-yyyy hh:mm:ss') Successfully assigned the LDAPS certificate to $($LdapServiceName)"
